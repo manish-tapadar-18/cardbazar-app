@@ -1,6 +1,48 @@
 pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
 plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+
+// ---------------------------------------------------------------------------
+// Global node PATH fix for NVM / non-interactive shell environments.
+//
+// Android Studio and the Gradle daemon start without loading .zshrc/.bashrc,
+// so NVM-managed node (and even /usr/local/bin) may be absent from PATH.
+// This block reads node.path from local.properties and injects it into the
+// live JVM process environment via reflection — before any subproject
+// build.gradle runs — so every commandLine("node", ...) call across all
+// libraries (react-native-reanimated, react-native-worklets, etc.) finds node.
+// ---------------------------------------------------------------------------
+def localPropertiesFile = new File(rootDir, "local.properties")
+def nodeBinPath = ""
+if (localPropertiesFile.exists()) {
+    def props = new Properties()
+    localPropertiesFile.withInputStream { props.load(it) }
+    nodeBinPath = props.getProperty("node.path", "")
+}
+
+if (nodeBinPath) {
+    try {
+        def envMap = System.getenv()
+        def field = envMap.getClass().getDeclaredField("m")
+        field.setAccessible(true)
+        def mutableEnv = (Map<String, String>) field.get(envMap)
+        def currentPath = mutableEnv.getOrDefault("PATH", "")
+        if (!currentPath.contains(nodeBinPath)) {
+            mutableEnv.put("PATH", "${nodeBinPath}${File.pathSeparator}${currentPath}")
+        }
+        println("[node-path-fix] Injected node PATH: ${nodeBinPath}")
+    } catch (Exception e) {
+        println("[node-path-fix] WARNING: Could not inject node PATH: ${e.message}")
+    }
+} else {
+    println("[node-path-fix] WARNING: node.path not set in local.properties. " +
+            "If builds fail with 'command node not found', add:\n" +
+            "  node.path=/path/to/node/bin\nto android/local.properties")
+}
+
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
+    def npxCmd = nodeBinPath ? "${nodeBinPath}/npx" : "npx"
+    ex.autolinkLibrariesFromCommand([npxCmd, "@react-native-community/cli", "config"])
+}
 rootProject.name = 'cardbazar'
 include ':app'
 includeBuild('../node_modules/@react-native/gradle-plugin')

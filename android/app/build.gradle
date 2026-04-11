@@ -1,7 +1,16 @@
+project.ext.envConfigFiles = [
+    debug: ".env.dev",
+    release: ".env.prod",
+]
+
+// Set react-native path explicitly so react-native-reanimated and react-native-worklets
+// don't need to spawn a 'node' process during Gradle configuration (which fails with NVM).
+project.ext.REACT_NATIVE_NODE_MODULES_DIR = file("../../node_modules/react-native").absolutePath
+
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle", to: project
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.

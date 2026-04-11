@@ -1,0 +1,9 @@
+export { default as Account } from "./Account/Account.tsx";
+export { default as GameRules } from "./GameRules/GameRules.tsx";
+export { default as GameTimings } from "./GameTimings/GameTimings.tsx";
+export { default as Home } from "./Home/Home.tsx";
+export { default as LanguageOptions } from "./LanguageOptions/LanguageOptions.tsx";
+export { default as Refer } from "./Refer/Refer.tsx";
+export { default as TransactionHistory } from "./TransactionHistory/TransactionHistory.tsx";
+export { default as AddMoney } from "./AddMoney/AddMoney.tsx";
+export { default as PlayHistory } from "./PlayHistory/PlayHistory.tsx";
