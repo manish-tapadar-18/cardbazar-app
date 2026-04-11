@@ -9,15 +9,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { AuthStackParamList } from '../../types/NavigationStack'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useNavigation } from '@react-navigation/native'
-import Wrapper from '../../components/Wrapper'
 const Splash = () => {
 
     const { top, bottom } = useSafeAreaInsets();
     type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
     const navigation = useNavigation<AuthNavigationProp>();
-    
+
     return (
-        <View style={{justifyContent:"flex-end",flex:1}}>
+        <View style={{ justifyContent: "flex-end", flex: 1 }}>
             <Image source={Images.MAIN_SPLASH_SCREEN} style={styles.backgroundImage} />
             <CustomText children={"Card Bazar"} style={{ ...styles.apptext, marginTop: top }} />
             <CustomButton

@@ -2,15 +2,18 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useUserStore } from "../stores/userStore";
 import AuthStack from "./AuthStack";
 import { RootDrawer } from "./RootDrawer";
+import DemoStack from "./DemoStack";
 import React from "react";
 import { http } from "../utils/http";
 import { UriRepo } from "../utils/UriRepo";
 import { useLanguageStore, LanguageData } from "../stores/languageStore";
 import LanguageSelectionModal from "../components/LanguageSelectionModal";
+import { useDemoStore } from "../stores/demoStore";
 
 export default function AppNavigator() {
     const { isAuthenticated } = useUserStore();
     const { setLanguages } = useLanguageStore();
+    const { isDemoMode } = useDemoStore();
 
     useFocusEffect(React.useCallback(() => {
         loadAllLanguages();
@@ -24,7 +27,13 @@ export default function AppNavigator() {
     }
     return (
         <>
-            {isAuthenticated ? <RootDrawer /> : <AuthStack />}
+            {isDemoMode ? (
+                <DemoStack />
+            ) : isAuthenticated ? (
+                <RootDrawer />
+            ) : (
+                <AuthStack />
+            )}
             <LanguageSelectionModal />
         </>
     );

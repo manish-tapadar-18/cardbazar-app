@@ -1,5 +1,5 @@
-import { Image, StyleSheet, View, LayoutChangeEvent } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import { Image, StyleSheet, View, LayoutChangeEvent, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
 import { styles } from './styles';
 import { Images } from '../../utils/Images';
 import CustomText from '../../components/CustomText';
@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spaces } from '../../utils/Spaces';
 import { commonStyles } from '../../utils/CommonStyles';
 import { Colors } from '../../utils/Colors';
+import { useLanguageModalStore } from '../../stores/languageModalStore';
+import { rw } from '../../utils/responsive';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -15,12 +17,11 @@ import Animated, {
 import Register from './Register';
 import Wrapper from '../../components/Wrapper';
 import Login from './Login';
-// import LottieView from 'lottie-react-native';
-import { rh } from '../../utils/responsive';
 
 const Authentication: React.FC = () => {
   const [authType, setAuthType] = useState<'Login' | 'Register'>('Login');
   const { top } = useSafeAreaInsets();
+  const { openModal } = useLanguageModalStore();
 
   const translateX = useSharedValue(0);
   const containerWidth = useSharedValue(0);
@@ -46,13 +47,7 @@ const Authentication: React.FC = () => {
       transform: [{ translateX: translateX.value }],
     };
   });
-  // const animationRef = useRef<LottieView>(null);
-  // useEffect(() => {
-  //   animationRef.current?.play();
-
-  //   // Or set a specific startFrame and endFrame with:
-  //   animationRef.current?.play(30, 120);
-  // }, []);
+ 
 
   return (
     <Wrapper>
@@ -61,6 +56,14 @@ const Authentication: React.FC = () => {
         source={Images.LANGUAGE_BACKGROUND_IMAGE}
         blurRadius={3}
       />
+
+      <TouchableOpacity
+        onPress={openModal}
+        style={{ position: 'absolute', top: top + 12, right: rw(4) }}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Image source={Images.LANGUAGE} style={{ width: rw(7), height: rw(7), tintColor: Colors.WHITE }} resizeMode="contain" />
+      </TouchableOpacity>
 
       <CustomText
         children={`${authType} with Card Bazaar App`}

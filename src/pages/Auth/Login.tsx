@@ -27,6 +27,10 @@ import { Repository } from '../../repository/Repository';
 import { ENV } from '../../utils/env';
 import { FontFamilyWithWeight } from '../../utils/FontFamilyWithWeight';
 import { Images } from '../../utils/Images';
+import { useDemoStore } from '../../stores/demoStore';
+
+const DEMO_MOBILE = '9087561198';
+const DEMO_PASSWORD = '123456';
 
 const Login = () => {
     const [isLoading, setLoading] = useState<boolean>(false);
@@ -54,6 +58,7 @@ const Login = () => {
 
     const { setUserSession, setAuthenticationStatus, setToken } = useUserStore();
     const { setAdminDetails } = useAdminDetailsStore();
+    const { setDemoMode } = useDemoStore();
 
     const getUserDetails = async (email: string) => {
         const userDetailsResponse = await Repository.User.userDetails({ EMAIL: email });
@@ -74,6 +79,10 @@ const Login = () => {
     };
 
     const login = async (values: ILoginFormValues) => {
+        if (values.EMAIL === DEMO_MOBILE && values.PASSWORD === DEMO_PASSWORD) {
+            setDemoMode(true);
+            return;
+        }
         try {
             Keyboard.dismiss();
             setLoading(true);
