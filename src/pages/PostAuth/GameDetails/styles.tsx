@@ -21,6 +21,12 @@ export const styles = StyleSheet.create({
     borderRadius: rh(2),
     backgroundColor: Colors.DARK_VIOLET,
   },
+  tabPillSkeleton: {
+    height: rh(4),
+    width: rw(22),
+    borderRadius: rh(2),
+    backgroundColor: 'rgba(140,80,220,0.5)',
+  },
   scrollView: {
     flex: 1,
   },
