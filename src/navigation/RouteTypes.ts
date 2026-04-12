@@ -2,6 +2,7 @@ import { NavigatorScreenParams } from "@react-navigation/native";
 
 export type HomeStackParamList = {
     Home: undefined;
+    GameDetails: { categoryId: string };
     GameRules: undefined;
     Account: undefined;
     GameTimings: undefined;

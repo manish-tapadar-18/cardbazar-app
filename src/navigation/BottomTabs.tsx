@@ -9,10 +9,12 @@ import { Image } from "react-native";
 import { rh, rw } from "../utils/responsive";
 import { Images } from "../utils/Images";
 import { Colors } from "../utils/Colors";
+import { useTranslation } from "../hooks/useTranslation";
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
 export const BottomTabs = () => {
+    const { t } = useTranslation();
     return (
         <Tab.Navigator
             initialRouteName="HomeTab"
@@ -28,7 +30,7 @@ export const BottomTabs = () => {
                 component={HomeStack}
                 options={{
                     tabBarLabel: ({ focused }) => (
-                        <CustomText children="Home" style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                        <CustomText children={t('home_menu')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -50,7 +52,7 @@ export const BottomTabs = () => {
                 component={AddMoneyStack}
                 options={{
                     tabBarLabel: ({ focused }) => (
-                        <CustomText children="Add Money" style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                        <CustomText children={t('add_money')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -79,7 +81,7 @@ export const BottomTabs = () => {
                 component={PlayHistoryStack}
                 options={{
                     tabBarLabel: ({ focused }) => (
-                        <CustomText children="Play History" style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                        <CustomText children={t('play_history')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -108,7 +110,7 @@ export const BottomTabs = () => {
                 component={ResultStack}
                 options={{
                     tabBarLabel: ({ focused }) => (
-                        <CustomText children="Result" style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                        <CustomText children={t('result_menu')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image

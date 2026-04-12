@@ -23,6 +23,7 @@ type DrawerMenuItem = {
 };
 
 const MENU_ITEMS: DrawerMenuItem[] = [
+  { label: "Home", icon: Images.HOME, tab: "HomeTab", screen: "Home", languageKey: "home_menu" },
   { label: "My Account", icon: Images.ACCOUNT, tab: "HomeTab", screen: "Account", languageKey: "my_account" },
   { label: "Game Rules", icon: Images.TROPHY, tab: "HomeTab", screen: "GameRules", languageKey: "game_rules" },
   { label: "Game Timing", icon: Images.CLOCK, tab: "HomeTab", screen: "GameTimings", languageKey: "game_timing" },
@@ -34,6 +35,7 @@ const MENU_ITEMS: DrawerMenuItem[] = [
 ];
 
 const ROUTE_MAP: Record<string, string> = {
+  "Home": "Home",
   "My Account": "Account",
   "Game Rules": "GameRules",
   "Game Timing": "GameTimings",

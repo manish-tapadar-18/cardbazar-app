@@ -1,4 +1,3 @@
-import { IGameListFilterRequest } from "../../request/module/IGameListFilterRequest";
 import { IGameRulesRequest } from "../../request/module/IGameRulesRequest";
 import { IUpdateProfileRequest } from "../../request/module/IUpdateProfileRequest";
 import { ICustomResponse } from "../../response/generic/ICustomResponse";

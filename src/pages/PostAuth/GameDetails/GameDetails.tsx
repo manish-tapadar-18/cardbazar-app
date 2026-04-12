@@ -1,0 +1,307 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Animated,
+  Image,
+  ImageBackground,
+  RefreshControl,
+  ScrollView,
+  View,
+} from 'react-native'
+import LinearGradient from 'react-native-linear-gradient'
+import moment from 'moment'
+import { RouteProp, useRoute } from '@react-navigation/native'
+import { Images } from '../../../utils/Images'
+import { Colors } from '../../../utils/Colors'
+import { styles } from './styles'
+import GradientIconBar from '../../../components/GradientIconBar'
+import CustomText from '../../../components/CustomText'
+import { Repository } from '../../../repository/Repository'
+import { Toast } from '../../../utils/toast'
+import { IScheduleDetail } from '../../../response/module/IGetAllGamesListResponse'
+import { HomeStackParamList } from '../../../navigation/RouteTypes'
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+type GameStatus = 'RUNNING' | 'UPCOMING' | 'EXPIRED'
+
+interface CategorizedSchedules {
+  running: IScheduleDetail[]
+  upcoming: IScheduleDetail[]
+  expired: IScheduleDetail[]
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const getStatus = (schedule: IScheduleDetail): GameStatus => {
+  const now = moment()
+  const start = moment(schedule.START_TIME, 'HH:mm')
+  const end = moment(schedule.END_TIME, 'HH:mm')
+  if (now.isBefore(start)) return 'UPCOMING'
+  if (now.isAfter(end)) return 'EXPIRED'
+  return 'RUNNING'
+}
+
+const getRemainingTime = (endTime: string): string => {
+  const diff = moment(endTime, 'HH:mm').diff(moment())
+  if (diff <= 0) return '00:00:00'
+  return moment.utc(diff).format('HH:mm:ss')
+}
+
+const formatTime = (time: string) => moment(time, 'HH:mm').format('hh:mm A')
+
+// ─── Skeleton Box ─────────────────────────────────────────────────────────────
+const SkeletonBox = ({ style }: { style: any }) => {
+  const pulseAnim = useRef(new Animated.Value(0.4)).current
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.4, duration: 700, useNativeDriver: true }),
+      ])
+    )
+    pulse.start()
+    return () => pulse.stop()
+  }, [pulseAnim])
+
+  return <Animated.View style={[style, { opacity: pulseAnim }]} />
+}
+
+// ─── Skeleton Card ────────────────────────────────────────────────────────────
+const SkeletonCard: React.FC = () => (
+  <View style={styles.cardWrapper}>
+    <View style={styles.skeletonCard}>
+      <SkeletonBox style={styles.skeletonIcon} />
+      <View style={styles.cardContent}>
+        <SkeletonBox style={styles.skeletonCardTitle} />
+        <SkeletonBox style={styles.skeletonCardSubtitle} />
+      </View>
+    </View>
+  </View>
+)
+
+// ─── Section Header ───────────────────────────────────────────────────────────
+const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
+  <View style={styles.sectionHeader}>
+    <LinearGradient
+      colors={['transparent', Colors.GOLD]}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
+      style={styles.sectionLine}
+    />
+    <CustomText style={styles.sectionTitle}>{title}</CustomText>
+    <LinearGradient
+      colors={[Colors.GOLD, 'transparent']}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
+      style={styles.sectionLine}
+    />
+  </View>
+)
+
+// ─── Game Card ────────────────────────────────────────────────────────────────
+const GameCard: React.FC<{ schedule: IScheduleDetail }> = ({ schedule }) => {
+  const status = getStatus(schedule)
+  return (
+    <View style={styles.cardWrapper}>
+      <LinearGradient
+        colors={['#FFD700', '#E8900C']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.card}
+      >
+        <Image source={Images.CARD_ICON} style={styles.cardIcon} resizeMode="contain" />
+        <View style={styles.cardContent}>
+          <CustomText style={styles.cardTitle}>{schedule.NAME}</CustomText>
+          {status === 'RUNNING' && (
+            <CustomText style={styles.runningTime}>
+              Ends in {getRemainingTime(schedule.END_TIME)}
+            </CustomText>
+          )}
+          {status === 'UPCOMING' && (
+            <View style={styles.upcomingTimeRow}>
+              <CustomText style={styles.upcomingTime}>
+                Starts at {formatTime(schedule.START_TIME)}
+              </CustomText>
+              <CustomText style={styles.upcomingTimeSpacer}>{'    '}</CustomText>
+              <CustomText style={styles.upcomingTime}>
+                Ends at {formatTime(schedule.END_TIME)}
+              </CustomText>
+            </View>
+          )}
+          {status === 'EXPIRED' && (
+            <CustomText style={styles.expiredTime}>
+              Ended at {formatTime(schedule.END_TIME)}
+            </CustomText>
+          )}
+        </View>
+      </LinearGradient>
+    </View>
+  )
+}
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+const EmptyState: React.FC = () => (
+  <View style={styles.emptyContainer}>
+    {/* Outer glow ring */}
+    <View style={styles.emptyGlowRing}>
+      {/* Inner gold gradient circle */}
+      <LinearGradient
+        colors={['#FFD700', '#E8900C']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.emptyIconCircle}
+      >
+        <Image source={Images.GAME_LIST} style={styles.emptyIcon} resizeMode="contain" />
+      </LinearGradient>
+    </View>
+
+    <CustomText style={styles.emptyTitle}>NO GAMES TODAY</CustomText>
+
+    {/* Gold divider */}
+    <LinearGradient
+      colors={['transparent', Colors.GOLD, 'transparent']}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
+      style={styles.emptyDivider}
+    />
+
+    <CustomText style={styles.emptySubtitle}>
+      There are no active games available{'\n'}for this category right now.{'\n'}Pull down to refresh.
+    </CustomText>
+  </View>
+)
+
+// ─── GameDetails Screen ───────────────────────────────────────────────────────
+const GameDetails = () => {
+  const route = useRoute<RouteProp<HomeStackParamList, 'GameDetails'>>()
+  const { categoryId } = route.params
+
+  const [activeTopKey, setActiveTopKey] = useState('')
+  const [schedules, setSchedules] = useState<IScheduleDetail[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  // tick drives countdown re-renders every second
+  const [, setTick] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const buildPayload = useCallback(
+    () => ({
+      filters: {
+        search: [
+          { FIELD_NAME: 'GAME_MASTER.NAME', FIELD_VALUE: '', OPT: 'LIKE' },
+          { FIELD_NAME: 'GAME_MASTER.CATEGORY_ID', FIELD_VALUE: categoryId, OPT: '=' },
+          {
+            FIELD_NAME: 'GAME_MASTER.GAME_DATE',
+            FIELD_VALUE: moment().format('YYYY-MM-DD'),
+            OPT: '=',
+          },
+        ],
+        sortFilter: { FIELD_NAME: 'GAME_MASTER.GAME_DATE', SORT_ORDER: 'DESC' },
+      },
+    }),
+    [categoryId]
+  )
+
+  const getGameListByCategoryId = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const response = await Repository.Game.getAllGamesList(buildPayload())
+      const { isSuccess, data, message } = response
+      if (!isSuccess || !data) {
+        Toast.error(`Error: ${message}`, { placement: 'bottom', duration: 3000 })
+        return
+      }
+      const allSchedules = data.DATA.flatMap(game =>
+        game.SCHEDULE_DETAILS.filter(s => s.STATUS === 'ACTIVE')
+      )
+      setSchedules(allSchedules)
+    } catch (error: any) {
+      Toast.error(error.message, { placement: 'bottom', duration: 3000 })
+    } finally {
+      setIsLoading(false)
+    }
+  }, [buildPayload])
+
+  // Fetch on categoryId change
+  useEffect(() => {
+    getGameListByCategoryId()
+  }, [getGameListByCategoryId])
+
+  // Countdown ticker — 1-second interval for running game timers
+  useEffect(() => {
+    intervalRef.current = setInterval(() => setTick(t => t + 1), 1000)
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [])
+
+  const categorized = useMemo<CategorizedSchedules>(() => {
+    const running: IScheduleDetail[] = []
+    const upcoming: IScheduleDetail[] = []
+    const expired: IScheduleDetail[] = []
+    for (const s of schedules) {
+      const status = getStatus(s)
+      if (status === 'RUNNING') running.push(s)
+      else if (status === 'UPCOMING') upcoming.push(s)
+      else expired.push(s)
+    }
+    return { running, upcoming, expired }
+  }, [schedules])
+
+  const hasGames = schedules.length > 0
+
+  return (
+    <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.background} resizeMode="cover">
+      <GradientIconBar
+        activeKey={activeTopKey}
+        onPress={(item) => setActiveTopKey(item.key)}
+      />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={getGameListByCategoryId}
+            tintColor={Colors.GOLD}
+            colors={[Colors.GOLD]}
+          />
+        }
+      >
+        {isLoading && !hasGames ? (
+          Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+        ) : !hasGames ? (
+          <EmptyState />
+        ) : (
+          <>
+            {categorized.running.length > 0 && (
+              <>
+                <SectionHeader title="RUNNING" />
+                {categorized.running.map(s => (
+                  <GameCard key={s.ID} schedule={s} />
+                ))}
+              </>
+            )}
+            {categorized.upcoming.length > 0 && (
+              <>
+                <SectionHeader title="UPCOMING" />
+                {categorized.upcoming.map(s => (
+                  <GameCard key={s.ID} schedule={s} />
+                ))}
+              </>
+            )}
+            {categorized.expired.length > 0 && (
+              <>
+                <SectionHeader title="EXPIRED" />
+                {categorized.expired.map(s => (
+                  <GameCard key={s.ID} schedule={s} />
+                ))}
+              </>
+            )}
+          </>
+        )}
+      </ScrollView>
+    </ImageBackground>
+  )
+}
+
+export default GameDetails

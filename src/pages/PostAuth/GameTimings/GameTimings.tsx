@@ -14,11 +14,12 @@ import { Toast } from '../../../utils/toast';
 import { IGameCategoryResponse } from '../../../response/module/IGameCategoryResponse';
 import { IGameItem, IScheduleDetail } from '../../../response/module/IGetAllGamesListResponse';
 import { IGameListFilterRequest } from '../../../request/module/IGameListFilterRequest';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 
 const formatTime = (time: string) => moment(time, 'HH:mm').format('hh:mm A');
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
 
 const SkeletonBox = ({ style }: { style: any }) => {
   const pulseAnim = useRef(new Animated.Value(0.4)).current;
@@ -55,7 +56,9 @@ type TimingCardProps = {
   schedule: IScheduleDetail;
 };
 
-const TimingCard: React.FC<TimingCardProps> = ({ schedule }) => (
+const TimingCard: React.FC<TimingCardProps> = ({ schedule }) => {
+  const { t } = useTranslation();
+  return(
   <View style={styles.wrapper}>
     <View style={styles.badgeRow}>
       <LinearGradient
@@ -71,22 +74,22 @@ const TimingCard: React.FC<TimingCardProps> = ({ schedule }) => (
       <View style={styles.timingRow}>
         <View style={styles.timeColumn}>
           <Text style={styles.timeValue}>{formatTime(schedule.START_TIME)}</Text>
-          <Text style={styles.startLabel}>Start Time</Text>
+          <Text style={styles.startLabel}>{t('start_time')}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.timeColumn}>
           <Text style={styles.timeValue}>{formatTime(schedule.END_TIME)}</Text>
-          <Text style={styles.endLabel}>End Time</Text>
+          <Text style={styles.endLabel}>{t('end_time')}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.timeColumn}>
           <Text style={styles.timeValue}>{formatTime(schedule.RESULT_TIME)}</Text>
-          <Text style={styles.resultLabel}>Result Time</Text>
+          <Text style={styles.resultLabel}>{t('result_time')}</Text>
         </View>
       </View>
     </View>
   </View>
-);
+)};
 
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
@@ -113,7 +116,7 @@ const GameTimings = () => {
   const [isLoading, setLoading] = useState(false);
   const [games, setGames] = useState<IGameItem[]>([]);
   const [categoryTabs, setCategoryTabs] = useState<IGameCategoryResponse[]>([]);
-
+  
   const buildPayload = (): IGameListFilterRequest => ({
     filters: {
       search: [
