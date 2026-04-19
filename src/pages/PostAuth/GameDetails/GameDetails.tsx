@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  Alert,
   Animated,
   Image,
   ImageBackground,
@@ -110,12 +111,14 @@ const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
 )
 
 // ─── Game Card ────────────────────────────────────────────────────────────────
-const GameCard: React.FC<{ schedule: IScheduleDetail, isEnabled:boolean}> = ({ schedule, isEnabled }) => {
+const GameCard: React.FC<{ schedule: IScheduleDetail, isEnabled:boolean, onGameCardClick?: (schedule:IScheduleDetail) => void}> = ({ schedule, isEnabled, onGameCardClick }) => {
   const status = getStatus(schedule)
   return (
     <Pressable 
       disabled={!isEnabled} 
-      onPress={()=>{}} 
+      onPress={()=>{
+        onGameCardClick?.(schedule)
+      }} 
       style={styles.cardWrapper}
       >
       <LinearGradient
@@ -210,6 +213,14 @@ const GameDetails = () => {
     },
     [navigation]
   )
+
+  const onGameCardClick = (schedule:IScheduleDetail)=> {
+    const {ID} = schedule
+    let index = gameCategories.findIndex((category) => category.ID == categoryId);
+    let temp = [...gameCategories];     
+    let { PLAY_OPTIONS } = temp[index];
+    navigation.navigate('PlayGame', { cardImages: PLAY_OPTIONS, GAME_MASTER_SCHEDULE_ID: ID, GAME_CATEGORY: categoryId });
+  }
 
   // ── Categories (tab bar) ──────────────────────────────────────────────────
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
@@ -368,7 +379,7 @@ const GameDetails = () => {
               <>
                 <SectionHeader title="RUNNING" />
                 {categorized.running.map(s => (
-                  <GameCard key={s.ID} schedule={s} isEnabled={true} />
+                  <GameCard onGameCardClick={(schedule:IScheduleDetail)=>onGameCardClick(schedule)} key={s.ID} schedule={s} isEnabled={true} />
                 ))}
               </>
             )}

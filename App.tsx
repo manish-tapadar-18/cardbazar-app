@@ -148,10 +148,10 @@ export default function App() {
                 <AppNavigator />
             </NavigationContainer>
 
-            <SecurityBlockModal
+            {/* <SecurityBlockModal
                 visible={violation !== null}
                 reason={violation?.reason ?? ''}
-            />
+            /> */}
         </ToastProvider>
     );
 }

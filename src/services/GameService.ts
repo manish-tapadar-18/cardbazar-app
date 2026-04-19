@@ -4,6 +4,7 @@ import { IApiResponse } from "../response/generic/IApiResponse";
 import { ICustomResponse } from "../response/generic/ICustomResponse";
 import { IGameCategoryResponse } from "../response/module/IGameCategoryResponse";
 import { IGameRulesResponse } from "../response/module/IGameRulesResponse";
+import { IGameTypeResponse } from "../response/module/IGameTypeResponse";
 import { IGetAllGamesListResponse } from "../response/module/IGetAllGamesListResponse";
 import { genericErrorParser } from "../response/parser/genericErrorParser";
 import { genericResponseParser } from "../response/parser/genericResponseParser";
@@ -23,6 +24,19 @@ class GameService implements IGameService {
             return genericResponseParser<IGameCategoryResponse[]>(result);
         } catch (error: any) {
             return genericErrorParser<IGameCategoryResponse[]>(error);
+        }
+    }
+
+    async getAllGameTypes(): Promise<ICustomResponse<IGameTypeResponse[]>> {
+        try {
+            const response = await http.get<IApiResponse<IGameTypeResponse[]>>(
+                UriRepo.GETALLGAMETYPE,
+                { requireAuth: true }
+            );
+            const result = response.data;
+            return genericResponseParser<IGameTypeResponse[]>(result);
+        } catch (error: any) {
+            return genericErrorParser<IGameTypeResponse[]>(error);
         }
     }
 
