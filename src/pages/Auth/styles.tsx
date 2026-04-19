@@ -26,7 +26,6 @@ export const styles = StyleSheet.create({
     },
     formOuterContainer: {
         flex: 1,
-        backgroundColor: Colors.WHITE
     },
     inputStyle: {
         borderWidth: 1,

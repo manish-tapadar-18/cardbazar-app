@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    TouchableWithoutFeedback,
     TouchableOpacity,
     Keyboard,
     Image,
     StyleSheet,
+    Text,
+    Platform,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomTextInput from '../../components/CustomTextInput';
 import { Colors } from '../../utils/Colors';
@@ -35,6 +34,15 @@ const DEMO_PASSWORD = '123456';
 const Login = () => {
     const [isLoading, setLoading] = useState<boolean>(false);
     const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    useEffect(() => {
+        const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+        const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+        const show = Keyboard.addListener(showEvent, (e) => setKeyboardHeight(e.endCoordinates.height));
+        const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+        return () => { show.remove(); hide.remove(); };
+    }, []);
 
     const {
         values,
@@ -108,144 +116,146 @@ const Login = () => {
     };
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={rh(30)}
-        >
+        <View style={{ flex: 1, backgroundColor: '#1B0535' }}>
             <LinearGradient
                 colors={['#1B0535', '#2D0A6E', '#3A0D7A']}
                 style={styles.gradientBg}
             >
-                {/* Decorative card watermark */}
                 <Image
                     source={require('../../assets/images/spade_card.png')}
                     style={styles.watermark}
                     resizeMode="contain"
                 />
 
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <ScrollView
-                        contentContainerStyle={styles.scrollContent}
-                        showsVerticalScrollIndicator={false}
-                        keyboardShouldPersistTaps="always"
-                    >
-                        {/* Logo + branding */}
-                        <View style={styles.brandSection}>
-                            <Image
-                                source={require('../../assets/logo/logo.png')}
-                                style={styles.logo}
-                                resizeMode="contain"
-                            />
-                            
-                            <CustomText style={styles.tagline}>
-                                Your Ultimate Card Gaming Platform
-                            </CustomText>
+                <KeyboardAwareScrollView
+                    enableOnAndroid
+                    extraScrollHeight={70}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.scrollContent}
+                >
+                    {/* Logo + branding */}
+                    <View style={styles.brandSection}>
+                        <Image
+                            source={require('../../assets/logo/logo.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                        <CustomText style={styles.tagline}>
+                            Your Ultimate Card Gaming Platform
+                        </CustomText>
+                    </View>
+
+                    {/* Form card */}
+                    <View style={styles.card}>
+                        <CustomText style={styles.cardTitle}>Welcome Back</CustomText>
+                        <CustomText style={styles.cardSubtitle}>Sign in to continue</CustomText>
+
+                        {/* Mobile input */}
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.inputRow}>
+                                <Image
+                                    source={Images.PHONE}
+                                    style={styles.inputIcon}
+                                    resizeMode="contain"
+                                />
+                                <View style={styles.inputFlex}>
+                                    <CustomTextInput
+                                        onChangeText={(value: string) => {
+                                            const numericValue = value.replace(/[^0-9]/g, "");
+                                            setFieldValue("EMAIL", numericValue);
+                                        }}
+                                        onBlur={handleBlur("EMAIL")}
+                                        value={values.EMAIL}
+                                        placeholder='Mobile Number'
+                                        keyboardType='number-pad'
+                                        returnKeyType='send'
+                                        returnKeyLabel='CardBazaar'
+                                        style={styles.textInput}
+                                        focusedPlaceholderColor={Colors.GOLD}
+                                        unfocusedPlaceholderColor={Colors.WHITE_55}
+                                    />
+                                </View>
+                            </View>
+                            {touched.EMAIL && errors.EMAIL && (
+                                <CustomText style={authStyles.errorText}>
+                                    {errors.EMAIL}
+                                </CustomText>
+                            )}
                         </View>
 
-                        {/* Form card */}
-                        <View style={styles.card}>
-                            <CustomText style={styles.cardTitle}>Welcome Back</CustomText>
-                            <CustomText style={styles.cardSubtitle}>Sign in to continue</CustomText>
-
-                            {/* Mobile input */}
-                            <View style={styles.inputWrapper}>
-                                <View style={styles.inputRow}>
+                        {/* Password input */}
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.inputRow}>
+                                <Image
+                                    source={Images.DATA_SECURITY}
+                                    style={styles.inputIcon}
+                                    resizeMode="contain"
+                                />
+                                <View style={styles.inputFlex}>
+                                    <CustomTextInput
+                                        secureTextEntry={!showPassword}
+                                        onChangeText={handleChange("PASSWORD")}
+                                        onBlur={handleBlur("PASSWORD")}
+                                        value={values.PASSWORD}
+                                        placeholder='Password'
+                                        style={styles.textInput}
+                                        focusedPlaceholderColor={Colors.GOLD}
+                                        unfocusedPlaceholderColor={Colors.WHITE_55}
+                                    />
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => setShowPassword(prev => !prev)}
+                                    style={styles.eyeButton}
+                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                >
                                     <Image
-                                        source={Images.PHONE}
-                                        style={styles.inputIcon}
+                                        source={
+                                            showPassword
+                                                ? require('../../assets/images/eye_on.png')
+                                                : require('../../assets/images/eye_off.png')
+                                        }
+                                        style={styles.eyeIcon}
                                         resizeMode="contain"
                                     />
-                                    <View style={styles.inputFlex}>
-                                        <CustomTextInput
-                                            onChangeText={(value: string) => {
-                                                const numericValue = value.replace(/[^0-9]/g, "");
-                                                setFieldValue("EMAIL", numericValue);
-                                            }}
-                                            onBlur={handleBlur("EMAIL")}
-                                            value={values.EMAIL}
-                                            placeholder='Mobile Number'
-                                            keyboardType='number-pad'
-                                            returnKeyType='send'
-                                            returnKeyLabel='CardBazaar'
-                                            style={styles.textInput}
-                                            focusedPlaceholderColor={Colors.GOLD}
-                                            unfocusedPlaceholderColor={Colors.WHITE_55}
-                                        />
-                                    </View>
-                                </View>
-                                {touched.EMAIL && errors.EMAIL && (
-                                    <CustomText style={authStyles.errorText}>
-                                        {errors.EMAIL}
-                                    </CustomText>
-                                )}
+                                </TouchableOpacity>
                             </View>
-
-                            {/* Password input */}
-                            <View style={styles.inputWrapper}>
-                                <View style={styles.inputRow}>
-                                    <Image
-                                        source={Images.DATA_SECURITY}
-                                        style={styles.inputIcon}
-                                        resizeMode="contain"
-                                    />
-                                    <View style={styles.inputFlex}>
-                                        <CustomTextInput
-                                            secureTextEntry={!showPassword}
-                                            onChangeText={handleChange("PASSWORD")}
-                                            onBlur={handleBlur("PASSWORD")}
-                                            value={values.PASSWORD}
-                                            placeholder='Password'
-                                            style={styles.textInput}
-                                            focusedPlaceholderColor={Colors.GOLD}
-                                            unfocusedPlaceholderColor={Colors.WHITE_55}
-                                        />
-                                    </View>
-                                    <TouchableOpacity
-                                        onPress={() => setShowPassword(prev => !prev)}
-                                        style={styles.eyeButton}
-                                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                                    >
-                                        <Image
-                                            source={
-                                                showPassword
-                                                    ? require('../../assets/images/eye_on.png')
-                                                    : require('../../assets/images/eye_off.png')
-                                            }
-                                            style={styles.eyeIcon}
-                                            resizeMode="contain"
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                                {touched.PASSWORD && errors.PASSWORD && (
-                                    <CustomText style={authStyles.errorText}>
-                                        {errors.PASSWORD}
-                                    </CustomText>
-                                )}
-                            </View>
-
-                            {/* Divider */}
-                            <LinearGradient
-                                colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                style={styles.divider}
-                            />
-
-                            <CustomButton
-                                disabled={isLoading}
-                                loading={isLoading}
-                                title={isLoading ? 'Please Wait...' : 'Login'}
-                                containerStyle={styles.loginButton}
-                                textStyle={authStyles.buttonText}
-                                onPress={handleSubmit}
-                                gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
-                            />
+                            {touched.PASSWORD && errors.PASSWORD && (
+                                <CustomText style={authStyles.errorText}>
+                                    {errors.PASSWORD}
+                                </CustomText>
+                            )}
                         </View>
-                    </ScrollView>
-                </TouchableWithoutFeedback>
+
+                        {/* Divider */}
+                        <LinearGradient
+                            colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.divider}
+                        />
+
+                        <CustomButton
+                            disabled={isLoading}
+                            loading={isLoading}
+                            title={isLoading ? 'Please Wait...' : 'Login'}
+                            containerStyle={styles.loginButton}
+                            textStyle={authStyles.buttonText}
+                            onPress={handleSubmit}
+                            gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
+                        />
+                    </View>
+                </KeyboardAwareScrollView>
             </LinearGradient>
-        </KeyboardAvoidingView>
+
+            {keyboardHeight > 0 && (
+                <View style={[styles.keyboardToolbar, { bottom: keyboardHeight }]}>
+                    <TouchableOpacity onPress={Keyboard.dismiss} style={styles.doneButton}>
+                        <Text style={styles.doneText}>Done</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+        </View>
     );
 };
 
@@ -268,7 +278,6 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         paddingHorizontal: rw(6),
         paddingBottom: rh(5),
-        justifyContent: 'center',
     },
     brandSection: {
         alignItems: 'center',
@@ -279,12 +288,6 @@ const styles = StyleSheet.create({
         width: rw(28),
         height: rw(28),
         marginBottom: rh(1.5),
-    },
-    appTitle: {
-        color: Colors.GOLD,
-        fontSize: rf(7.5),
-        fontFamily: FontFamilyWithWeight[700],
-        letterSpacing: 1,
     },
     tagline: {
         color: Colors.WHITE_55,
@@ -362,5 +365,25 @@ const styles = StyleSheet.create({
     loginButton: {
         height: rh(7),
         borderRadius: 12,
+    },
+    keyboardToolbar: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        backgroundColor: '#2D0A6E',
+        paddingHorizontal: rw(4),
+        paddingVertical: rh(1),
+        alignItems: 'flex-end',
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.15)',
+    },
+    doneButton: {
+        paddingHorizontal: rw(4),
+        paddingVertical: rh(0.8),
+    },
+    doneText: {
+        color: Colors.GOLD,
+        fontSize: rf(4),
+        fontFamily: FontFamilyWithWeight[600],
     },
 });
