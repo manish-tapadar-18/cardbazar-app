@@ -5,7 +5,7 @@ export interface ISortFilter {
 
 export interface IGameRulesFilters {
     search: any[];
-    sortFilter: ISortFilter;
+    sortFilter?: ISortFilter;
 }
 
 export interface IGameRulesRequest {

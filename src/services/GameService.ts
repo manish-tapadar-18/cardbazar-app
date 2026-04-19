@@ -1,4 +1,5 @@
 import { IGameRulesRequest } from "../request/module/IGameRulesRequest";
+import { IPlayGameMultipleRequest } from "../request/module/IPlayGameMultipleRequest";
 import { IUpdateProfileRequest } from "../request/module/IUpdateProfileRequest";
 import { IApiResponse } from "../response/generic/IApiResponse";
 import { ICustomResponse } from "../response/generic/ICustomResponse";
@@ -12,13 +13,15 @@ import { http } from "../utils/http";
 import { UriRepo } from "../utils/UriRepo";
 import { IGameService } from "./interfaces/IGameServices";
 
+const option = { requireAuth: true }
+
 class GameService implements IGameService {
 
     async getAllGameCategories(): Promise<ICustomResponse<IGameCategoryResponse[]>> {
         try {
             const response = await http.get<IApiResponse<IGameCategoryResponse[]>>(
                 UriRepo.GETALLGAMECATEGORY,
-                { requireAuth: true }
+                option
             );
             const result = response.data;
             return genericResponseParser<IGameCategoryResponse[]>(result);
@@ -31,7 +34,7 @@ class GameService implements IGameService {
         try {
             const response = await http.get<IApiResponse<IGameTypeResponse[]>>(
                 UriRepo.GETALLGAMETYPE,
-                { requireAuth: true }
+                option
             );
             const result = response.data;
             return genericResponseParser<IGameTypeResponse[]>(result);
@@ -45,7 +48,7 @@ class GameService implements IGameService {
             const response = await http.post<IApiResponse<IGameRulesResponse>>(
                 UriRepo.GETALLGAMERULES,
                 payload,
-                { requireAuth: true }
+                option
             );
             const result = response.data;
             return genericResponseParser<IGameRulesResponse>(result);
@@ -59,7 +62,7 @@ class GameService implements IGameService {
             const response = await http.post<IApiResponse<IGetAllGamesListResponse>>(
                 UriRepo.GETGAMELISTBYCATEGORYID,
                 payload,
-                { requireAuth: true }
+                option
             );
             const result = response.data;
             return genericResponseParser<IGetAllGamesListResponse>(result);
@@ -68,12 +71,26 @@ class GameService implements IGameService {
         }
     }
 
+    async playGameMultiple(payload: IPlayGameMultipleRequest): Promise<ICustomResponse<null>> {
+        try {
+            const response = await http.post<IApiResponse<null>>(
+                UriRepo.PLAYGAMEMULTIPLE,
+                payload,
+                option
+            );
+            const result = response.data;
+            return genericResponseParser<null>(result);
+        } catch (error: any) {
+            return genericErrorParser<null>(error);
+        }
+    }
+
     async updateProfile(payload: IUpdateProfileRequest): Promise<ICustomResponse<null>> {
         try {
             const response = await http.put<IApiResponse<null>>(
                 UriRepo.UPDATEPROFILE,
                 payload,
-                { requireAuth: true }
+                option
             );
             const result = response.data;
             return genericResponseParser<null>(result);

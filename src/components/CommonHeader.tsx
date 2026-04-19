@@ -8,6 +8,7 @@ import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight'
 import { Fonts } from '../utils/Fontsizes'
 import CustomText from './CustomText'
 import { Colors } from '../utils/Colors'
+import { useWalletStore } from '../stores/walletStore'
 
 type CommonHeaderProps = {
     onMenuPress: () => void

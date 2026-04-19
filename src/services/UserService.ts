@@ -1,6 +1,7 @@
 import { IApiResponse } from "../response/generic/IApiResponse";
 import { ICustomResponse } from "../response/generic/ICustomResponse";
 import { IAdminDetailsResponse } from "../response/module/IAdminDetailsResponse";
+import { IUserBalanceResponse } from "../response/module/IUserBalanceResponse";
 import { IUserDetailsResponse } from "../response/module/IUserDetailsResponse";
 import { genericErrorParser } from "../response/parser/genericErrorParser";
 import { genericResponseParser } from "../response/parser/genericResponseParser";
@@ -40,6 +41,18 @@ class UserService implements IUserService {
 
         } catch (error: any) {
             return genericErrorParser<IAdminDetailsResponse>(error);
+        }
+    }
+
+    async getUserBalance(userId: string): Promise<ICustomResponse<IUserBalanceResponse>> {
+        try {
+            const response = await http.get<IApiResponse<IUserBalanceResponse>>(
+                UriRepo.GETUSERBALANCE(userId),
+                { requireAuth: true }
+            );
+            return genericResponseParser<IUserBalanceResponse>(response.data);
+        } catch (error: any) {
+            return genericErrorParser<IUserBalanceResponse>(error);
         }
     }
 }

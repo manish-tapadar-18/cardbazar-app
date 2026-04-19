@@ -20,5 +20,6 @@ export const UriRepo = {
     PLAYGAMEHISTORY: `${version}getAllGameHistory?_format=json`,
     GETALLGAMERESULT: `${version}getAllGame?_format=json`,
     APPSTATUS: `${version}getVariable?_format=json&name=APP_STATUS`,
+    GETUSERBALANCE:(userId:String)=> `${version}getUserBalance/${userId}?_format=json`,
     GETALLLANGUAGE: `language.json`,
 }

@@ -6,12 +6,28 @@ import CommonHeader from "../components/CommonHeader";
 import { useUserStore } from "../stores/userStore";
 import { useAdminDetailsStore } from "../stores/adminDetailsStore";
 import { Alert, Linking } from "react-native";
+import { useCallback, useEffect } from "react";
+import { Repository } from "../repository/Repository";
+import { useWalletStore } from "../stores/walletStore";
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
 export const RootDrawer = () => {
     const { userDetails } = useUserStore();
     const { adminDetails } = useAdminDetailsStore();
+    const { balance, setWallet } = useWalletStore();
+    useEffect(() => {
+        fetchWalletBalance()
+    }, [])
+
+    const fetchWalletBalance = useCallback(async () => {
+        const userId = userDetails?.ID;
+        if (!userId) return;
+        try {
+            const { isSuccess, data } = await Repository.User.getUserBalance(userId);
+            if (isSuccess && data) setWallet(data);
+        } catch { }
+    }, [userDetails?.ID, setWallet]);
     return (
         <Drawer.Navigator
             screenOptions={{
@@ -20,7 +36,7 @@ export const RootDrawer = () => {
                 drawerType: "back",
                 header: ({ navigation }) => {
                     return <CommonHeader
-                        balance={userDetails?.USER_BALANCE || "0"}
+                        balance={balance}
                         onWhatsappPress={() => {
                             let number = adminDetails?.WHATSAPP_NUMBER;
                             let url = "whatsapp://send?text=''&phone=91" + number;
@@ -29,7 +45,7 @@ export const RootDrawer = () => {
                                     // console.log("WhatsApp Opened successfully " + data);  //<---Success
                                 })
                                 .catch(() => {
-                                    Alert.alert("Whatsapp Error","Make sure WhatsApp installed on your device");  //<---Error
+                                    Alert.alert("Whatsapp Error", "Make sure WhatsApp installed on your device");  //<---Error
                                 });
                         }}
                         onPhonePress={() => {

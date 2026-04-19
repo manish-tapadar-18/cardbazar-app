@@ -3,6 +3,7 @@ import { HomeStackParamList } from "./RouteTypes.ts";
 import {Home,Account,GameRules,GameTimings,LanguageOptions,Refer,TransactionHistory, AddMoney} from "../pages/PostAuth/index.ts"
 import ShareApp from "../pages/PostAuth/ShareApp/ShareApp.tsx";
 import GameDetails from "../pages/PostAuth/GameDetails/GameDetails.tsx";
+import PlayGame from "../pages/PostAuth/PlayGame/PlayGame.tsx";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -19,6 +20,7 @@ export const HomeStack = () => {
       <Stack.Screen name="Refer" component={Refer} />
       <Stack.Screen name="TransactionHistory" component={TransactionHistory} />
       <Stack.Screen name="ShareApp" component={ShareApp} />
+      <Stack.Screen name="PlayGame" component={PlayGame} />
     </Stack.Navigator>
   );
 };

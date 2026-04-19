@@ -1,4 +1,5 @@
 import { IGameRulesRequest } from "../../request/module/IGameRulesRequest";
+import { IPlayGameMultipleRequest } from "../../request/module/IPlayGameMultipleRequest";
 import { IUpdateProfileRequest } from "../../request/module/IUpdateProfileRequest";
 import { ICustomResponse } from "../../response/generic/ICustomResponse";
 import { IGameCategoryResponse } from "../../response/module/IGameCategoryResponse";
@@ -12,4 +13,5 @@ export interface IGameService {
     getAllGameRules(payload: IGameRulesRequest): Promise<ICustomResponse<IGameRulesResponse>>;
     getAllGamesList(payload: any): Promise<ICustomResponse<IGetAllGamesListResponse>>;
     updateProfile(payload: IUpdateProfileRequest): Promise<ICustomResponse<null>>;
+    playGameMultiple(payload: IPlayGameMultipleRequest): Promise<ICustomResponse<null>>;
 }

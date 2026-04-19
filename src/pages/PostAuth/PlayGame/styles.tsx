@@ -1,12 +1,386 @@
-import { StyleSheet } from "react-native";
-import { rh, rw } from "../../../utils/responsive";
-import { Fonts } from "../../../utils/Fontsizes";
-import { FontFamilyWithWeight } from "../../../utils/FontFamilyWithWeight";
-import { Colors } from "../../../utils/Colors";
+import { Dimensions, StyleSheet } from 'react-native';
+import { rf, rh, rw } from '../../../utils/responsive';
+import { FontFamilyWithWeight } from '../../../utils/FontFamilyWithWeight';
+import { Colors } from '../../../utils/Colors';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Width of a single card: 4 cards per row with horizontal padding + gaps
+const CARD_WIDTH = (SCREEN_WIDTH - rw(8) - rw(4.5)) / 4; // (screen - padding*2 - gap*3) / 4
+const CARD_HEIGHT = CARD_WIDTH * 1.45;
 
 export const styles = StyleSheet.create({
-    background: {
+    // ─── Layout ───────────────────────────────────────────────────────────────
+    bg: {
         flex: 1,
         backgroundColor: Colors.DEEP_PURPLE,
-    }
-})
+    },
+    flex1: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingBottom: rh(2),
+    },
+
+    // ─── Header ───────────────────────────────────────────────────────────────
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: rw(3),
+        paddingBottom: rh(1),
+        gap: rw(3),
+    },
+    backBtn: {
+        padding: rw(1.5),
+    },
+    backIcon: {
+        width: rh(2.8),
+        height: rh(2.8),
+        resizeMode: 'contain',
+    },
+    walletPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: Colors.OVERLAY_DARK,
+        borderRadius: rh(1.5),
+        borderWidth: 1,
+        borderColor: Colors.BORDER_WHITE_12,
+        paddingHorizontal: rw(3),
+        paddingVertical: rh(0.8),
+        gap: rw(2),
+    },
+    walletIcon: {
+        width: rh(3.5),
+        height: rh(3.5),
+        resizeMode: 'contain',
+    },
+    balanceText: {
+        color: Colors.WHITE,
+        fontSize: rf(4),
+        fontFamily: FontFamilyWithWeight[700],
+        lineHeight: rh(2.4),
+    },
+    walletLabel: {
+        color: Colors.WHITE_75,
+        fontSize: rf(2.8),
+        fontFamily: FontFamilyWithWeight[400],
+        lineHeight: rh(1.8),
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: rw(2),
+    },
+    actionBtn: {
+        width: rh(4.5),
+        height: rh(4.5),
+        borderRadius: rh(1),
+        backgroundColor: Colors.OVERLAY_DARK,
+        borderWidth: 1,
+        borderColor: Colors.BORDER_WHITE_12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    whatsappBtn: {
+        backgroundColor: Colors.WHITE,
+        borderColor: Colors.TRANSPARENT,
+    },
+    actionIcon: {
+        width: rh(2.8),
+        height: rh(2.8),
+        resizeMode: 'contain',
+    },
+
+    // ─── Dropdown ─────────────────────────────────────────────────────────────
+    dropdown: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        alignSelf: 'center',
+        backgroundColor: 'rgba(20,0,60,0.65)',
+        borderRadius: rh(2),
+        borderWidth: 1,
+        borderColor: Colors.GOLD,
+        paddingHorizontal: rw(6),
+        paddingVertical: rh(1),
+        marginTop: rh(1.5),
+        marginBottom: rh(1),
+        gap: rw(2),
+    },
+    dropdownText: {
+        color: Colors.GOLD,
+        fontSize: rf(5),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 1,
+    },
+    angleDown: {
+        width: rw(4),
+        height: rw(4),
+        resizeMode: 'contain',
+    },
+
+    // ─── Card FlatList ────────────────────────────────────────────────────────
+    cardFlatList: {
+        flexGrow: 0,
+        height: CARD_HEIGHT + rh(5), // card height + label space
+    },
+    groupPage: {
+        width: SCREEN_WIDTH,
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        paddingHorizontal: rw(4),
+        gap: rw(1.5),
+        paddingTop: rh(0.5),
+        paddingBottom: rh(1),
+    },
+
+    // ─── Card ─────────────────────────────────────────────────────────────────
+    card: {
+        flex: 1,
+        backgroundColor: Colors.WHITE,
+        borderRadius: rw(2.5),
+        alignItems: 'center',
+        paddingTop: rh(0.8),
+        paddingBottom: rh(1),
+        borderWidth: 2,
+        borderColor: 'transparent',
+        // subtle shadow
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.18,
+        shadowRadius: 4,
+        position: 'relative',
+    },
+    cardSelected: {
+        borderColor: '#22cc44',
+        elevation: 6,
+        shadowColor: '#22cc44',
+        shadowOpacity: 0.4,
+    },
+    checkBadge: {
+        position: 'absolute',
+        top: rh(0.4),
+        right: rw(1.5),
+        width: rw(5),
+        height: rw(5),
+        borderRadius: rw(2.5),
+        backgroundColor: '#22cc44',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 2,
+    },
+    checkMark: {
+        color: Colors.WHITE,
+        fontSize: rf(2.8),
+        fontFamily: FontFamilyWithWeight[700],
+        lineHeight: rw(5.2),
+    },
+    cardLabel: {
+        color: Colors.DARK_GRAY,
+        fontSize: rf(2.5),
+        fontFamily: FontFamilyWithWeight[600],
+        textAlign: 'center',
+        marginBottom: rh(0.5),
+        paddingHorizontal: rw(0.5),
+    },
+    cardImage: {
+        width: '88%',
+        height: CARD_HEIGHT - rh(4),
+        borderRadius: rw(1.5),
+    },
+
+    // ─── Amount Row ───────────────────────────────────────────────────────────
+    amountRow: {
+        flexDirection: 'row',
+        marginHorizontal: rw(4),
+        marginTop: rh(2),
+        marginBottom: rh(1),
+        borderRadius: rw(3),
+        overflow: 'hidden',
+        backgroundColor: Colors.WHITE,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.12,
+        shadowRadius: 3,
+    },
+    amountInput: {
+        flex: 1,
+        paddingHorizontal: rw(4),
+        paddingVertical: rh(1.8),
+        color: Colors.BLACK,
+        fontSize: rf(4),
+        fontFamily: FontFamilyWithWeight[400],
+    },
+    addBtn: {
+        width: rw(15),
+        backgroundColor: Colors.DEEP_PURPLE,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    addBtnText: {
+        color: Colors.WHITE,
+        fontSize: rf(8),
+        fontFamily: FontFamilyWithWeight[300],
+        lineHeight: rw(15),
+    },
+
+    // ─── Line Items ───────────────────────────────────────────────────────────
+    lineItemsSection: {
+        marginHorizontal: rw(4),
+        marginTop: rh(1),
+    },
+    dividerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: rh(1.5),
+        gap: rw(2),
+    },
+    dividerLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: Colors.GOLD,
+        opacity: 0.45,
+    },
+    dividerLabel: {
+        color: Colors.GRAY_ALT,
+        fontSize: rf(3),
+        fontFamily: FontFamilyWithWeight[600],
+        letterSpacing: 0.6,
+    },
+    lineItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: rh(1.6),
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.GOLD,
+        gap: rw(3),
+    },
+    lineItemName: {
+        flex: 1,
+        color: Colors.WHITE,
+        fontSize: rf(3.8),
+        fontFamily: FontFamilyWithWeight[600],
+    },
+    lineItemAmount: {
+        color: Colors.GOLD,
+        fontSize: rf(3.8),
+        fontFamily: FontFamilyWithWeight[700],
+        minWidth: rw(20),
+        textAlign: 'right',
+    },
+    trashBtn: {
+        padding: rw(1.5),
+    },
+    trashIcon: {
+        width: rh(2.6),
+        height: rh(2.6),
+        resizeMode: 'contain',
+    },
+    deleteConfirmRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: rw(2),
+    },
+    cancelDeleteBtn: {
+        paddingHorizontal: rw(3),
+        paddingVertical: rh(0.6),
+        borderRadius: rw(1.5),
+        borderWidth: 1,
+        borderColor: Colors.BORDER_WHITE_12,
+    },
+    cancelDeleteText: {
+        color: Colors.WHITE_75,
+        fontSize: rf(3),
+        fontFamily: FontFamilyWithWeight[500],
+    },
+    confirmDeleteBtn: {
+        paddingHorizontal: rw(3),
+        paddingVertical: rh(0.6),
+        borderRadius: rw(1.5),
+        backgroundColor: '#cc2200',
+    },
+    confirmDeleteText: {
+        color: Colors.WHITE,
+        fontSize: rf(3),
+        fontFamily: FontFamilyWithWeight[600],
+    },
+
+    // ─── Play Game Button ─────────────────────────────────────────────────────
+    playBtnWrapper: {
+        backgroundColor: Colors.TRANSPARENT,
+    },
+    playBtnGradient: {
+        height: rh(7.5),
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    playBtnText: {
+        color: Colors.BLACK,
+        fontSize: rf(5),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 1.5,
+    },
+
+    // ─── Dropdown Modal ───────────────────────────────────────────────────────
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingTop: rh(14),
+    },
+    dropdownModal: {
+        width: rw(55),
+        backgroundColor: '#1a0540',
+        borderRadius: rw(3),
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: Colors.GOLD,
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+    },
+    dropdownModalHeader: {
+        paddingVertical: rh(1.2),
+        paddingHorizontal: rw(4),
+        alignItems: 'center',
+    },
+    dropdownModalTitle: {
+        color: Colors.WHITE,
+        fontSize: rf(3.2),
+        fontFamily: FontFamilyWithWeight[600],
+        letterSpacing: 0.8,
+    },
+    dropdownItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: rh(1.8),
+        paddingHorizontal: rw(5),
+    },
+    dropdownItemBorder: {
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,215,0,0.15)',
+    },
+    dropdownItemActive: {
+        backgroundColor: 'rgba(255,215,0,0.1)',
+    },
+    dropdownItemText: {
+        flex: 1,
+        color: Colors.WHITE_75,
+        fontSize: rf(4.2),
+        fontFamily: FontFamilyWithWeight[500],
+    },
+    dropdownItemTextActive: {
+        color: Colors.GOLD,
+        fontFamily: FontFamilyWithWeight[700],
+    },
+    dropdownItemCheck: {
+        color: Colors.GOLD,
+        fontSize: rf(4),
+        fontFamily: FontFamilyWithWeight[700],
+    },
+});
