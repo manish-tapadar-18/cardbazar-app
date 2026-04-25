@@ -1,18 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TouchableWithoutFeedback,
   Keyboard,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Platform,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useFormik } from 'formik';
 import CustomTextInput from '../../../components/CustomTextInput';
 import CustomButton from '../../../components/CustomButton';
 import CustomText from '../../../components/CustomText';
 import { Colors } from '../../../utils/Colors';
-import { rh } from '../../../utils/responsive';
+import { rf, rh, rw } from '../../../utils/responsive';
 import { styles } from './styles';
 import { IAccountFormValues } from '../../../validations/interfaces';
 import { AccountValidationSchema } from '../../../validations/schemas/AccountValidationSchema';
@@ -21,14 +22,34 @@ import { Repository } from '../../../repository/Repository';
 import { Toast } from '../../../utils/toast';
 import { IUserDetailsResponse } from '../../../response/module/IUserDetailsResponse';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { FontFamilyWithWeight } from '../../../utils/FontFamilyWithWeight';
+
+const SectionHeader = ({
+  title,
+  locked,
+}: {
+  title: string;
+  locked?: boolean;
+}) => (
+  <View style={styles.sectionHeaderRow}>
+    <View style={styles.sectionAccent} />
+    <CustomText style={styles.sectionTitle}>{title}</CustomText>
+    {locked && (
+      <View style={styles.lockedBadge}>
+        <CustomText style={styles.lockedBadgeText}>🔒 Locked</CustomText>
+      </View>
+    )}
+  </View>
+);
 
 const Account = () => {
   const { userDetails } = useUserStore();
-  const scrollRef = useRef<ScrollView>(null);
   const [isFetchingDetails, setFetchingDetails] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [bankDetailsLocked, setBankDetailsLocked] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { t } = useTranslation();
+
   const {
     values,
     errors,
@@ -60,10 +81,11 @@ const Account = () => {
   }, []);
 
   useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', () => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    });
-    return () => show.remove();
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, (e) => setKeyboardHeight(e.endCoordinates.height));
+    const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
+    return () => { show.remove(); hide.remove(); };
   }, []);
 
   const fetchUserDetails = async () => {
@@ -132,95 +154,106 @@ const Account = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-      keyboardVerticalOffset={rh(10)}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          ref={scrollRef}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Account Details */}
-          <CustomText style={styles.sectionTitle}>{t("account_details")}</CustomText>
+    <View style={styles.bg}>
+      <KeyboardAwareScrollView
+        enableOnAndroid
+        extraScrollHeight={70}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* ── Account Details ── */}
+        <View style={styles.card}>
+          <SectionHeader title={t('account_details')} />
+          <View style={styles.divider} />
 
           <View style={styles.inputRow}>
             <View style={styles.halfInput}>
               <CustomTextInput
                 value={values.FIRST_NAME}
-                onChangeText={() => { }}
+                onChangeText={() => {}}
                 placeholder="First Name"
                 editable={false}
+                style={{ color: Colors.WHITE }}
               />
             </View>
             <View style={styles.halfInput}>
               <CustomTextInput
                 value={values.LAST_NAME}
-                onChangeText={() => { }}
+                onChangeText={() => {}}
                 placeholder="Last Name"
                 editable={false}
+                style={{ color: Colors.WHITE }}
               />
             </View>
           </View>
 
-          <View style={[styles.fullInput, { marginTop: 10 }]}>
+          <View style={[styles.fullInput, { marginTop: rh(1.2) }]}>
             <CustomTextInput
               value={userDetails?.MOBILE ?? ''}
-              onChangeText={() => { }}
+              onChangeText={() => {}}
               placeholder="Mobile No."
               keyboardType="number-pad"
               editable={false}
+              style={{ color: Colors.WHITE }}
             />
           </View>
+        </View>
 
-          {/* UPI ID Details */}
-          <CustomText style={styles.sectionTitle}>{t("upi_id_details")}</CustomText>
+        {/* ── UPI Details ── */}
+        <View style={styles.card}>
+          <SectionHeader title={t('upi_id_details')} />
+          <View style={styles.divider} />
 
-          <CustomText style={styles.upiLabel}>{t("paytm")}</CustomText>
+          <CustomText style={styles.fieldLabel}>{t('paytm')}</CustomText>
           <View style={styles.fullInput}>
             <CustomTextInput
               value={values.PAYTM_DETAILS}
               onChangeText={(text) => setFieldValue('PAYTM_DETAILS', text)}
               onBlur={handleBlur('PAYTM_DETAILS')}
               placeholder="Enter Paytm UPI ID"
+              style={{ color: Colors.WHITE }}
             />
           </View>
           {touched.PAYTM_DETAILS && errors.PAYTM_DETAILS && (
             <CustomText style={styles.errorText}>{errors.PAYTM_DETAILS}</CustomText>
           )}
 
-          <CustomText style={[styles.upiLabel, { marginTop: 10 }]}>{t("phonepe")}</CustomText>
+          <CustomText style={styles.fieldLabel}>{t('phonepe')}</CustomText>
           <View style={styles.fullInput}>
             <CustomTextInput
               value={values.PHONEPE_DETAILS}
               onChangeText={(text) => setFieldValue('PHONEPE_DETAILS', text)}
               onBlur={handleBlur('PHONEPE_DETAILS')}
               placeholder="Enter PhonePe UPI ID"
+              style={{ color: Colors.WHITE }}
             />
           </View>
           {touched.PHONEPE_DETAILS && errors.PHONEPE_DETAILS && (
             <CustomText style={styles.errorText}>{errors.PHONEPE_DETAILS}</CustomText>
           )}
 
-          <CustomText style={[styles.upiLabel, { marginTop: 10 }]}>{t("gpay")}</CustomText>
+          <CustomText style={styles.fieldLabel}>{t('gpay')}</CustomText>
           <View style={styles.fullInput}>
             <CustomTextInput
               value={values.UPI_DETAILS}
               onChangeText={(text) => setFieldValue('UPI_DETAILS', text)}
               onBlur={handleBlur('UPI_DETAILS')}
               placeholder="Enter GPay UPI ID"
+              style={{ color: Colors.WHITE }}
             />
           </View>
           {touched.UPI_DETAILS && errors.UPI_DETAILS && (
             <CustomText style={styles.errorText}>{errors.UPI_DETAILS}</CustomText>
           )}
+        </View>
 
-          {/* Bank Details */}
-          <CustomText style={styles.sectionTitle}>{t("bank_details")}</CustomText>
-          <CustomText style={[styles.upiLabel, { marginTop: 10 }]}>{t("account_holder_name")}</CustomText>
+        {/* ── Bank Details ── */}
+        <View style={styles.card}>
+          <SectionHeader title={t('bank_details')} locked={bankDetailsLocked} />
+          <View style={styles.divider} />
+
+          <CustomText style={styles.fieldLabel}>{t('account_holder_name')}</CustomText>
           <View style={styles.fullInput}>
             <CustomTextInput
               value={values.BANK_ACCOUNT_HOLDER_NAME}
@@ -231,13 +264,15 @@ const Account = () => {
               onBlur={handleBlur('BANK_ACCOUNT_HOLDER_NAME')}
               placeholder="Account Holder Name"
               editable={!bankDetailsLocked}
+              style={{ color: Colors.WHITE }}
             />
           </View>
           {touched.BANK_ACCOUNT_HOLDER_NAME && errors.BANK_ACCOUNT_HOLDER_NAME && (
             <CustomText style={styles.errorText}>{errors.BANK_ACCOUNT_HOLDER_NAME}</CustomText>
           )}
-          <CustomText style={[styles.upiLabel, { marginTop: 10 }]}>{t("account_number")}</CustomText>
-          <View style={[styles.fullInput, { marginTop: 10 }]}>
+
+          <CustomText style={styles.fieldLabel}>{t('account_number')}</CustomText>
+          <View style={styles.fullInput}>
             <CustomTextInput
               value={values.BANK_ACCOUNT_NO}
               onChangeText={(text) => {
@@ -248,13 +283,15 @@ const Account = () => {
               placeholder="Account Number"
               keyboardType="number-pad"
               editable={!bankDetailsLocked}
+              style={{ color: Colors.WHITE }}
             />
           </View>
           {touched.BANK_ACCOUNT_NO && errors.BANK_ACCOUNT_NO && (
             <CustomText style={styles.errorText}>{errors.BANK_ACCOUNT_NO}</CustomText>
           )}
-          <CustomText style={[styles.upiLabel, { marginTop: 10 }]}>{t("ifsc_code")}</CustomText>
-          <View style={[styles.fullInput, { marginTop: 10 }]}>
+
+          <CustomText style={styles.fieldLabel}>{t('ifsc_code')}</CustomText>
+          <View style={styles.fullInput}>
             <CustomTextInput
               value={values.BANK_IFSC}
               onChangeText={(text) => {
@@ -265,24 +302,56 @@ const Account = () => {
               placeholder="IFSC Code"
               autoCapitalize="characters"
               editable={!bankDetailsLocked}
+              style={{ color: Colors.WHITE }}
             />
           </View>
           {touched.BANK_IFSC && errors.BANK_IFSC && (
             <CustomText style={styles.errorText}>{errors.BANK_IFSC}</CustomText>
           )}
+        </View>
 
-          <CustomButton
-            title={isLoading ? 'Please Wait...' : t("update_details")}
-            containerStyle={styles.buttonContainer}
-            textStyle={styles.buttonText}
-            disabled={isLoading || isFetchingDetails}
-            onPress={handleSubmit}
-            gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
-          />
-        </ScrollView>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+        <CustomButton
+          title={isLoading ? 'Please Wait...' : t('update_details')}
+          containerStyle={styles.buttonContainer}
+          textStyle={styles.buttonText}
+          disabled={isLoading || isFetchingDetails}
+          onPress={handleSubmit}
+          gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
+        />
+      </KeyboardAwareScrollView>
+
+      {keyboardHeight > 0 && (
+        <View style={[localStyles.keyboardToolbar, { bottom: keyboardHeight }]}>
+          <TouchableOpacity onPress={Keyboard.dismiss} style={localStyles.doneButton}>
+            <Text style={localStyles.doneText}>Done</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
   );
 };
 
 export default Account;
+
+const localStyles = StyleSheet.create({
+  keyboardToolbar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.DEEP_PURPLE,
+    paddingHorizontal: rw(4),
+    paddingVertical: rh(1),
+    alignItems: 'flex-end',
+    borderTopWidth: 1,
+    borderTopColor: Colors.BORDER_WHITE_12,
+  },
+  doneButton: {
+    paddingHorizontal: rw(4),
+    paddingVertical: rh(0.8),
+  },
+  doneText: {
+    color: Colors.GOLD,
+    fontSize: rf(4),
+    fontFamily: FontFamilyWithWeight[600],
+  },
+});
