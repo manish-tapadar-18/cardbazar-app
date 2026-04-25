@@ -17,7 +17,7 @@ export const UriRepo = {
     GETALLGAMETYPE: `${version}getAllGameType?_format=json`,
     PLAYGAMEMULTIPLE: `${version}playGameMultiple?_format=json`,
     TRANSACTIONLIST: (skip: number, take: number) => `${version}getAllUserTransaction?_format=json&skip=${skip}&take=${take}`,
-    PLAYGAMEHISTORY: `${version}getAllGameHistory?_format=json`,
+    PLAYGAMEHISTORY: (skip: number, take: number) => `${version}getAllGameHistory?_format=json&skip=${skip}&take=${take}`,
     GETALLGAMERESULT: `${version}getAllGame?_format=json`,
     APPSTATUS: `${version}getVariable?_format=json&name=APP_STATUS`,
     GETUSERBALANCE:(userId:String)=> `${version}getUserBalance/${userId}?_format=json`,

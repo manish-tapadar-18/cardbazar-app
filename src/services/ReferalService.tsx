@@ -17,6 +17,8 @@ class ReferalService implements IReferalService {
                 UriRepo.REFERRALBONUS,
                 option
             );
+            console.log("getReferralBonus", JSON.stringify(response.data,null,2));
+
             return genericResponseParser<IReferralResponse>(response.data);
         } catch (error: any) {
             return genericErrorParser<IReferralResponse>(error);
