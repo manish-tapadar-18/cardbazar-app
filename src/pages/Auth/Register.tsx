@@ -138,11 +138,14 @@ const Register = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#1B0535' }}>
+        <View style={styles.root}>
             <LinearGradient
-                colors={['#1B0535', '#2D0A6E', '#3A0D7A']}
+                colors={['#1B0535', '#2D0A6E', '#3A0D7A', '#2D0A6E', '#1B0535']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
                 style={styles.gradientBg}
             >
+                {/* Decorative watermark */}
                 <Image
                     source={Images.HEART_CARD}
                     style={styles.watermark}
@@ -156,87 +159,90 @@ const Register = () => {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.scrollContent}
                 >
-                    {/* Branding */}
+                    {/* ── Branding ── */}
                     <View style={styles.brandSection}>
                         <Image
                             source={require('../../assets/logo/logo.png')}
                             style={styles.logo}
                             resizeMode="contain"
                         />
-                        <CustomText style={styles.appTitle}>
-                            {showRegForm ? 'Create Account' : 'Verify OTP'}
-                        </CustomText>
+                        <CustomText style={styles.appName}>Card Bazar</CustomText>
                         <CustomText style={styles.tagline}>
-                            {showRegForm
-                                ? 'Join the ultimate card gaming platform'
-                                : `OTP sent to +91 ${values.MOBILE}`}
+                            Join the ultimate card gaming platform
                         </CustomText>
                     </View>
 
-                    {/* Registration form */}
+                    {/* ── Registration form ── */}
                     {showRegForm && (
                         <View style={styles.card}>
-                            {/* First Name */}
+
+                            <View style={styles.cardHeaderRow}>
+                                <View style={styles.cardAccent} />
+                                <View>
+                                    <CustomText style={styles.cardTitle}>Create Account</CustomText>
+                                    <CustomText style={styles.cardSubtitle}>Fill in your details below</CustomText>
+                                </View>
+                            </View>
+                            <View style={styles.goldDivider} />
+
                             <FieldRow
+                                label="First Name"
                                 icon={Images.USERS}
                                 error={touched.FIRST_NAME && errors.FIRST_NAME ? errors.FIRST_NAME : undefined}
                             >
                                 <CustomTextInput
-                                    onChangeText={(text: string) => {
-                                        setFieldValue("FIRST_NAME", text.replace(/[^A-Za-z\s]/g, ""));
-                                    }}
+                                    onChangeText={(text: string) =>
+                                        setFieldValue("FIRST_NAME", text.replace(/[^A-Za-z\s]/g, ""))
+                                    }
                                     onBlur={handleBlur("FIRST_NAME")}
                                     value={values.FIRST_NAME}
-                                    placeholder='First Name'
-                                    returnKeyLabel='CardBazaar'
+                                    placeholder='Enter first name'
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
                                 />
                             </FieldRow>
 
-                            {/* Last Name */}
                             <FieldRow
+                                label="Last Name"
                                 icon={Images.USERS}
                                 error={touched.LAST_NAME && errors.LAST_NAME ? errors.LAST_NAME : undefined}
                             >
                                 <CustomTextInput
-                                    onChangeText={(text: string) => {
-                                        setFieldValue("LAST_NAME", text.replace(/[^A-Za-z\s]/g, ""));
-                                    }}
+                                    onChangeText={(text: string) =>
+                                        setFieldValue("LAST_NAME", text.replace(/[^A-Za-z\s]/g, ""))
+                                    }
                                     onBlur={handleBlur("LAST_NAME")}
                                     value={values.LAST_NAME}
-                                    placeholder='Last Name'
-                                    returnKeyLabel='CardBazaar'
+                                    placeholder='Enter last name'
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
                                 />
                             </FieldRow>
 
-                            {/* Mobile */}
                             <FieldRow
+                                label="Mobile Number"
                                 icon={Images.PHONE}
                                 error={touched.MOBILE && errors.MOBILE ? errors.MOBILE : undefined}
                             >
                                 <CustomTextInput
-                                    onChangeText={(value: string) => {
-                                        setFieldValue("MOBILE", value.replace(/[^0-9]/g, ""));
-                                    }}
+                                    onChangeText={(value: string) =>
+                                        setFieldValue("MOBILE", value.replace(/[^0-9]/g, ""))
+                                    }
                                     onBlur={handleBlur("MOBILE")}
                                     value={values.MOBILE}
-                                    placeholder='Mobile Number'
+                                    placeholder='Enter mobile number'
                                     keyboardType='number-pad'
-                                    returnKeyType='send'
-                                    returnKeyLabel='CardBazaar'
+                                    returnKeyType='next'
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
                                 />
                             </FieldRow>
 
-                            {/* Password */}
                             <FieldRow
+                                label="Password"
                                 icon={Images.DATA_SECURITY}
                                 error={touched.PASSWORD && errors.PASSWORD ? errors.PASSWORD : undefined}
                                 rightSlot={
@@ -254,19 +260,18 @@ const Register = () => {
                             >
                                 <CustomTextInput
                                     secureTextEntry={!showPassword}
-                                    placeholder='Password'
+                                    placeholder='Enter password'
                                     value={values.PASSWORD}
                                     onChangeText={handleChange("PASSWORD")}
                                     onBlur={handleBlur("PASSWORD")}
-                                    returnKeyLabel='CardBazaar'
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
                                 />
                             </FieldRow>
 
-                            {/* Confirm Password */}
                             <FieldRow
+                                label="Confirm Password"
                                 icon={Images.DATA_SECURITY}
                                 error={touched.CONFIRM_PASSWORD && errors.CONFIRM_PASSWORD ? errors.CONFIRM_PASSWORD : undefined}
                                 rightSlot={
@@ -284,30 +289,28 @@ const Register = () => {
                             >
                                 <CustomTextInput
                                     secureTextEntry={!showConfirmPassword}
-                                    placeholder='Confirm Password'
+                                    placeholder='Re-enter password'
                                     value={values.CONFIRM_PASSWORD || ""}
                                     onChangeText={handleChange("CONFIRM_PASSWORD")}
                                     onBlur={handleBlur("CONFIRM_PASSWORD")}
-                                    returnKeyLabel='CardBazaar'
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
                                 />
                             </FieldRow>
 
-                            {/* Referral Code */}
                             <FieldRow
+                                label="Referral Code (Optional)"
                                 icon={Images.TROPHY}
                                 error={undefined}
                             >
                                 <CustomTextInput
                                     value={values.REFERRAL_CODE || ""}
-                                    onChangeText={(text: string) => {
-                                        setFieldValue("REFERRAL_CODE", text.replace(/[^A-Za-z0-9]/g, ""));
-                                    }}
+                                    onChangeText={(text: string) =>
+                                        setFieldValue("REFERRAL_CODE", text.replace(/[^A-Za-z0-9]/g, ""))
+                                    }
                                     onBlur={handleBlur("REFERRAL_CODE")}
-                                    placeholder='Referral Code (Optional)'
-                                    returnKeyLabel='CardBazaar'
+                                    placeholder='Enter referral code'
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -318,7 +321,7 @@ const Register = () => {
                                 colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
-                                style={styles.divider}
+                                style={styles.decorativeDivider}
                             />
 
                             <CustomButton
@@ -333,9 +336,21 @@ const Register = () => {
                         </View>
                     )}
 
-                    {/* OTP form */}
+                    {/* ── OTP form ── */}
                     {!showRegForm && (
                         <View style={styles.card}>
+
+                            <View style={styles.cardHeaderRow}>
+                                <View style={styles.cardAccent} />
+                                <View>
+                                    <CustomText style={styles.cardTitle}>Verify OTP</CustomText>
+                                    <CustomText style={styles.cardSubtitle}>
+                                        Sent to +91 {values.MOBILE}
+                                    </CustomText>
+                                </View>
+                            </View>
+                            <View style={styles.goldDivider} />
+
                             <TouchableOpacity
                                 onPress={() => setRegFormVisibility(true)}
                                 style={styles.editNumberRow}
@@ -345,18 +360,18 @@ const Register = () => {
                             </TouchableOpacity>
 
                             <FieldRow
+                                label="Enter OTP"
                                 icon={Images.CIRCLE_CHECK}
                                 error={OtpTouched.otp && OtpErrors.otp ? OtpErrors.otp : undefined}
                             >
                                 <CustomTextInput
-                                    onChangeText={(text: string) => {
-                                        OtpSetFieldValue("otp", text.replace(/[^A-Za-z0-9\s]/g, ""));
-                                    }}
+                                    onChangeText={(text: string) =>
+                                        OtpSetFieldValue("otp", text.replace(/[^A-Za-z0-9\s]/g, ""))
+                                    }
                                     onBlur={OtpHandleBlur("otp")}
                                     value={OtpValues.otp}
                                     placeholder='Enter OTP'
                                     keyboardType='number-pad'
-                                    returnKeyLabel='CardBazaar'
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -367,7 +382,7 @@ const Register = () => {
                                 colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
-                                style={styles.divider}
+                                style={styles.decorativeDivider}
                             />
 
                             <CustomButton
@@ -395,16 +410,18 @@ const Register = () => {
     );
 };
 
-// ─── Reusable field row ───────────────────────────────────────────────────────
+// ─── Field row: label + icon input + error ────────────────────────────────────
 type FieldRowProps = {
+    label: string;
     icon: any;
     error?: string;
     rightSlot?: React.ReactNode;
     children: React.ReactNode;
 };
 
-const FieldRow: React.FC<FieldRowProps> = ({ icon, error, rightSlot, children }) => (
-    <View style={styles.inputWrapper}>
+const FieldRow: React.FC<FieldRowProps> = ({ label, icon, error, rightSlot, children }) => (
+    <View style={styles.fieldGroup}>
+        <CustomText style={styles.fieldLabel}>{label}</CustomText>
         <View style={styles.inputRow}>
             <Image source={icon} style={styles.inputIcon} resizeMode="contain" />
             <View style={styles.inputFlex}>{children}</View>
@@ -417,65 +434,113 @@ const FieldRow: React.FC<FieldRowProps> = ({ icon, error, rightSlot, children })
 export default Register;
 
 const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+        backgroundColor: Colors.PRIMARY_BG,
+    },
     gradientBg: {
         flex: 1,
     },
     watermark: {
         position: 'absolute',
-        width: rw(80),
-        height: rw(80),
-        opacity: 0.04,
-        bottom: rh(-5),
-        left: rw(-15),
+        width: rw(75),
+        height: rw(75),
+        opacity: 0.05,
+        bottom: rh(-4),
+        left: rw(-12),
         tintColor: Colors.GOLD,
     },
     scrollContent: {
         flexGrow: 1,
-        paddingHorizontal: rw(6),
+        paddingHorizontal: rw(5),
         paddingBottom: rh(5),
     },
+
+    // ─── Branding ─────────────────────────────────────────────────────────────
     brandSection: {
         alignItems: 'center',
         paddingTop: rh(5),
         paddingBottom: rh(3),
     },
     logo: {
-        width: rw(22),
-        height: rw(22),
+        width: rw(20),
+        height: rw(20),
         marginBottom: rh(1),
     },
-    appTitle: {
+    appName: {
         color: Colors.GOLD,
         fontSize: rf(7.5),
         fontFamily: FontFamilyWithWeight[700],
-        letterSpacing: 1,
+        letterSpacing: 1.5,
     },
     tagline: {
-        color: Colors.WHITE_55,
-        fontSize: rf(3.8),
+        color: Colors.WHITE_75,
+        fontSize: rf(3.5),
         fontFamily: FontFamilyWithWeight[400],
         marginTop: rh(0.5),
         textAlign: 'center',
     },
+
+    // ─── Card ─────────────────────────────────────────────────────────────────
     card: {
-        backgroundColor: 'rgba(255,255,255,0.06)',
-        borderRadius: 20,
+        backgroundColor: Colors.CARD_BG,
+        borderRadius: rh(1.5),
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.12)',
-        paddingHorizontal: rw(6),
-        paddingVertical: rh(3),
-        gap: rh(1.8),
+        borderColor: Colors.BORDER_WHITE_08,
+        paddingHorizontal: rw(4),
+        paddingTop: rh(2),
+        paddingBottom: rh(2.5),
     },
-    inputWrapper: {
-        gap: rh(2),
+
+    // ─── Card Header ──────────────────────────────────────────────────────────
+    cardHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: rw(2.5),
+        marginBottom: rh(1.5),
+    },
+    cardAccent: {
+        width: rw(1),
+        height: rh(3.5),
+        borderRadius: 4,
+        backgroundColor: Colors.GOLD,
+    },
+    cardTitle: {
+        color: Colors.WHITE,
+        fontSize: rf(5.5),
+        fontFamily: FontFamilyWithWeight[700],
+        lineHeight: rf(6.5),
+    },
+    cardSubtitle: {
+        color: Colors.WHITE_75,
+        fontSize: rf(3.3),
+        fontFamily: FontFamilyWithWeight[400],
+    },
+
+    // ─── Solid gold divider (matches Account.tsx) ─────────────────────────────
+    goldDivider: {
+        height: 1,
+        backgroundColor: Colors.GOLD,
+        marginBottom: rh(1.5),
+    },
+
+    // ─── Field group (label + input + error) ──────────────────────────────────
+    fieldGroup: {
+        marginBottom: rh(1.5),
+    },
+    fieldLabel: {
+        fontSize: rf(3.2),
+        fontFamily: FontFamilyWithWeight[500],
+        color: Colors.WHITE_75,
+        marginBottom: rh(0.8),
     },
     inputRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderRadius: rh(1),
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.15)',
+        borderColor: 'rgba(255,215,0,0.2)',
         paddingHorizontal: rw(3),
         height: rh(6.5),
     },
@@ -483,8 +548,8 @@ const styles = StyleSheet.create({
         width: rw(4.5),
         height: rw(4.5),
         tintColor: Colors.GOLD,
-        marginRight: rw(2),
-        opacity: 0.85,
+        marginRight: rw(2.5),
+        opacity: 0.9,
     },
     inputFlex: {
         flex: 1,
@@ -496,6 +561,7 @@ const styles = StyleSheet.create({
         color: Colors.WHITE,
         paddingHorizontal: 0,
         fontSize: rf(3.8),
+        fontFamily: FontFamilyWithWeight[400],
     },
     eyeIcon: {
         width: rw(5),
@@ -503,21 +569,27 @@ const styles = StyleSheet.create({
         tintColor: Colors.WHITE_55,
         marginLeft: rw(2),
     },
-    divider: {
+
+    // ─── Decorative divider + button ──────────────────────────────────────────
+    decorativeDivider: {
         height: 1,
         borderRadius: 1,
-        marginVertical: rh(0.4),
+        marginBottom: rh(2),
     },
     actionButton: {
         height: rh(7),
-        borderRadius: 12,
+        borderRadius: rh(1),
+        overflow: 'hidden',
     },
+
+    // ─── Edit number row (OTP screen) ─────────────────────────────────────────
     editNumberRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 10,
+        gap: rw(2),
         paddingVertical: rh(0.5),
+        marginBottom: rh(0.5),
     },
     editPenIcon: {
         width: rw(4),
@@ -526,19 +598,21 @@ const styles = StyleSheet.create({
     },
     editNumberText: {
         color: Colors.GOLD,
-        fontSize: rf(4),
+        fontSize: rf(3.8),
         fontFamily: FontFamilyWithWeight[600],
     },
+
+    // ─── Keyboard toolbar ─────────────────────────────────────────────────────
     keyboardToolbar: {
         position: 'absolute',
         left: 0,
         right: 0,
-        backgroundColor: '#2D0A6E',
+        backgroundColor: Colors.DEEP_PURPLE,
         paddingHorizontal: rw(4),
         paddingVertical: rh(1),
         alignItems: 'flex-end',
         borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.15)',
+        borderTopColor: Colors.BORDER_WHITE_12,
     },
     doneButton: {
         paddingHorizontal: rw(4),

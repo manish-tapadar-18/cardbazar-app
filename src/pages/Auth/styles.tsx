@@ -50,9 +50,10 @@ export const styles = StyleSheet.create({
         gap: Spaces.regular,
     },
     errorText: {
-        color: Colors.BLOOD_RED,
-        fontSize: rf(3.5),
-        marginTop: -10,
+        color: Colors.ERROR_RED,
+        fontSize: rf(3.2),
+        fontFamily: FontFamilyWithWeight[400],
+        marginTop: rh(0.3),
     },
     editNumber:{
         alignSelf:"center",

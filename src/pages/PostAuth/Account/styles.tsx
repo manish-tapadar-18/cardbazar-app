@@ -98,7 +98,7 @@ export const styles = StyleSheet.create({
   // ─── Divider ──────────────────────────────────────────────────────────────
   divider: {
     height: 1,
-    backgroundColor: Colors.BORDER_WHITE_08,
+    backgroundColor: Colors.GOLD,
     marginVertical: rh(1.5),
   },
 
@@ -111,7 +111,7 @@ export const styles = StyleSheet.create({
   },
   buttonText: {
     color: Colors.DARK_BROWN,
-    fontSize: rf(4),
+    fontSize: rf(5),
     fontFamily: FontFamilyWithWeight[700],
     letterSpacing: 0.4,
   },

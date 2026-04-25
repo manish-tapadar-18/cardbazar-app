@@ -23,7 +23,6 @@ import { useUserStore } from '../../stores/userStore';
 import { useAdminDetailsStore } from '../../stores/adminDetailsStore';
 import { Toast } from '../../utils/toast';
 import { Repository } from '../../repository/Repository';
-import { ENV } from '../../utils/env';
 import { FontFamilyWithWeight } from '../../utils/FontFamilyWithWeight';
 import { Images } from '../../utils/Images';
 import { useDemoStore } from '../../stores/demoStore';
@@ -71,18 +70,14 @@ const Login = () => {
     const getUserDetails = async (email: string) => {
         const userDetailsResponse = await Repository.User.userDetails({ EMAIL: email });
         const { isSuccess, data, message } = userDetailsResponse;
-        if (isSuccess && data) {
-            return data;
-        }
+        if (isSuccess && data) return data;
         throw new Error(message ?? 'Failed to fetch user details');
     };
 
     const getAdminDetails = async () => {
         const adminDetailsResponse = await Repository.User.adminDetails();
         const { isSuccess, data, message } = adminDetailsResponse;
-        if (isSuccess && data) {
-            return data;
-        }
+        if (isSuccess && data) return data;
         throw new Error(message ?? 'Failed to fetch admin details');
     };
 
@@ -116,11 +111,14 @@ const Login = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#1B0535' }}>
+        <View style={styles.root}>
             <LinearGradient
-                colors={['#1B0535', '#2D0A6E', '#3A0D7A']}
+                colors={['#1B0535', '#2D0A6E', '#3A0D7A', '#2D0A6E', '#1B0535']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
                 style={styles.gradientBg}
             >
+                {/* Decorative watermark */}
                 <Image
                     source={require('../../assets/images/spade_card.png')}
                     style={styles.watermark}
@@ -134,43 +132,49 @@ const Login = () => {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.scrollContent}
                 >
-                    {/* Logo + branding */}
+                    {/* ── Branding ── */}
                     <View style={styles.brandSection}>
                         <Image
                             source={require('../../assets/logo/logo.png')}
                             style={styles.logo}
                             resizeMode="contain"
                         />
+                        <CustomText style={styles.appName}>Card Bazar</CustomText>
                         <CustomText style={styles.tagline}>
                             Your Ultimate Card Gaming Platform
                         </CustomText>
                     </View>
 
-                    {/* Form card */}
+                    {/* ── Form card ── */}
                     <View style={styles.card}>
-                        <CustomText style={styles.cardTitle}>Welcome Back</CustomText>
-                        <CustomText style={styles.cardSubtitle}>Sign in to continue</CustomText>
 
-                        {/* Mobile input */}
-                        <View style={styles.inputWrapper}>
+                        {/* Header */}
+                        <View style={styles.cardHeaderRow}>
+                            <View style={styles.cardAccent} />
+                            <View>
+                                <CustomText style={styles.cardTitle}>Welcome Back</CustomText>
+                                <CustomText style={styles.cardSubtitle}>Sign in to your account</CustomText>
+                            </View>
+                        </View>
+
+                        {/* Solid gold divider — same as Account.tsx */}
+                        <View style={styles.goldDivider} />
+
+                        {/* Mobile field */}
+                        <View style={styles.fieldGroup}>
+                            <CustomText style={styles.fieldLabel}>Mobile Number</CustomText>
                             <View style={styles.inputRow}>
-                                <Image
-                                    source={Images.PHONE}
-                                    style={styles.inputIcon}
-                                    resizeMode="contain"
-                                />
+                                <Image source={Images.PHONE} style={styles.inputIcon} resizeMode="contain" />
                                 <View style={styles.inputFlex}>
                                     <CustomTextInput
-                                        onChangeText={(value: string) => {
-                                            const numericValue = value.replace(/[^0-9]/g, "");
-                                            setFieldValue("EMAIL", numericValue);
-                                        }}
+                                        onChangeText={(value: string) =>
+                                            setFieldValue("EMAIL", value.replace(/[^0-9]/g, ""))
+                                        }
                                         onBlur={handleBlur("EMAIL")}
                                         value={values.EMAIL}
-                                        placeholder='Mobile Number'
+                                        placeholder='Enter mobile number'
                                         keyboardType='number-pad'
-                                        returnKeyType='send'
-                                        returnKeyLabel='CardBazaar'
+                                        returnKeyType='next'
                                         style={styles.textInput}
                                         focusedPlaceholderColor={Colors.GOLD}
                                         unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -178,27 +182,22 @@ const Login = () => {
                                 </View>
                             </View>
                             {touched.EMAIL && errors.EMAIL && (
-                                <CustomText style={authStyles.errorText}>
-                                    {errors.EMAIL}
-                                </CustomText>
+                                <CustomText style={authStyles.errorText}>{errors.EMAIL}</CustomText>
                             )}
                         </View>
 
-                        {/* Password input */}
-                        <View style={styles.inputWrapper}>
+                        {/* Password field */}
+                        <View style={styles.fieldGroup}>
+                            <CustomText style={styles.fieldLabel}>Password</CustomText>
                             <View style={styles.inputRow}>
-                                <Image
-                                    source={Images.DATA_SECURITY}
-                                    style={styles.inputIcon}
-                                    resizeMode="contain"
-                                />
+                                <Image source={Images.DATA_SECURITY} style={styles.inputIcon} resizeMode="contain" />
                                 <View style={styles.inputFlex}>
                                     <CustomTextInput
                                         secureTextEntry={!showPassword}
                                         onChangeText={handleChange("PASSWORD")}
                                         onBlur={handleBlur("PASSWORD")}
                                         value={values.PASSWORD}
-                                        placeholder='Password'
+                                        placeholder='Enter password'
                                         style={styles.textInput}
                                         focusedPlaceholderColor={Colors.GOLD}
                                         unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -206,7 +205,6 @@ const Login = () => {
                                 </View>
                                 <TouchableOpacity
                                     onPress={() => setShowPassword(prev => !prev)}
-                                    style={styles.eyeButton}
                                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                                 >
                                     <Image
@@ -221,25 +219,23 @@ const Login = () => {
                                 </TouchableOpacity>
                             </View>
                             {touched.PASSWORD && errors.PASSWORD && (
-                                <CustomText style={authStyles.errorText}>
-                                    {errors.PASSWORD}
-                                </CustomText>
+                                <CustomText style={authStyles.errorText}>{errors.PASSWORD}</CustomText>
                             )}
                         </View>
 
-                        {/* Divider */}
+                        {/* Decorative gold gradient rule */}
                         <LinearGradient
                             colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
-                            style={styles.divider}
+                            style={styles.decorativeDivider}
                         />
 
                         <CustomButton
                             disabled={isLoading}
                             loading={isLoading}
                             title={isLoading ? 'Please Wait...' : 'Login'}
-                            containerStyle={styles.loginButton}
+                            containerStyle={styles.actionButton}
                             textStyle={authStyles.buttonText}
                             onPress={handleSubmit}
                             gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
@@ -262,81 +258,122 @@ const Login = () => {
 export default Login;
 
 const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+        backgroundColor: Colors.PRIMARY_BG,
+    },
     gradientBg: {
         flex: 1,
     },
     watermark: {
         position: 'absolute',
-        width: rw(80),
-        height: rw(80),
-        opacity: 0.04,
-        bottom: rh(-5),
-        right: rw(-15),
+        width: rw(75),
+        height: rw(75),
+        opacity: 0.05,
+        bottom: rh(-4),
+        right: rw(-12),
         tintColor: Colors.GOLD,
     },
     scrollContent: {
         flexGrow: 1,
-        paddingHorizontal: rw(6),
+        paddingHorizontal: rw(5),
         paddingBottom: rh(5),
     },
+
+    // ─── Branding ─────────────────────────────────────────────────────────────
     brandSection: {
         alignItems: 'center',
-        paddingTop: rh(8),
-        paddingBottom: rh(4),
+        paddingTop: rh(7),
+        paddingBottom: rh(3.5),
     },
     logo: {
-        width: rw(28),
-        height: rw(28),
-        marginBottom: rh(1.5),
+        width: rw(24),
+        height: rw(24),
+        marginBottom: rh(1.2),
+    },
+    appName: {
+        color: Colors.GOLD,
+        fontSize: rf(7.5),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 1.5,
     },
     tagline: {
-        color: Colors.WHITE_55,
-        fontSize: rf(3.8),
+        color: Colors.WHITE_75,
+        fontSize: rf(3.5),
         fontFamily: FontFamilyWithWeight[400],
         marginTop: rh(0.5),
         textAlign: 'center',
     },
+
+    // ─── Card ─────────────────────────────────────────────────────────────────
     card: {
-        backgroundColor: 'rgba(255,255,255,0.06)',
-        borderRadius: 20,
+        backgroundColor: Colors.CARD_BG,
+        borderRadius: rh(1.5),
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.12)',
-        paddingHorizontal: rw(6),
-        paddingVertical: rh(3.5),
-        gap: rh(2),
+        borderColor: Colors.BORDER_WHITE_08,
+        paddingHorizontal: rw(4),
+        paddingTop: rh(2),
+        paddingBottom: rh(2.5),
+    },
+
+    // ─── Card Header ──────────────────────────────────────────────────────────
+    cardHeaderRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: rw(2.5),
+        marginBottom: rh(1.5),
+    },
+    cardAccent: {
+        width: rw(1),
+        height: rh(3.5),
+        borderRadius: 4,
+        backgroundColor: Colors.GOLD,
     },
     cardTitle: {
         color: Colors.WHITE,
-        fontSize: rf(6),
+        fontSize: rf(5.5),
         fontFamily: FontFamilyWithWeight[700],
-        textAlign: 'center',
+        lineHeight: rf(6.5),
     },
     cardSubtitle: {
-        color: Colors.WHITE_55,
-        fontSize: rf(3.8),
+        color: Colors.WHITE_75,
+        fontSize: rf(3.3),
         fontFamily: FontFamilyWithWeight[400],
-        textAlign: 'center',
-        marginTop: -rh(1),
     },
-    inputWrapper: {
-        gap: rh(2),
+
+    // ─── Solid gold divider (matches Account.tsx) ─────────────────────────────
+    goldDivider: {
+        height: 1,
+        backgroundColor: Colors.GOLD,
+        marginBottom: rh(2),
+    },
+
+    // ─── Field group (label + input + error) ─────────────────────────────────
+    fieldGroup: {
+        marginBottom: rh(1.8),
+    },
+    fieldLabel: {
+        fontSize: rf(3.2),
+        fontFamily: FontFamilyWithWeight[500],
+        color: Colors.WHITE_75,
+        marginBottom: rh(0.8),
     },
     inputRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        borderRadius: rh(1),
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.15)',
+        borderColor: 'rgba(255,215,0,0.2)',
         paddingHorizontal: rw(3),
-        height: rh(7),
+        height: rh(6.5),
     },
     inputIcon: {
-        width: rw(5),
-        height: rw(5),
+        width: rw(4.5),
+        height: rw(4.5),
         tintColor: Colors.GOLD,
-        marginRight: rw(2),
-        opacity: 0.85,
+        marginRight: rw(2.5),
+        opacity: 0.9,
     },
     inputFlex: {
         flex: 1,
@@ -347,35 +384,39 @@ const styles = StyleSheet.create({
         borderWidth: 0,
         color: Colors.WHITE,
         paddingHorizontal: 0,
-        fontSize: rf(4),
-    },
-    eyeButton: {
-        paddingLeft: rw(2),
+        fontSize: rf(3.8),
+        fontFamily: FontFamilyWithWeight[400],
     },
     eyeIcon: {
         width: rw(5),
         height: rw(5),
         tintColor: Colors.WHITE_55,
+        marginLeft: rw(2),
     },
-    divider: {
+
+    // ─── Decorative divider + button ──────────────────────────────────────────
+    decorativeDivider: {
         height: 1,
         borderRadius: 1,
-        marginVertical: rh(0.5),
+        marginBottom: rh(2),
     },
-    loginButton: {
+    actionButton: {
         height: rh(7),
-        borderRadius: 12,
+        borderRadius: rh(1),
+        overflow: 'hidden',
     },
+
+    // ─── Keyboard toolbar ─────────────────────────────────────────────────────
     keyboardToolbar: {
         position: 'absolute',
         left: 0,
         right: 0,
-        backgroundColor: '#2D0A6E',
+        backgroundColor: Colors.DEEP_PURPLE,
         paddingHorizontal: rw(4),
         paddingVertical: rh(1),
         alignItems: 'flex-end',
         borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.15)',
+        borderTopColor: Colors.BORDER_WHITE_12,
     },
     doneButton: {
         paddingHorizontal: rw(4),

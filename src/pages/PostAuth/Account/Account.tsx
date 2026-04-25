@@ -175,6 +175,8 @@ const Account = () => {
                 placeholder="First Name"
                 editable={false}
                 style={{ color: Colors.WHITE }}
+                focusedPlaceholderColor={Colors.GOLD}
+                unfocusedPlaceholderColor={Colors.WHITE_55}
               />
             </View>
             <View style={styles.halfInput}>
@@ -184,6 +186,8 @@ const Account = () => {
                 placeholder="Last Name"
                 editable={false}
                 style={{ color: Colors.WHITE }}
+                focusedPlaceholderColor={Colors.GOLD}
+                unfocusedPlaceholderColor={Colors.WHITE_55}
               />
             </View>
           </View>
@@ -196,6 +200,8 @@ const Account = () => {
               keyboardType="number-pad"
               editable={false}
               style={{ color: Colors.WHITE }}
+              focusedPlaceholderColor={Colors.GOLD}
+              unfocusedPlaceholderColor={Colors.WHITE_55}
             />
           </View>
         </View>
@@ -213,6 +219,8 @@ const Account = () => {
               onBlur={handleBlur('PAYTM_DETAILS')}
               placeholder="Enter Paytm UPI ID"
               style={{ color: Colors.WHITE }}
+              focusedPlaceholderColor={Colors.GOLD}
+              unfocusedPlaceholderColor={Colors.WHITE_55}
             />
           </View>
           {touched.PAYTM_DETAILS && errors.PAYTM_DETAILS && (
@@ -227,6 +235,8 @@ const Account = () => {
               onBlur={handleBlur('PHONEPE_DETAILS')}
               placeholder="Enter PhonePe UPI ID"
               style={{ color: Colors.WHITE }}
+              focusedPlaceholderColor={Colors.GOLD}
+              unfocusedPlaceholderColor={Colors.WHITE_55}
             />
           </View>
           {touched.PHONEPE_DETAILS && errors.PHONEPE_DETAILS && (
@@ -241,6 +251,8 @@ const Account = () => {
               onBlur={handleBlur('UPI_DETAILS')}
               placeholder="Enter GPay UPI ID"
               style={{ color: Colors.WHITE }}
+              focusedPlaceholderColor={Colors.GOLD}
+              unfocusedPlaceholderColor={Colors.WHITE_55}
             />
           </View>
           {touched.UPI_DETAILS && errors.UPI_DETAILS && (
@@ -265,6 +277,8 @@ const Account = () => {
               placeholder="Account Holder Name"
               editable={!bankDetailsLocked}
               style={{ color: Colors.WHITE }}
+              focusedPlaceholderColor={Colors.GOLD}
+              unfocusedPlaceholderColor={Colors.WHITE_55}
             />
           </View>
           {touched.BANK_ACCOUNT_HOLDER_NAME && errors.BANK_ACCOUNT_HOLDER_NAME && (
@@ -284,6 +298,8 @@ const Account = () => {
               keyboardType="number-pad"
               editable={!bankDetailsLocked}
               style={{ color: Colors.WHITE }}
+              focusedPlaceholderColor={Colors.GOLD}
+              unfocusedPlaceholderColor={Colors.WHITE_55}
             />
           </View>
           {touched.BANK_ACCOUNT_NO && errors.BANK_ACCOUNT_NO && (
@@ -303,6 +319,8 @@ const Account = () => {
               autoCapitalize="characters"
               editable={!bankDetailsLocked}
               style={{ color: Colors.WHITE }}
+              focusedPlaceholderColor={Colors.GOLD}
+              unfocusedPlaceholderColor={Colors.WHITE_55}
             />
           </View>
           {touched.BANK_IFSC && errors.BANK_IFSC && (
