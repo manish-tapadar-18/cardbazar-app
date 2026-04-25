@@ -18,6 +18,8 @@ import { IGameCategoryResponse } from '../../../response/module/IGameCategoryRes
 import { Repository } from '../../../repository/Repository'
 import { Toast } from '../../../utils/toast'
 import { Colors } from '../../../utils/Colors'
+import { useUserStore } from '../../../stores/userStore'
+import { useWalletStore } from '../../../stores/walletStore'
 
 // ─── Skeleton Box ─────────────────────────────────────────────────────────────
 const SkeletonBox = ({ style }: { style: any }) => {
@@ -55,7 +57,7 @@ const CardSkeleton: React.FC = () => (
 const SKELETON_COUNT = 4
 
 // ─── Category Card ────────────────────────────────────────────────────────────
-const CategoryCard: React.FC<{ item: IGameCategoryResponse; onPress: (id: string) => void  }> = ({ item, onPress }) => (
+const CategoryCard: React.FC<{ item: IGameCategoryResponse; onPress: (id: string) => void }> = ({ item, onPress }) => (
   <TouchableOpacity onPress={() => { onPress(item.ID) }} activeOpacity={0.82} style={styles.categoryCardWrapper}>
     <LinearGradient
       colors={['#331070', '#1A0040']}
@@ -101,6 +103,21 @@ const Home = () => {
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const navigation = useNavigation();
+  const { userDetails } = useUserStore();
+  const { setWallet } = useWalletStore();
+  
+  useFocusEffect(React.useCallback(() => {
+    fetchWalletBalance();
+  }, []))
+
+  const fetchWalletBalance = useCallback(async () => {
+    const userId = userDetails?.ID;
+    if (!userId) return;
+    try {
+      const { isSuccess, data } = await Repository.User.getUserBalance(userId);
+      if (isSuccess && data) setWallet(data);
+    } catch { }
+  }, [userDetails?.ID]);
 
   const navigateToGameDetails = (id: string) => {
     (navigation as any).navigate('GameDetails', { categoryId: id })
@@ -145,7 +162,7 @@ const Home = () => {
         <FlatList
           data={gameCategories}
           keyExtractor={(item) => item.ID}
-          renderItem={({ item }) => <CategoryCard item={item} onPress={(id)=>navigateToGameDetails(id)} />}
+          renderItem={({ item }) => <CategoryCard item={item} onPress={(id) => navigateToGameDetails(id)} />}
           ListHeaderComponent={<ListHeader />}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}

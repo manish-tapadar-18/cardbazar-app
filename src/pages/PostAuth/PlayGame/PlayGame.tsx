@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   Dimensions,
   FlatList,
   Image,
   ImageBackground,
+  Keyboard,
   KeyboardAvoidingView, Modal,
   Platform,
   Pressable,
@@ -13,33 +13,22 @@ import {
   View
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
 import { Images } from '../../../utils/Images';
 import { Colors } from '../../../utils/Colors';
-import { rh } from '../../../utils/responsive';
 import CustomText from '../../../components/CustomText';
 import { HomeStackParamList } from '../../../navigation/RouteTypes';
 import { Repository } from '../../../repository/Repository';
 import { Toast } from '../../../utils/toast';
 import { useUserStore } from '../../../stores/userStore';
-import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 import { useWalletStore } from '../../../stores/walletStore';
 import { IGameRulesItem } from '../../../response/module/IGameRulesResponse';
-import { ENV } from '../../../utils/env';
 import { styles } from './styles';
 import { IGameTypeResponse } from '../../../response/module/IGameTypeResponse';
+import CardItem, { PlayOption, formatCardName } from '../../../components/CardItem';
+import SectionDivider from '../../../components/SectionDivider';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface PlayOption {
-  ID: number;
-  NAME: string;
-  IMAGE_URL: string;
-  TYPE?: string;
-  typeOrder?: number;
-  cardOrder?: number;
-}
-
 interface LineItem {
   card: PlayOption;
   amount: string;
@@ -55,13 +44,6 @@ interface CardGroup {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const formatCardName = (name: string): string => {
-  const parts = name.split('-');
-  if (parts.length < 2) return name.toUpperCase();
-  return `${parts[0].toUpperCase()} - ${parts[1].toUpperCase()}`;
-};
-
-// Group by TYPE field (backup: _.groupBy by card.TYPE, sorted by typeOrder/cardOrder)
 const groupBySuit = (options: PlayOption[]): CardGroup[] => {
   const sorted = [...options].sort((a, b) => (a.typeOrder ?? 0) - (b.typeOrder ?? 0));
   const map: Record<string, PlayOption[]> = {};
@@ -77,58 +59,14 @@ const groupBySuit = (options: PlayOption[]): CardGroup[] => {
   }));
 };
 
-// ─── Card Item ────────────────────────────────────────────────────────────────
-const CardItem: React.FC<{
-  card: PlayOption;
-  isSelected: boolean;
-  onPress: (card: PlayOption) => void;
-}> = ({ card, isSelected, onPress }) => {
-  const imageUri = `${ENV.BASE_URL}/${card.IMAGE_URL}`;
-  return (
-    <Pressable
-      onPress={() => onPress(card)}
-      style={[styles.card, isSelected && styles.cardSelected]}
-    >
-      {isSelected && (
-        <View style={styles.checkBadge}>
-          <CustomText style={styles.checkMark}>✓</CustomText>
-        </View>
-      )}
-      <CustomText style={styles.cardLabel} numberOfLines={1}>
-        {formatCardName(card.NAME)}
-      </CustomText>
-      <Image
-        source={{ uri: imageUri }}
-        defaultSource={Images.SMALL_CARD}
-        style={styles.cardImage}
-        resizeMode="contain"
-      />
-    </Pressable>
-  );
-};
-
-// ─── Divider with Label ───────────────────────────────────────────────────────
-const SectionDivider: React.FC<{ label: string }> = ({ label }) => (
-  <View style={styles.dividerRow}>
-    <View style={styles.dividerLine} />
-    <CustomText style={styles.dividerLabel}>{label}</CustomText>
-    <View style={styles.dividerLine} />
-  </View>
-);
-
 // ─── PlayGame Screen ──────────────────────────────────────────────────────────
 const PlayGame: React.FC = () => {
   const route = useRoute<RouteProp<HomeStackParamList, 'PlayGame'>>();
-  const navigation = useNavigation<any>();
-  const { bottom } = useSafeAreaInsets();
-
+  const { userDetails } = useUserStore();
   const { GAME_MASTER_SCHEDULE_ID, GAME_CATEGORY, cardImages } = route.params;
 
-  const userDetails = useUserStore(s => s.userDetails);
-  const adminDetails = useAdminDetailsStore(s => s.adminDetails);
   const { balance, setWallet } = useWalletStore();
 
-  // ── Parse card groups (grouped by TYPE, sorted by typeOrder/cardOrder) ───
   const cardGroups = useMemo<CardGroup[]>(() => {
     try {
       const opts: PlayOption[] = JSON.parse(cardImages);
@@ -160,7 +98,9 @@ const PlayGame: React.FC = () => {
         Toast.error(response.message);
       }
     } catch (error: any) {
-      Toast.error(error.message);
+      Toast.error(error?.message ?? 'Failed to load game types.');
+    } finally {
+      // reserved for loading state cleanup if added later
     }
   }, []);
 
@@ -183,6 +123,8 @@ const PlayGame: React.FC = () => {
       }
     } catch (error: any) {
       Toast.error(error?.message ?? 'Something went wrong.');
+    } finally {
+      // reserved for loading state cleanup if added later
     }
   }, [GAME_CATEGORY]);
 
@@ -192,22 +134,32 @@ const PlayGame: React.FC = () => {
     if (!userId) return;
     try {
       const { isSuccess, data } = await Repository.User.getUserBalance(userId);
-      if (isSuccess && data) setWallet(data);
-    } catch { }
+      if (isSuccess && data) {
+        setWallet(data);
+      }
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to refresh wallet balance.');
+    } finally {
+      // reserved for loading state cleanup if added later
+    }
   }, [userDetails?.ID, setWallet]);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     fetchGameTypes();
     fetchGameRules();
     fetchWalletBalance();
-  }, [fetchGameTypes, fetchGameRules, fetchWalletBalance]);
+  }, []));
 
   // ── Dropdown group select ────────────────────────────────────────────────
   const selectGroup = (index: number) => {
-    setCurrentGroupIndex(index);
-    setIsDropdownOpen(false);
-    setSelectedCardIds(new Set());
-    flatListRef.current?.scrollToIndex({ index, animated: true });
+    try {
+      setCurrentGroupIndex(index);
+      setIsDropdownOpen(false);
+      setSelectedCardIds(new Set());
+      flatListRef.current?.scrollToIndex({ index, animated: true });
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to switch category.');
+    }
   };
 
   // ── Multi-card selection toggle ──────────────────────────────────────────
@@ -225,92 +177,109 @@ const PlayGame: React.FC = () => {
 
   // ── Add line items — supports multiple selected cards at once ────────────
   const onAddLineItem = () => {
-    // 1. Validate amount
-    const numAmount = parseFloat(amount);
-    if (!amount || isNaN(numAmount) || numAmount <= 0) {
-      Toast.error('Please enter a valid amount.', { placement: 'bottom', duration: 2500 });
-      return;
-    }
+    Keyboard.dismiss();
+    try {
+      const numAmount = parseFloat(amount);
+      if (!amount || isNaN(numAmount) || numAmount <= 0) {
+        Toast.error('Please enter a valid amount.', { placement: 'bottom', duration: 2500 });
+        return;
+      }
 
-    // 2. Validate card selection
-    if (selectedCardIds.size === 0) {
-      Toast.error('Please select at least one card.', { placement: 'bottom', duration: 2500 });
-      return;
-    }
+      if (selectedCardIds.size === 0) {
+        Toast.error('Please select at least one card.', { placement: 'bottom', duration: 2500 });
+        return;
+      }
 
-    // 3. Find rule matching CATEGORY_ID and TYPE_ID (backup: both must match)
-    const activeRule = gameRules.find(
-      r => r.CATEGORY_ID === GAME_CATEGORY && r.TYPE_ID === (gameType[0]?.ID ?? '')
-    );
-    if (!activeRule) {
-      Toast.error('No rules found for this game.', { placement: 'bottom', duration: 2500 });
-      return;
-    }
+      const activeRule = gameRules.find(
+        r => r.CATEGORY_ID === GAME_CATEGORY && r.TYPE_ID === (gameType[0]?.ID ?? '')
+      );
+      if (!activeRule) {
+        Toast.error('No rules found for this game.', { placement: 'bottom', duration: 2500 });
+        return;
+      }
 
-    // 4. Min/max validation
-    const min = parseFloat(activeRule.MIN_BET);
-    const max = parseFloat(activeRule.MAX_BET);
-    if (numAmount < min) {
-      Toast.error(`Minimum bet is ₹${min}.`, { placement: 'bottom', duration: 2500 });
-      return;
-    }
-    if (numAmount > max) {
-      Toast.error(`Maximum bet is ₹${max}.`, { placement: 'bottom', duration: 2500 });
-      return;
-    }
+      const min = parseFloat(activeRule.MIN_BET);
+      const max = parseFloat(activeRule.MAX_BET);
+      if (numAmount < min) {
+        Toast.error(`Minimum bet is ₹${min}.`, { placement: 'bottom', duration: 2500 });
+        return;
+      }
+      if (numAmount > max) {
+        Toast.error(`Maximum bet is ₹${max}.`, { placement: 'bottom', duration: 2500 });
+        return;
+      }
 
-    // 5. Collect all selected cards across all groups
-    const allCards = cardGroups.flatMap(g => g.cards);
-    const selectedCards = allCards.filter(c => selectedCardIds.has(c.ID));
+      const allCards = cardGroups.flatMap(g => g.cards);
+      const selectedCards = allCards.filter(c => selectedCardIds.has(c.ID));
 
-    // 6. Duplicate check
-    const duplicates = selectedCards.filter(c => lineItems.some(i => i.card.ID === c.ID));
-    if (duplicates.length > 0) {
-      Toast.error('Some selected cards are already added.', { placement: 'bottom', duration: 2500 });
-      return;
+      const duplicates = selectedCards.filter(c => lineItems.some(i => i.card.ID === c.ID));
+      if (duplicates.length > 0) {
+        Toast.error('Some selected cards are already added.', { placement: 'bottom', duration: 2500 });
+        return;
+      }
+
+      setLineItems(prev => [
+        ...prev,
+        ...selectedCards.map(card => ({ card, amount })),
+      ]);
+      setAmount('');
+      setSelectedCardIds(new Set());
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to add line item.');
     }
-
-    // 7. Add all selected cards and reset (backup: setGames([...games, ...selectedCards]) + clear)
-    setLineItems(prev => [
-      ...prev,
-      ...selectedCards.map(card => ({ card, amount })),
-    ]);
-    setAmount('');
-    setSelectedCardIds(new Set());
   };
 
   // ── Remove line item ─────────────────────────────────────────────────────
   const removeLineItem = (cardId: number) => {
-    setLineItems(prev => prev.filter(i => i.card.ID !== cardId));
+    try {
+      setLineItems(prev => prev.filter(i => i.card.ID !== cardId));
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to remove item.');
+    }
   };
 
   // ── Submit bets ──────────────────────────────────────────────────────────
-  const onPlayGame = () => {
+  const onPlayGame = async () => {
     if (lineItems.length === 0) {
       Toast.error('Please add at least one bet before playing.', { placement: 'bottom', duration: 2500 });
       return;
     }
 
     const totalAmount = lineItems.reduce((sum, i) => sum + parseFloat(i.amount), 0);
-
     if (totalAmount > balance) {
       Toast.error('Insufficient balance.', { placement: 'bottom', duration: 2500 });
       return;
     }
 
-    const body = {
-      GAME_MASTER_SCHEDULE_ID,
-      GAME_TYPE: gameType[0]?.ID ?? '',
-      USER_ID: userDetails?.ID ?? '',
-      GAME_CATEGORY,
-      DATA: lineItems.map(i => ({
-        GAME_NUMBER: i.card.ID.toString(),
-        AMOUNT: i.amount,
-      })),
-      SUB_TYPE: gameType[0]?.SUB_TYPE ?? 'single',
-    };
+    setIsPlaying(true);
+    try {
+      const body = {
+        GAME_MASTER_SCHEDULE_ID,
+        GAME_TYPE: gameType[0]?.ID ?? '',
+        USER_ID: userDetails?.ID ?? '',
+        GAME_CATEGORY,
+        DATA: lineItems.map(i => ({
+          GAME_NUMBER: i.card.ID.toString(),
+          AMOUNT: i.amount,
+        })),
+        SUB_TYPE: gameType[0]?.SUB_TYPE ?? 'single',
+      };
 
-    Alert.alert('Request Body', JSON.stringify(body, null, 2));
+      const { isSuccess, message } = await Repository.Game.playGameMultiple(body);
+
+      if (!isSuccess) {
+        Toast.error(`${message}`, { placement: 'bottom', duration: 3000 });
+        return;
+      }
+
+      Toast.success(`${message}`, { placement: 'bottom', duration: 3000 });
+      setLineItems([]);
+      await fetchWalletBalance();
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to place bets. Please try again.', { placement: 'bottom', duration: 3000 });
+    } finally {
+      setIsPlaying(false);
+    }
   };
 
   // ── Track horizontal scroll page ─────────────────────────────────────────
@@ -345,11 +314,9 @@ const PlayGame: React.FC = () => {
   });
 
   const currentGroup = cardGroups[currentGroupIndex];
+
   return (
     <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.bg} resizeMode="cover">
-
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -465,7 +432,7 @@ const PlayGame: React.FC = () => {
             colors={isPlaying ? [Colors.DISABLED_BG, Colors.DISABLED_BG] : Colors.GRADIENT.GOLD}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={[styles.playBtnGradient, { paddingBottom: bottom || rh(2) }]}
+            style={styles.playBtnGradient}
           >
             <CustomText style={styles.playBtnText}>
               {isPlaying ? 'PLACING BETS...' : 'PLAY GAME'}

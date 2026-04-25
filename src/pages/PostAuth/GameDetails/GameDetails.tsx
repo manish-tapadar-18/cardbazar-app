@@ -23,6 +23,8 @@ import { IScheduleDetail } from '../../../response/module/IGetAllGamesListRespon
 import { IGameCategoryResponse } from '../../../response/module/IGameCategoryResponse'
 import HorizontalTabBar from '../../../components/HorizontalTabBar'
 import { HomeStackParamList } from '../../../navigation/RouteTypes'
+import { useUserStore } from '../../../stores/userStore'
+import { useWalletStore } from '../../../stores/walletStore'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type GameStatus = 'RUNNING' | 'UPCOMING' | 'EXPIRED'
@@ -111,16 +113,16 @@ const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
 )
 
 // ─── Game Card ────────────────────────────────────────────────────────────────
-const GameCard: React.FC<{ schedule: IScheduleDetail, isEnabled:boolean, onGameCardClick?: (schedule:IScheduleDetail) => void}> = ({ schedule, isEnabled, onGameCardClick }) => {
+const GameCard: React.FC<{ schedule: IScheduleDetail, isEnabled: boolean, onGameCardClick?: (schedule: IScheduleDetail) => void }> = ({ schedule, isEnabled, onGameCardClick }) => {
   const status = getStatus(schedule)
   return (
-    <Pressable 
-      disabled={!isEnabled} 
-      onPress={()=>{
+    <Pressable
+      disabled={!isEnabled}
+      onPress={() => {
         onGameCardClick?.(schedule)
-      }} 
+      }}
       style={styles.cardWrapper}
-      >
+    >
       <LinearGradient
         colors={['#FFD700', '#E8900C']}
         start={{ x: 0, y: 0 }}
@@ -193,16 +195,30 @@ const EmptyState: React.FC = () => (
 const GameDetails = () => {
   const route = useRoute<RouteProp<HomeStackParamList, 'GameDetails'>>()
   const { categoryId } = route.params
+  const { userDetails } = useUserStore();
+  const { setWallet } = useWalletStore();
 
+  useFocusEffect(
+    useCallback(() => {
+      setActiveTopKey('');
+      fetchWalletBalance();
+    }, [])
+  )
+  
+
+  const fetchWalletBalance = useCallback(async () => {
+    const userId = userDetails?.ID;
+    if (!userId) return;
+    try {
+      const { isSuccess, data } = await Repository.User.getUserBalance(userId);
+      if (isSuccess && data) setWallet(data);
+    } catch { }
+  }, [userDetails?.ID]);
   const navigation = useNavigation<any>()
   const [activeTopKey, setActiveTopKey] = useState('')
 
   // Reset highlight when user navigates back to this screen
-  useFocusEffect(
-    useCallback(() => {
-      setActiveTopKey('')
-    }, [])
-  )
+  
 
   const handleTopBarPress = useCallback(
     (item: { key: string }) => {
@@ -214,10 +230,10 @@ const GameDetails = () => {
     [navigation]
   )
 
-  const onGameCardClick = (schedule:IScheduleDetail)=> {
-    const {ID} = schedule
+  const onGameCardClick = (schedule: IScheduleDetail) => {
+    const { ID } = schedule
     let index = gameCategories.findIndex((category) => category.ID == categoryId);
-    let temp = [...gameCategories];     
+    let temp = [...gameCategories];
     let { PLAY_OPTIONS } = temp[index];
     navigation.navigate('PlayGame', { cardImages: PLAY_OPTIONS, GAME_MASTER_SCHEDULE_ID: ID, GAME_CATEGORY: categoryId });
   }
@@ -379,7 +395,7 @@ const GameDetails = () => {
               <>
                 <SectionHeader title="RUNNING" />
                 {categorized.running.map(s => (
-                  <GameCard onGameCardClick={(schedule:IScheduleDetail)=>onGameCardClick(schedule)} key={s.ID} schedule={s} isEnabled={true} />
+                  <GameCard onGameCardClick={(schedule: IScheduleDetail) => onGameCardClick(schedule)} key={s.ID} schedule={s} isEnabled={true} />
                 ))}
               </>
             )}
@@ -395,7 +411,7 @@ const GameDetails = () => {
               <>
                 <SectionHeader title="EXPIRED" />
                 {categorized.expired.map(s => (
-                  <GameCard key={s.ID} schedule={s} isEnabled={false}/>
+                  <GameCard key={s.ID} schedule={s} isEnabled={false} />
                 ))}
               </>
             )}

@@ -13,21 +13,11 @@ import { useWalletStore } from "../stores/walletStore";
 const Drawer = createDrawerNavigator<DrawerParamList>();
 
 export const RootDrawer = () => {
-    const { userDetails } = useUserStore();
+    
     const { adminDetails } = useAdminDetailsStore();
-    const { balance, setWallet } = useWalletStore();
-    useEffect(() => {
-        fetchWalletBalance()
-    }, [])
+    const { balance } = useWalletStore();
 
-    const fetchWalletBalance = useCallback(async () => {
-        const userId = userDetails?.ID;
-        if (!userId) return;
-        try {
-            const { isSuccess, data } = await Repository.User.getUserBalance(userId);
-            if (isSuccess && data) setWallet(data);
-        } catch { }
-    }, [userDetails?.ID, setWallet]);
+    
     return (
         <Drawer.Navigator
             screenOptions={{
