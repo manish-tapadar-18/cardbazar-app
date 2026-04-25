@@ -16,7 +16,7 @@ export const UriRepo = {
     REFERRALBONUS: `${version}getVariable?_format=json&name=REFERRAL_BONUS`,
     GETALLGAMETYPE: `${version}getAllGameType?_format=json`,
     PLAYGAMEMULTIPLE: `${version}playGameMultiple?_format=json`,
-    TRANSACTIONLIST: `${version}getAllUserTransaction?_format=json`,
+    TRANSACTIONLIST: (skip: number, take: number) => `${version}getAllUserTransaction?_format=json&skip=${skip}&take=${take}`,
     PLAYGAMEHISTORY: `${version}getAllGameHistory?_format=json`,
     GETALLGAMERESULT: `${version}getAllGame?_format=json`,
     APPSTATUS: `${version}getVariable?_format=json&name=APP_STATUS`,
