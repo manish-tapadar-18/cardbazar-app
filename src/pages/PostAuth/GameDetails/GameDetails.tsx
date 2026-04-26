@@ -5,14 +5,12 @@ import {
   ScrollView,
   View
 } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 import moment from 'moment'
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native'
 import { Images } from '../../../utils/Images'
 import { Colors } from '../../../utils/Colors'
 import { styles } from './styles'
 import GradientIconBar from '../../../components/GradientIconBar'
-import CustomText from '../../../components/CustomText'
 import { Repository } from '../../../repository/Repository'
 import { Toast } from '../../../utils/toast'
 import { IScheduleDetail } from '../../../response/module/IGetAllGamesListResponse'

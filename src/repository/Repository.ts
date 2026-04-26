@@ -4,6 +4,7 @@ import { userService } from "../services/UserService";
 import { referalService } from "../services/ReferalService";
 import { transactionService } from "../services/TransactionService";
 import { playHistoryService } from "../services/PlayHistoryService";
+import { paymentService } from "../services/PaymentService";
 import { IRepository } from "./interfaces/IRepository";
 
 const Repository: IRepository = {
@@ -13,6 +14,7 @@ const Repository: IRepository = {
     Referal: referalService,
     Transaction: transactionService,
     PlayHistory: playHistoryService,
+    Payment: paymentService,
 };
 
 export { Repository };

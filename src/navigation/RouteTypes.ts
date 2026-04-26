@@ -12,7 +12,8 @@ export type HomeStackParamList = {
     Refer: undefined;
     AddMoney: undefined;
     ShareApp: undefined;
-    PlayGame: { cardImages: string; GAME_MASTER_SCHEDULE_ID: string; GAME_CATEGORY: string }
+    PlayGame: { cardImages: string; GAME_MASTER_SCHEDULE_ID: string; GAME_CATEGORY: string },
+    PaymentSelection:{userId:string,amount:string}
 };
 
 export type AddMoneyStackParamList = {
