@@ -55,6 +55,19 @@ class UserService implements IUserService {
             return genericErrorParser<IUserBalanceResponse>(error);
         }
     }
+
+    async updateWithdrawalRequestUser(userId: string): Promise<ICustomResponse<null>> {
+        try {
+            const response = await http.put<IApiResponse<null>>(
+                UriRepo.UPDATEWITHDRAWALREQUESTUSER(userId),
+                {},
+                { requireAuth: true }
+            );
+            return genericResponseParser<null>(response.data);
+        } catch (error: any) {
+            return genericErrorParser<null>(error);
+        }
+    }
 }
 
 export const userService = new UserService();

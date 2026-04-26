@@ -1,5 +1,5 @@
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import LinearGradient from 'react-native-linear-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Images } from '../utils/Images'
@@ -8,7 +8,7 @@ import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight'
 import { Fonts } from '../utils/Fontsizes'
 import CustomText from './CustomText'
 import { Colors } from '../utils/Colors'
-import { useWalletStore } from '../stores/walletStore'
+import WalletStatusModal from './WalletStatusModal'
 
 type CommonHeaderProps = {
     onMenuPress: () => void
@@ -19,36 +19,52 @@ type CommonHeaderProps = {
 
 const CommonHeader = ({ onMenuPress, balance, onPhonePress, onWhatsappPress }: CommonHeaderProps) => {
     const { top } = useSafeAreaInsets()
+    const [showWalletModal, setShowWalletModal] = useState(false)
+
     return (
-        <LinearGradient
-            colors={Colors.GRADIENT.HEADER}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.container, { paddingTop: top }]}
-        >
+        <>
+            <LinearGradient
+                colors={Colors.GRADIENT.HEADER}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[styles.container, { paddingTop: top }]}
+            >
+                <TouchableOpacity onPress={onMenuPress} style={styles.menuBtn} activeOpacity={0.7}>
+                    <Image source={Images.HAMBURGER} style={styles.hamburgerIcon} tintColor={Colors.WHITE} />
+                </TouchableOpacity>
 
-            <TouchableOpacity onPress={onMenuPress} style={styles.menuBtn} activeOpacity={0.7}>
-                <Image source={Images.HAMBURGER} style={styles.hamburgerIcon} tintColor={Colors.WHITE} />
-            </TouchableOpacity>
-            <View style={{ flex: 1 }} />
-            <View style={styles.walletPill}>
-                <Image source={Images.WALLET} style={styles.walletIcon} />
-                <View style={styles.walletTextCol}>
-                    <CustomText style={styles.balanceText}>{String(balance)}</CustomText>
-                    <CustomText style={styles.walletLabel}>INR In Wallet</CustomText>
+                <View style={{ flex: 1 }} />
+
+                {/* Wallet pill — tapping opens WalletStatusModal */}
+                <TouchableOpacity
+                    style={styles.walletPill}
+                    activeOpacity={0.75}
+                    onPress={() => setShowWalletModal(true)}
+                >
+                    <Image source={Images.WALLET} style={styles.walletIcon} />
+                    <View style={styles.walletTextCol}>
+                        <CustomText style={styles.balanceText}>{String(balance)}</CustomText>
+                        <CustomText style={styles.walletLabel}>INR In Wallet</CustomText>
+                    </View>
+                </TouchableOpacity>
+
+                {/* Right actions */}
+                <View style={styles.rightActions}>
+                    <TouchableOpacity onPress={onPhonePress} style={styles.actionBtn} activeOpacity={0.7}>
+                        <Image source={Images.PHONE} style={styles.actionIcon} tintColor={Colors.WHITE} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={onWhatsappPress} style={[styles.actionBtn, styles.whatsappBtn]} activeOpacity={0.7}>
+                        <Image source={Images.WHATSAPP} style={styles.actionIcon} />
+                    </TouchableOpacity>
                 </View>
-            </View>
+            </LinearGradient>
 
-            {/* Right actions */}
-            <View style={styles.rightActions}>
-                <TouchableOpacity onPress={onPhonePress} style={styles.actionBtn} activeOpacity={0.7}>
-                    <Image source={Images.PHONE} style={styles.actionIcon} tintColor={Colors.WHITE} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={onWhatsappPress} style={[styles.actionBtn, styles.whatsappBtn]} activeOpacity={0.7}>
-                    <Image source={Images.WHATSAPP} style={styles.actionIcon} />
-                </TouchableOpacity>
-            </View>
-        </LinearGradient>
+            {/* Wallet Status Modal — rendered outside LinearGradient so it overlays the full screen */}
+            <WalletStatusModal
+                visible={showWalletModal}
+                onClose={() => setShowWalletModal(false)}
+            />
+        </>
     )
 }
 
@@ -59,8 +75,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: rw(3),
-        paddingHorizontal:8,
-        paddingBottom:8
+        paddingHorizontal: 8,
+        paddingBottom: 8,
     },
     menuBtn: {
         padding: rw(1),
@@ -78,12 +94,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Colors.BORDER_WHITE_12,
         paddingHorizontal: rw(3),
-        paddingVertical: rh(0.8),
+        paddingVertical: rh(0.5),
         gap: rw(2),
     },
     walletIcon: {
-        width: rh(4),
-        height: rh(4),
+        width: rh(3),
+        height: rh(3),
         resizeMode: 'contain',
     },
     walletTextCol: {
@@ -91,7 +107,7 @@ const styles = StyleSheet.create({
     },
     balanceText: {
         color: Colors.WHITE,
-        fontSize: Fonts.small,
+        fontSize: Fonts.smaller,
         fontFamily: FontFamilyWithWeight[700],
         lineHeight: rh(2.4),
     },

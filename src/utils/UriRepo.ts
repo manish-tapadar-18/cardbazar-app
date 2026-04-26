@@ -24,4 +24,5 @@ export const UriRepo = {
     GETALLLANGUAGE: `language.json`,
     GETPAYMENTGATEWAY: (amount: number) => `${version}getPaymentGateway?_format=json&status=1&amount=${amount}`,
     GETKILLERPAYMENTGATEWAYDETAILS: (amount: number, id: string) => `${version}getKillerPaymentGatewayDetails?_format=json&amount=${amount}&id=${id}`,
+    UPDATEWITHDRAWALREQUESTUSER: (userId: string) => `${version}updateWithdrawalRequestUser/${userId}?_format=json`,
 }

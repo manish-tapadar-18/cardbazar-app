@@ -14,4 +14,5 @@ export interface IUserService {
   adminDetails(): Promise<ICustomResponse<IAdminDetailsResponse>>;
 
   getUserBalance(userId: string): Promise<ICustomResponse<IUserBalanceResponse>>;
+  updateWithdrawalRequestUser(userId: string): Promise<ICustomResponse<null>>;
 }
