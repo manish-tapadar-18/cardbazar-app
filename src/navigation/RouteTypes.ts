@@ -13,11 +13,12 @@ export type HomeStackParamList = {
     AddMoney: undefined;
     ShareApp: undefined;
     PlayGame: { cardImages: string; GAME_MASTER_SCHEDULE_ID: string; GAME_CATEGORY: string },
-    PaymentSelection:{userId:string,amount:string}
+    PaymentSelection: { ID: string; amount: number }
 };
 
 export type AddMoneyStackParamList = {
     AddMoney: undefined;
+    PaymentSelection: { ID: string; amount: number };
 };
 
 export type PlayHistoryStackParamList = {

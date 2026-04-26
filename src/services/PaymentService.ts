@@ -1,11 +1,13 @@
 import { IApiResponse } from "../response/generic/IApiResponse";
 import { ICustomResponse } from "../response/generic/ICustomResponse";
+import { IAddMoneyResponse } from "../response/module/IAddMoneyResponse";
+import { IGetKillerPaymentGatewayResponse } from "../response/module/IGetKillerPaymentGatewayResponse";
 import { IGetPaymentGatewayResponse } from "../response/module/IGetPaymentGatewayResponse";
 import { genericErrorParser } from "../response/parser/genericErrorParser";
 import { genericResponseParser } from "../response/parser/genericResponseParser";
 import { http } from "../utils/http";
 import { UriRepo } from "../utils/UriRepo";
-import { IPaymentService } from "./interfaces/IPaymentService";
+import { IAddMoneyPayload, IPaymentService } from "./interfaces/IPaymentService";
 
 const option = { requireAuth: true };
 
@@ -20,6 +22,38 @@ class PaymentService implements IPaymentService {
             return genericResponseParser<IGetPaymentGatewayResponse>(response.data);
         } catch (error: any) {
             return genericErrorParser<IGetPaymentGatewayResponse>(error);
+        }
+    }
+
+    async addMoneyRequest(payload: IAddMoneyPayload): Promise<ICustomResponse<IAddMoneyResponse>> {
+        try {
+            const response = await http.post<IApiResponse<IAddMoneyResponse>>(
+                UriRepo.ADDMONEY,
+                payload,
+                option
+            );
+            return genericResponseParser<IAddMoneyResponse>(response.data);
+        } catch (error: any) {
+            return genericErrorParser<IAddMoneyResponse>(error);
+        }
+    }
+
+    async getKillerPaymentGatewayDetails(amount: number, id: string): Promise<ICustomResponse<IGetKillerPaymentGatewayResponse>> {
+        try {
+            const response = await http.get<IApiResponse<IGetKillerPaymentGatewayResponse>>(
+                UriRepo.GETKILLERPAYMENTGATEWAYDETAILS(amount, id),
+                option
+            );
+            const parsed = genericResponseParser<IGetKillerPaymentGatewayResponse>(response.data);
+            if (parsed.isSuccess && parsed.data) {
+                return {
+                    ...parsed,
+                    data: [...parsed.data].sort((a, b) => a.order - b.order),
+                };
+            }
+            return parsed;
+        } catch (error: any) {
+            return genericErrorParser<IGetKillerPaymentGatewayResponse>(error);
         }
     }
 }

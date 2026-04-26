@@ -6,7 +6,7 @@ export function genericResponseParser<T>(
   result: IApiResponse<T>
 ): ICustomResponse<T> {
 
-  if (result.code === "200" && result.status === "success") {
+  if ((result.code === "200" || result.code === "201") && result.status === "success") {
     return {
       isSuccess: true,
       data: result.data ?? null,

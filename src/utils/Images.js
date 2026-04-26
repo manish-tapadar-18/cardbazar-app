@@ -48,6 +48,7 @@ export const Images = {
     SPADE_CARD : require('../assets/images/spade_card.png'),
     TRASH : require('../assets/images/trash.png'),
     ADD_AMOUNT : require('../assets/images/add_amount.png'),
+    ADD_AMOUNT_BANNER : require('../assets/images/payment.png'),
     EDIT_PEN : require('../assets/images/pen.png'),
     TOP_DRAWER : require('../assets/images/top_drawer.jpeg'),
     NO_CONNECTION : require('../assets/images/no_connection.jpg'),

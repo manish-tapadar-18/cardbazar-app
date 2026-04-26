@@ -4,6 +4,7 @@ import {Home,Account,GameRules,GameTimings,LanguageOptions,Refer,TransactionHist
 import ShareApp from "../pages/PostAuth/ShareApp/ShareApp.tsx";
 import GameDetails from "../pages/PostAuth/GameDetails/GameDetails.tsx";
 import PlayGame from "../pages/PostAuth/PlayGame/PlayGame.tsx";
+import PaymentSelection from "../pages/PostAuth/PaymentSelection/PaymentSelection.tsx";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -21,6 +22,7 @@ export const HomeStack = () => {
       <Stack.Screen name="TransactionHistory" component={TransactionHistory} />
       <Stack.Screen name="ShareApp" component={ShareApp} />
       <Stack.Screen name="PlayGame" component={PlayGame} />
+      <Stack.Screen name="PaymentSelection" component={PaymentSelection} />
     </Stack.Navigator>
   );
 };

@@ -20,6 +20,7 @@ import CustomText from '../../../components/CustomText'
 import { Repository } from '../../../repository/Repository'
 import { Toast } from '../../../utils/toast'
 import { useUserStore } from '../../../stores/userStore'
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
 import { clearAllStores } from '../../../stores/clearAllStores'
 import { IPaymentGatewayItem } from '../../../response/module/IGetPaymentGatewayResponse'
 import AddMoneyBlockedOverlay from './components/AddMoneyBlockedOverlay'
@@ -30,6 +31,7 @@ const MONEY_ARR = [50, 100, 200, 300, 500, 1000, 2000, 5000]
 // ─── AddMoney Screen ──────────────────────────────────────────────────────────
 const AddMoney = () => {
   const { userDetails } = useUserStore()
+  const { adminDetails } = useAdminDetailsStore()
   const navigation = useNavigation<any>()
   const [activeTopKey, setActiveTopKey] = useState('')
 
@@ -49,6 +51,7 @@ const AddMoney = () => {
   // ── Gateway ───────────────────────────────────────────────────────────────
   const [selectedGateway, setSelectedGateway] = useState<IPaymentGatewayItem | null>(null)
   const [isGatewayLoading, setIsGatewayLoading] = useState(false)
+  const [isAddingMoney, setIsAddingMoney] = useState(false)
 
   // ── Derived ───────────────────────────────────────────────────────────────
   const isBlocked = !(adminAddMoneyFlag === 1 && userAddMoneyFlag === 1)
@@ -155,8 +158,31 @@ const AddMoney = () => {
     }
   }
 
-  // ── Add money (to be implemented) ─────────────────────────────────────────
-  const handleAddMoney = () => {}
+  // ── Add money ─────────────────────────────────────────────────────────────
+  const handleAddMoney = async () => {
+    const amount = isOtherSelected ? Number(otherAmount) : selectedAmount
+    if (!amount || !userDetails?.ID) return
+
+    try {
+      setIsAddingMoney(true)
+      const payload = {
+        USER_ID: userDetails.ID,
+        AMOUNT: amount,
+        DESCRIPTION: adminDetails?.EMAIL ?? '',
+        STATUS: 'PENDING' as const,
+      }
+      const { isSuccess, data, message } = await Repository.Payment.addMoneyRequest(payload)
+      if (isSuccess && data?.ID) {
+        navigation.navigate('PaymentSelection', { ID: data.ID, amount })
+      } else {
+        Toast.error(message ?? 'Failed to initiate payment.', { placement: 'bottom', duration: 3000 })
+      }
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Something went wrong.', { placement: 'bottom', duration: 3000 })
+    } finally {
+      setIsAddingMoney(false)
+    }
+  }
 
   const handleTopBarPress = useCallback(
     (item: { key: string }) => {
@@ -329,9 +355,10 @@ const AddMoney = () => {
             {/* ── Add Money Button ──────────────────────────────────── */}
             {!isGatewayLoading && selectedGateway?.CODE === 'KILLER' && (
               <TouchableOpacity
-                style={styles.addMoneyBtnWrapper}
+                style={[styles.addMoneyBtnWrapper, isAddingMoney && { opacity: 0.7 }]}
                 onPress={handleAddMoney}
                 activeOpacity={0.85}
+                disabled={isAddingMoney}
               >
                 <LinearGradient
                   colors={['#FFD700', '#E8900C']}
@@ -339,7 +366,10 @@ const AddMoney = () => {
                   end={{ x: 1, y: 0 }}
                   style={styles.addMoneyBtnGradient}
                 >
-                  <CustomText style={styles.addMoneyBtnText}>ADD MONEY</CustomText>
+                  {isAddingMoney
+                    ? <ActivityIndicator size="small" color={Colors.BLACK} />
+                    : <CustomText style={styles.addMoneyBtnText}>ADD MONEY</CustomText>
+                  }
                 </LinearGradient>
               </TouchableOpacity>
             )}
