@@ -1,14 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
-  Animated,
   FlatList,
-  Image,
   ImageBackground,
   RefreshControl,
-  TouchableOpacity,
   View,
 } from 'react-native'
-import LinearGradient from 'react-native-linear-gradient'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { Images } from '../../../utils/Images'
 import { styles } from './styles'
@@ -20,65 +16,10 @@ import { Toast } from '../../../utils/toast'
 import { Colors } from '../../../utils/Colors'
 import { useUserStore } from '../../../stores/userStore'
 import { useWalletStore } from '../../../stores/walletStore'
-
-// ─── Skeleton Box ─────────────────────────────────────────────────────────────
-const SkeletonBox = ({ style }: { style: any }) => {
-  const pulseAnim = useRef(new Animated.Value(0.4)).current
-
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 0.4, duration: 700, useNativeDriver: true }),
-      ])
-    )
-    pulse.start()
-    return () => pulse.stop()
-  }, [])
-
-  return <Animated.View style={[style, { opacity: pulseAnim }]} />
-}
-
-// ─── Skeleton Card ────────────────────────────────────────────────────────────
-const CardSkeleton: React.FC = () => (
-  <View style={styles.categoryCardWrapper}>
-    <View style={styles.skeletonCardInner}>
-      <SkeletonBox style={styles.skeletonTitle} />
-      <SkeletonBox style={styles.skeletonDescLine} />
-      <SkeletonBox style={[styles.skeletonDescLine, { width: '65%' }]} />
-      <View style={styles.categoryFooter}>
-        <SkeletonBox style={styles.skeletonBadge} />
-        <SkeletonBox style={styles.skeletonPlayBtn} />
-      </View>
-    </View>
-  </View>
-)
+import CardSkeleton from './components/CardSkeleton'
+import CategoryCard from './components/CategoryCard'
 
 const SKELETON_COUNT = 4
-
-// ─── Category Card ────────────────────────────────────────────────────────────
-const CategoryCard: React.FC<{ item: IGameCategoryResponse; onPress: (id: string) => void }> = ({ item, onPress }) => (
-  <TouchableOpacity onPress={() => { onPress(item.ID) }} activeOpacity={0.82} style={styles.categoryCardWrapper}>
-    <LinearGradient
-      colors={['#331070', '#1A0040']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.categoryCard}
-    >
-      <CustomText style={styles.categoryName}>{item.NAME}</CustomText>
-      <CustomText style={styles.categoryDesc} numberOfLines={2}>
-        {item.DESCRIPTION}
-      </CustomText>
-      <View style={styles.categoryFooter}>
-
-        <TouchableOpacity style={styles.playBtn} activeOpacity={0.8}>
-          <Image source={Images.PLAY_CIRCLE} style={styles.playIcon} resizeMode="contain" />
-          <CustomText style={styles.playText}>LET'S PLAY</CustomText>
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
-  </TouchableOpacity>
-)
 
 // ─── List Header ──────────────────────────────────────────────────────────────
 const ListHeader: React.FC = () => (
