@@ -21,14 +21,12 @@ import CategoryCard from './components/CategoryCard'
 
 const SKELETON_COUNT = 4
 
-// ─── List Header ──────────────────────────────────────────────────────────────
 const ListHeader: React.FC = () => (
   <View style={styles.listHeader}>
     <CustomText style={styles.listHeaderText}>ALL GAMES</CustomText>
   </View>
 )
 
-// ─── Skeleton List ────────────────────────────────────────────────────────────
 const SkeletonList: React.FC = () => (
   <View style={styles.skeletonContainer}>
     <ListHeader />
@@ -38,7 +36,6 @@ const SkeletonList: React.FC = () => (
   </View>
 )
 
-// ─── Home Screen ──────────────────────────────────────────────────────────────
 const Home = () => {
   const [activeTopKey, setActiveTopKey] = useState('')
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
