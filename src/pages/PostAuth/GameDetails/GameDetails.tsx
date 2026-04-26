@@ -1,13 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  Alert,
-  Animated,
-  Image,
   ImageBackground,
-  Pressable,
   RefreshControl,
   ScrollView,
-  View,
+  View
 } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import moment from 'moment'
@@ -25,6 +21,10 @@ import HorizontalTabBar from '../../../components/HorizontalTabBar'
 import { HomeStackParamList } from '../../../navigation/RouteTypes'
 import { useUserStore } from '../../../stores/userStore'
 import { useWalletStore } from '../../../stores/walletStore'
+import GameDetailsSkeletonBox from './components/GameDetailsSkeletonBox'
+import GameDetailsEmptyState from './components/GameDetailsEmptyState'
+import GameCard from './components/GameCard'
+import GameDetailsSectionHeader from './components/GameDetailsSectionHeader'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type GameStatus = 'RUNNING' | 'UPCOMING' | 'EXPIRED'
@@ -45,37 +45,11 @@ const getStatus = (schedule: IScheduleDetail): GameStatus => {
   return 'RUNNING'
 }
 
-const getRemainingTime = (endTime: string): string => {
-  const diff = moment(endTime, 'HH:mm').diff(moment())
-  if (diff <= 0) return '00:00:00'
-  return moment.utc(diff).format('HH:mm:ss')
-}
-
-const formatTime = (time: string) => moment(time, 'HH:mm').format('hh:mm A')
-
-// ─── Skeleton Box ─────────────────────────────────────────────────────────────
-const SkeletonBox = ({ style }: { style: any }) => {
-  const pulseAnim = useRef(new Animated.Value(0.4)).current
-
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 0.4, duration: 700, useNativeDriver: true }),
-      ])
-    )
-    pulse.start()
-    return () => pulse.stop()
-  }, [pulseAnim])
-
-  return <Animated.View style={[style, { opacity: pulseAnim }]} />
-}
-
 // ─── Tab Bar Skeleton ─────────────────────────────────────────────────────────
 const TabBarSkeleton: React.FC = () => (
   <View style={styles.tabBarRow}>
     {[1, 2, 3, 4].map((i) => (
-      <SkeletonBox key={i} style={styles.tabPillSkeleton} />
+      <GameDetailsSkeletonBox key={i} style={styles.tabPillSkeleton} />
     ))}
   </View>
 )
@@ -84,112 +58,15 @@ const TabBarSkeleton: React.FC = () => (
 const SkeletonCard: React.FC = () => (
   <View style={styles.cardWrapper}>
     <View style={styles.skeletonCard}>
-      <SkeletonBox style={styles.skeletonIcon} />
+      <GameDetailsSkeletonBox style={styles.skeletonIcon} />
       <View style={styles.cardContent}>
-        <SkeletonBox style={styles.skeletonCardTitle} />
-        <SkeletonBox style={styles.skeletonCardSubtitle} />
+        <GameDetailsSkeletonBox style={styles.skeletonCardTitle} />
+        <GameDetailsSkeletonBox style={styles.skeletonCardSubtitle} />
       </View>
     </View>
   </View>
 )
 
-// ─── Section Header ───────────────────────────────────────────────────────────
-const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
-  <View style={styles.sectionHeader}>
-    <LinearGradient
-      colors={['transparent', Colors.GOLD]}
-      start={{ x: 0, y: 0.5 }}
-      end={{ x: 1, y: 0.5 }}
-      style={styles.sectionLine}
-    />
-    <CustomText style={styles.sectionTitle}>{title}</CustomText>
-    <LinearGradient
-      colors={[Colors.GOLD, 'transparent']}
-      start={{ x: 0, y: 0.5 }}
-      end={{ x: 1, y: 0.5 }}
-      style={styles.sectionLine}
-    />
-  </View>
-)
-
-// ─── Game Card ────────────────────────────────────────────────────────────────
-const GameCard: React.FC<{ schedule: IScheduleDetail, isEnabled: boolean, onGameCardClick?: (schedule: IScheduleDetail) => void }> = ({ schedule, isEnabled, onGameCardClick }) => {
-  const status = getStatus(schedule)
-  return (
-    <Pressable
-      disabled={!isEnabled}
-      onPress={() => {
-        onGameCardClick?.(schedule)
-      }}
-      style={styles.cardWrapper}
-    >
-      <LinearGradient
-        colors={['#FFD700', '#E8900C']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.card}
-      >
-        <Image source={Images.CARD_ICON} style={styles.cardIcon} resizeMode="contain" />
-        <View style={styles.cardContent}>
-          <CustomText style={styles.cardTitle}>{schedule.NAME}</CustomText>
-          {status === 'RUNNING' && (
-            <CustomText style={styles.runningTime}>
-              Ends in {getRemainingTime(schedule.END_TIME)}
-            </CustomText>
-          )}
-          {status === 'UPCOMING' && (
-            <View style={styles.upcomingTimeRow}>
-              <CustomText style={styles.upcomingTime}>
-                Starts at {formatTime(schedule.START_TIME)}
-              </CustomText>
-              <CustomText style={styles.upcomingTimeSpacer}>{'    '}</CustomText>
-              <CustomText style={styles.upcomingTime}>
-                Ends at {formatTime(schedule.END_TIME)}
-              </CustomText>
-            </View>
-          )}
-          {status === 'EXPIRED' && (
-            <CustomText style={styles.expiredTime}>
-              Ended at {formatTime(schedule.END_TIME)}
-            </CustomText>
-          )}
-        </View>
-      </LinearGradient>
-    </Pressable>
-  )
-}
-
-// ─── Empty State ──────────────────────────────────────────────────────────────
-const EmptyState: React.FC = () => (
-  <View style={styles.emptyContainer}>
-    {/* Outer glow ring */}
-    <View style={styles.emptyGlowRing}>
-      {/* Inner gold gradient circle */}
-      <LinearGradient
-        colors={['#FFD700', '#E8900C']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.emptyIconCircle}
-      >
-        <Image source={Images.GAME_LIST} style={styles.emptyIcon} resizeMode="contain" />
-      </LinearGradient>
-    </View>
-
-    <CustomText style={styles.emptyTitle}>NO GAMES TODAY</CustomText>
-
-    {/* Gold divider */}
-    <LinearGradient
-      colors={['transparent', Colors.GOLD, 'transparent']}
-      start={{ x: 0, y: 0.5 }}
-      end={{ x: 1, y: 0.5 }}
-      style={styles.emptyDivider}
-    />
-
-    <CustomText style={styles.emptySubtitle}>
-      There are no active games available{'\n'}for this category right now.{'\n'}Pull down to refresh.
-    </CustomText>
-  </View>
-)
 
 // ─── GameDetails Screen ───────────────────────────────────────────────────────
 const GameDetails = () => {
@@ -204,7 +81,6 @@ const GameDetails = () => {
       fetchWalletBalance();
     }, [])
   )
-  
 
   const fetchWalletBalance = useCallback(async () => {
     const userId = userDetails?.ID;
@@ -216,9 +92,6 @@ const GameDetails = () => {
   }, [userDetails?.ID]);
   const navigation = useNavigation<any>()
   const [activeTopKey, setActiveTopKey] = useState('')
-
-  // Reset highlight when user navigates back to this screen
-  
 
   const handleTopBarPress = useCallback(
     (item: { key: string }) => {
@@ -269,8 +142,6 @@ const GameDetails = () => {
   }, [])
 
   // ── Fetch: games for the active tab ──────────────────────────────────────
-  // buildPayload depends on activeTab so getGameListByCategoryId re-runs
-  // whenever the user switches tabs
   const buildPayload = useCallback(
     () => ({
       filters: {
@@ -388,12 +259,12 @@ const GameDetails = () => {
         {isGamesLoading && !hasGames ? (
           Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
         ) : !hasGames ? (
-          <EmptyState />
+          <GameDetailsEmptyState />
         ) : (
           <>
             {categorized.running.length > 0 && (
               <>
-                <SectionHeader title="RUNNING" />
+                <GameDetailsSectionHeader title="RUNNING" />
                 {categorized.running.map(s => (
                   <GameCard onGameCardClick={(schedule: IScheduleDetail) => onGameCardClick(schedule)} key={s.ID} schedule={s} isEnabled={true} />
                 ))}
@@ -401,7 +272,7 @@ const GameDetails = () => {
             )}
             {categorized.upcoming.length > 0 && (
               <>
-                <SectionHeader title="UPCOMING" />
+                <GameDetailsSectionHeader title="UPCOMING" />
                 {categorized.upcoming.map(s => (
                   <GameCard key={s.ID} schedule={s} isEnabled={false} />
                 ))}
@@ -409,7 +280,7 @@ const GameDetails = () => {
             )}
             {categorized.expired.length > 0 && (
               <>
-                <SectionHeader title="EXPIRED" />
+                <GameDetailsSectionHeader title="EXPIRED" />
                 {categorized.expired.map(s => (
                   <GameCard key={s.ID} schedule={s} isEnabled={false} />
                 ))}
