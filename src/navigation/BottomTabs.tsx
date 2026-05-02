@@ -78,6 +78,36 @@ export const BottomTabs = () => {
             />
 
             <Tab.Screen
+                name="WithdrawMoneyTab"
+                component={WithdrawMoneyStack}
+                options={{
+                    tabBarLabel: ({ focused }) => (
+                        <CustomText children={'Withdraw Money'} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                        // <CustomText children={t('withdraw_money')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                    ),
+                    tabBarIcon: ({ focused }) => (
+                        <Image
+                            source={Images.WITHDRAWAL}
+                            style={{
+                                width: rw(focused?5:4),
+                                height: rw(focused?5:4),
+                                resizeMode: 'contain',
+                                tintColor: Colors.WHITE,
+                            }}
+                        />
+                    ),
+                    headerShown: false
+                }}
+                listeners={({ navigation }) => ({
+                    tabPress: () => {
+                        navigation.navigate("WithdrawMoneyTab", {
+                            screen: "WithdrawMoney",
+                        });
+                    },
+                })}
+            />
+
+            <Tab.Screen
                 name="PlayHistoryTab"
                 component={PlayHistoryStack}
                 options={{
@@ -135,34 +165,7 @@ export const BottomTabs = () => {
                 })}
             />
 
-            <Tab.Screen
-                name="WithdrawMoneyTab"
-                component={WithdrawMoneyStack}
-                options={{
-                    tabBarLabel: ({ focused }) => (
-                        <CustomText children={t('withdraw_money')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
-                    ),
-                    tabBarIcon: ({ focused }) => (
-                        <Image
-                            source={Images.WITHDRAWAL}
-                            style={{
-                                width: rw(focused?5:4),
-                                height: rw(focused?5:4),
-                                resizeMode: 'contain',
-                                tintColor: Colors.WHITE,
-                            }}
-                        />
-                    ),
-                    headerShown: false
-                }}
-                listeners={({ navigation }) => ({
-                    tabPress: () => {
-                        navigation.navigate("WithdrawMoneyTab", {
-                            screen: "WithdrawMoney",
-                        });
-                    },
-                })}
-            />
+            
         </Tab.Navigator>
     );
 };

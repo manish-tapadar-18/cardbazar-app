@@ -5,6 +5,7 @@ import { IReferalService } from "../../services/interfaces/IReferalService";
 import { ITransactionService } from "../../services/interfaces/ITransactionService";
 import { IPlayHistoryService } from "../../services/interfaces/IPlayHistoryService";
 import { IPaymentService } from "../../services/interfaces/IPaymentService";
+import { IWithdrawalService } from "../../services/interfaces/IWithdrawalService";
 
 export interface IRepository {
     Auth: IAuthenticationService;
@@ -14,4 +15,5 @@ export interface IRepository {
     Transaction: ITransactionService;
     PlayHistory: IPlayHistoryService;
     Payment: IPaymentService;
+    Withdrawal: IWithdrawalService;
 }

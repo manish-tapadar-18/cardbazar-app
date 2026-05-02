@@ -20,6 +20,7 @@ export const UriRepo = {
     PLAYGAMEHISTORY: (skip: number, take: number) => `${version}getAllGameHistory?_format=json&skip=${skip}&take=${take}`,
     GETALLGAMERESULT: `${version}getAllGame?_format=json`,
     APPSTATUS: `${version}getVariable?_format=json&name=APP_STATUS`,
+    CHECKAUTOWITHDRAWAL: `${version}getVariable?_format=json&name=AUTO_WITHDRAWAL`,
     GETUSERBALANCE:(userId:String)=> `${version}getUserBalance/${userId}?_format=json`,
     GETALLLANGUAGE: `language.json`,
     GETPAYMENTGATEWAY: (amount: number) => `${version}getPaymentGateway?_format=json&status=1&amount=${amount}`,
