@@ -29,11 +29,16 @@ export type ResultStackParamList = {
     Result: undefined;
 };
 
+export type WithdrawMoneyStackParamList = {
+    WithdrawMoney: undefined;
+};
+
 export type BottomTabParamList = {
     HomeTab: NavigatorScreenParams<HomeStackParamList>;
     AddMoneyTab: NavigatorScreenParams<AddMoneyStackParamList>;
     PlayHistoryTab: NavigatorScreenParams<PlayHistoryStackParamList>;
     ResultTab: NavigatorScreenParams<ResultStackParamList>;
+    WithdrawMoneyTab: NavigatorScreenParams<WithdrawMoneyStackParamList>;
 };
 
 export type DrawerParamList = {

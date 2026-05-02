@@ -5,7 +5,7 @@ import GradientIconBar from '../../../components/GradientIconBar'
 import { useNavigation } from '@react-navigation/native'
 import { styles } from './styles'
 
-const Withdtaw = () => {
+const Withdraw = () => {
     const [activeTopKey, setActiveTopKey] = useState('');
     const navigation = useNavigation<any>();
     
@@ -29,4 +29,4 @@ const Withdtaw = () => {
     )
 }
 
-export default Withdtaw
+export default Withdraw
