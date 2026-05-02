@@ -1,10 +1,10 @@
 import React from 'react'
 import { ActivityIndicator, Image, TouchableOpacity, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import { Images } from '../../../../utils/Images'
-import { Colors } from '../../../../utils/Colors'
-import { styles } from '../styles'
-import CustomText from '../../../../components/CustomText'
+import { styles } from '../pages/PostAuth/AddMoney/styles'
+import { Images } from '../utils/Images'
+import { Colors } from '../utils/Colors'
+import CustomText from './CustomText'
 
 interface Props {
   onRefresh: () => void

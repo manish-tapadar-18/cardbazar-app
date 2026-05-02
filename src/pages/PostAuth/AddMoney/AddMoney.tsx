@@ -23,7 +23,7 @@ import { useUserStore } from '../../../stores/userStore'
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
 import { clearAllStores } from '../../../stores/clearAllStores'
 import { IPaymentGatewayItem } from '../../../response/module/IGetPaymentGatewayResponse'
-import AddMoneyBlockedOverlay from './components/AddMoneyBlockedOverlay'
+import AddMoneyBlockedOverlay from '../../../components/AddMoneyBlockedOverlay'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const MONEY_ARR = [50, 100, 200, 300, 500, 1000, 2000, 5000]
