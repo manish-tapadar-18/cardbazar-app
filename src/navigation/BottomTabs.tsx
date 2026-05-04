@@ -30,8 +30,8 @@ export const BottomTabs = () => {
                 name="HomeTab"
                 component={HomeStack}
                 options={{
-                    tabBarLabel: ({ focused }) => (
-                        <CustomText children={t('home_menu')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                    tabBarLabel: () => (
+                        <CustomText children={t('home_menu')} style={{ color: Colors.WHITE, fontSize: rh(1.2) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -52,8 +52,8 @@ export const BottomTabs = () => {
                 name="AddMoneyTab"
                 component={AddMoneyStack}
                 options={{
-                    tabBarLabel: ({ focused }) => (
-                        <CustomText children={t('add_money')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                    tabBarLabel: () => (
+                        <CustomText children={t('add_money')} style={{ color: Colors.WHITE, fontSize: rh(1.2) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -81,9 +81,8 @@ export const BottomTabs = () => {
                 name="WithdrawMoneyTab"
                 component={WithdrawMoneyStack}
                 options={{
-                    tabBarLabel: ({ focused }) => (
-                        <CustomText children={'Withdraw Money'} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
-                        // <CustomText children={t('withdraw_money')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                    tabBarLabel: () => (
+                        <CustomText children={t('withdraw_money')} style={{ color: Colors.WHITE, fontSize: rh(1.2) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -111,8 +110,8 @@ export const BottomTabs = () => {
                 name="PlayHistoryTab"
                 component={PlayHistoryStack}
                 options={{
-                    tabBarLabel: ({ focused }) => (
-                        <CustomText children={t('play_history')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                    tabBarLabel: () => (
+                        <CustomText children={t('play_history')} style={{ color: Colors.WHITE, fontSize: rh(1.2) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -140,8 +139,8 @@ export const BottomTabs = () => {
                 name="ResultTab"
                 component={ResultStack}
                 options={{
-                    tabBarLabel: ({ focused }) => (
-                        <CustomText children={t('result_menu')} style={{ color: Colors.WHITE, fontSize: focused ? rh(1.6) : rh(1.4) }} />
+                    tabBarLabel: () => (
+                        <CustomText children={t('result_menu')} style={{ color: Colors.WHITE, fontSize: rh(1.2) }} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
