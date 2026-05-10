@@ -7,6 +7,17 @@ import ToastInitializer from './src/components/ToastInitializer';
 import AppNavigator from './src/navigation/AppNavigator';
 import SecurityBlockModal from './src/components/SecurityBlockModal';
 import JailMonkey from 'jail-monkey';
+import PushNotificationPermissionModal from './src/components/PushNotificationPermissionModal';
+import {
+    checkInitialNotification,
+    createNotificationChannel,
+    getFCMToken,
+    getNotificationPermissionStatus,
+    hasUserDismissedPermissionModal,
+    requestNotificationPermission,
+    setupPushNotificationHandlers,
+    storePermissionModalDismissed,
+} from './src/utils/PushNotificationUtils';
 
 interface SecurityViolation {
     reason: string;
@@ -112,12 +123,60 @@ const CHECKS: Array<{
     },
 ];
 
+// Module-level flag: persists across Strict Mode double-mounts so the custom
+// permission modal is shown at most once per JS bundle lifetime.
+let _permissionPromptShown = false;
+
 export default function App() {
     const [violation, setViolation] = React.useState<SecurityViolation | null>(null);
+    const [showPermissionModal, setShowPermissionModal] = React.useState(false);
 
     React.useEffect(() => {
         runSecurityChecks();
     }, []);
+
+    React.useEffect(() => {
+        createNotificationChannel();
+        initPushNotifications();
+        const cleanupHandlers = setupPushNotificationHandlers();
+        return cleanupHandlers;
+    }, []);
+
+    const initPushNotifications = async () => {
+        const status = await getNotificationPermissionStatus();
+
+        if (status === 'granted' || status === 'unavailable') {
+            // Already granted, or Android < 13 where no runtime permission is needed
+            const token = await getFCMToken();
+            if (token) console.log('[FCM] Token:', token);
+        } else if (status === 'denied') {
+            // Can still ask — but only if user hasn't previously pressed "Not Now"
+            const dismissed = await hasUserDismissedPermissionModal();
+            if (!dismissed && !_permissionPromptShown) {
+                _permissionPromptShown = true;
+                setTimeout(() => setShowPermissionModal(true), 1200);
+            }
+        }
+        // status === 'blocked': permanently denied, nothing we can do without Settings
+
+        await checkInitialNotification();
+    };
+
+    const handlePermissionDeny = async () => {
+        setShowPermissionModal(false);
+        // Persist so the modal never appears again on future app opens
+        await storePermissionModalDismissed();
+    };
+
+    const handlePermissionAllow = async () => {
+        setShowPermissionModal(false);
+        // Trigger the native OS permission dialog
+        const granted = await requestNotificationPermission();
+        if (granted) {
+            const token = await getFCMToken();
+            if (token) console.log('[FCM] Token:', token);
+        }
+    };
 
     const runSecurityChecks = async () => {
         const os = Platform.OS;
@@ -152,6 +211,12 @@ export default function App() {
                 visible={violation !== null}
                 reason={violation?.reason ?? ''}
             /> */}
+
+            <PushNotificationPermissionModal
+                visible={showPermissionModal}
+                onDeny={handlePermissionDeny}
+                onAllow={handlePermissionAllow}
+            />
         </ToastProvider>
     );
 }

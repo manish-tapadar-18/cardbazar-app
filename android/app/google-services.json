@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "901277662553",
+    "project_id": "cardbazaar-2026",
+    "storage_bucket": "cardbazaar-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:901277662553:android:e7d837741e8aa89c2f6048",
+        "android_client_info": {
+          "package_name": "com.cardbazar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-TziKdzH1wckTW1fps_4aMVcCLpnW3Cs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

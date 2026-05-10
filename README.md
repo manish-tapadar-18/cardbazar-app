@@ -86,6 +86,70 @@ You've successfully run and modified your React Native App. :partying_face:
 
 If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
 
+---
+
+## Fix: Android Studio Sync Fails with react-native-reanimated CMake Error
+
+### Environment
+
+- React Native: `0.85.0`
+- `react-native-reanimated`: `^4.3.0`
+- `react-native-worklets`: `^0.8.1`
+- OS: Windows 11
+- `buildToolsVersion`: `36.0.0`
+- `compileSdkVersion`: `36`
+- `targetSdkVersion`: `36`
+- `ndkVersion`: `27.1.12297006`
+- `kotlinVersion`: `2.1.20`
+- CMake: `3.22.1`
+
+### Error
+
+Android Studio sync failed with:
+
+```
+Caused by: com.android.ide.common.process.ProcessException: Error while executing process
+cmake.exe with arguments { -DANDROID_ABI=x86 ... -H.../react-native-reanimated/android ... }
+```
+
+### Root Cause
+
+`react-native-reanimated` 4.x uses `find_package(react-native-worklets REQUIRED CONFIG)` in its `CMakeLists.txt`. It depends on a **prefab** (prebuilt native library) from `react-native-worklets` being present before its own CMake configuration runs.
+
+During Android Studio sync, CMake is invoked for **all ABIs including x86 (32-bit)**. At that point the worklets prefab has not been built yet for x86, so CMake cannot find the package and the sync fails.
+
+`gradle clean` appeared successful because it only deletes build artifacts — it does not compile any native code.
+
+### Fix Applied
+
+**1. Add `abiFilters` to `android/app/build.gradle`**
+
+Inside the `defaultConfig` block, add:
+
+```groovy
+ndk {
+    abiFilters "arm64-v8a", "x86_64"
+}
+```
+
+This tells the Android Gradle Plugin to only build native code for `arm64-v8a` (physical devices) and `x86_64` (modern emulators), dropping x86 32-bit which was the failing ABI.
+
+**2. Build native libraries from CLI before syncing in Android Studio**
+
+Run the following from the `android/` directory to build the worklets prefab first, then reanimated:
+
+```powershell
+cd android
+./gradlew :react-native-worklets:externalNativeBuildDebug
+./gradlew :react-native-reanimated:externalNativeBuildDebug
+```
+
+After both complete successfully, go to Android Studio and do:
+
+**File → Sync Project with Gradle Files**
+
+The sync will now succeed because the worklets prefab is already in place when reanimated's CMake configuration runs.
+
 # Learn More
 
 To learn more about React Native, take a look at the following resources:

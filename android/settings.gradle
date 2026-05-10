@@ -40,8 +40,16 @@ if (nodeBinPath) {
 }
 
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
-    def npxCmd = nodeBinPath ? "${nodeBinPath}/npx" : "npx"
-    ex.autolinkLibrariesFromCommand([npxCmd, "@react-native-community/cli", "config"])
+    def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
+    def npxArgs
+    if (isWindows) {
+        def npxExe = nodeBinPath ? "${nodeBinPath}\\npx.cmd" : "npx.cmd"
+        npxArgs = ["cmd", "/c", npxExe, "@react-native-community/cli", "config"]
+    } else {
+        def npxExe = nodeBinPath ? "${nodeBinPath}/npx" : "npx"
+        npxArgs = [npxExe, "@react-native-community/cli", "config"]
+    }
+    ex.autolinkLibrariesFromCommand(npxArgs)
 }
 rootProject.name = 'cardbazar'
 include ':app'
