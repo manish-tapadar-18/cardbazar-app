@@ -15,6 +15,7 @@ export const UriRepo = {
     WITHDRAWALREQUEST: `${version}addWithdrawalRequest?_format=json`,
     REFERRALBONUS: `${version}getVariable?_format=json&name=REFERRAL_BONUS`,
     GETALLGAMETYPE: `${version}getAllGameType?_format=json`,
+    GETDEVICEDETAILS: `${version}getAllDevice?_format=json&skip=0&take=1000`,
     PLAYGAMEMULTIPLE: `${version}playGameMultiple?_format=json`,
     TRANSACTIONLIST: (skip: number, take: number) => `${version}getAllUserTransaction?_format=json&skip=${skip}&take=${take}`,
     PLAYGAMEHISTORY: (skip: number, take: number) => `${version}getAllGameHistory?_format=json&skip=${skip}&take=${take}`,
@@ -26,4 +27,5 @@ export const UriRepo = {
     GETPAYMENTGATEWAY: (amount: number) => `${version}getPaymentGateway?_format=json&status=1&amount=${amount}`,
     GETKILLERPAYMENTGATEWAYDETAILS: (amount: number, id: string) => `${version}getKillerPaymentGatewayDetails?_format=json&amount=${amount}&id=${id}`,
     UPDATEWITHDRAWALREQUESTUSER: (userId: string) => `${version}updateWithdrawalRequestUser/${userId}?_format=json`,
+    UPDATEDEVICE: `${version}updateDevice?_format=json`,
 }

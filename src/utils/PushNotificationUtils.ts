@@ -15,7 +15,7 @@ export const createNotificationChannel = async (): Promise<void> => {
         id: CHANNEL_ID,
         name: 'CardBazar Notifications',
         importance: AndroidImportance.HIGH,
-        sound: 'default',
+        sound: 'notification_sound',
     });
 };
 
@@ -31,11 +31,11 @@ export const getNotificationPermissionStatus =
     async (): Promise<NotificationPermissionStatus> => {
         const { status } = await checkNotifications();
         switch (status) {
-            case RESULTS.GRANTED:     return 'granted';
-            case RESULTS.DENIED:      return 'denied';
-            case RESULTS.BLOCKED:     return 'blocked';
+            case RESULTS.GRANTED: return 'granted';
+            case RESULTS.DENIED: return 'denied';
+            case RESULTS.BLOCKED: return 'blocked';
             case RESULTS.UNAVAILABLE: // Android < 13 — no runtime permission needed
-            default:                  return 'unavailable';
+            default: return 'unavailable';
         }
     };
 
@@ -59,7 +59,7 @@ export const hasUserDismissedPermissionModal = async (): Promise<boolean> => {
 export const storePermissionModalDismissed = async (): Promise<void> => {
     try {
         await EncryptedStorage.setItem(MODAL_DISMISSED_KEY, 'true');
-    } catch (_) {}
+    } catch (_) { }
 };
 
 // ── FCM Token ─────────────────────────────────────────────────────────────────
@@ -119,7 +119,17 @@ export const handleBackgroundMessage = async (
 export const onNotifeeBackgroundPress = async (): Promise<void> => {
     try {
         await EncryptedStorage.setItem(BG_PRESS_KEY, 'true');
-    } catch (_) {}
+    } catch (_) { }
+};
+
+// ── Topic subscription ────────────────────────────────────────────────────────
+export const subscribeToAppTopic = async (): Promise<void> => {
+    try {
+        await messaging().subscribeToTopic('cardbazar-notify');
+        console.log('[FCM] Subscribed to topic: cardbazar-notify');
+    } catch (e) {
+        console.warn('[FCM] Topic subscription failed:', e);
+    }
 };
 
 // ── Setup foreground handlers  (call inside App useEffect) ───────────────────
@@ -163,5 +173,5 @@ export const checkInitialNotification = async (): Promise<void> => {
             await EncryptedStorage.removeItem(BG_PRESS_KEY);
             showOpenedFromAlert('Background');
         }
-    } catch (_) {}
+    } catch (_) { }
 };

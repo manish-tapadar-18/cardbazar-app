@@ -17,6 +17,7 @@ import {
     requestNotificationPermission,
     setupPushNotificationHandlers,
     storePermissionModalDismissed,
+    subscribeToAppTopic,
 } from './src/utils/PushNotificationUtils';
 
 interface SecurityViolation {
@@ -149,6 +150,7 @@ export default function App() {
             // Already granted, or Android < 13 where no runtime permission is needed
             const token = await getFCMToken();
             if (token) console.log('[FCM] Token:', token);
+            await subscribeToAppTopic();
         } else if (status === 'denied') {
             // Can still ask — but only if user hasn't previously pressed "Not Now"
             const dismissed = await hasUserDismissedPermissionModal();
@@ -175,6 +177,7 @@ export default function App() {
         if (granted) {
             const token = await getFCMToken();
             if (token) console.log('[FCM] Token:', token);
+            await subscribeToAppTopic();
         }
     };
 
