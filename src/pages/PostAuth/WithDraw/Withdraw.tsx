@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import LinearGradient from 'react-native-linear-gradient'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { useFocusEffect } from '@react-navigation/native'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { Images } from '../../../utils/Images'
@@ -51,14 +51,12 @@ const autoWithdrawSchema = Yup.object().shape({
 
 // ─── Withdraw Screen ───────────────────────────────────────────────────────────
 const Withdraw = () => {
-  const navigation = useNavigation<any>()
   const { userDetails } = useUserStore()
   const { adminDetails } = useAdminDetailsStore()
   const { balance, setWallet } = useWalletStore()
   const { setAuthStatus } = useSwitchStackStore()
 
   // ── UI state ────────────────────────────────────────────────────────────
-  const [activeTopKey, setActiveTopKey] = useState('')
   const [isInitLoading, setIsInitLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isOverlayRefreshing, setIsOverlayRefreshing] = useState(false)
@@ -150,7 +148,6 @@ const Withdraw = () => {
 
   useFocusEffect(
     useCallback(() => {
-      setActiveTopKey('')
       setGlobalError('')
       setConfirmAccountNumber('')
       setConfirmAccountNumberError('')
@@ -292,21 +289,10 @@ const Withdraw = () => {
     )
   }
 
-  // ─── Top bar handler ───────────────────────────────────────────────────────
-  const handleTopBarPress = useCallback(
-    (item: { key: string }) => {
-      setActiveTopKey(item.key)
-      if (item.key === 'gameRules') navigation.navigate('GameRules')
-      else if (item.key === 'referEarn') navigation.navigate('Refer')
-      else if (item.key === 'gamesList') navigation.navigate('Home')
-    },
-    [navigation],
-  )
-
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.background} resizeMode="cover">
-      <GradientIconBar activeKey={activeTopKey} onPress={handleTopBarPress} />
+      <GradientIconBar />
 
       <View style={styles.content}>
         {isInitLoading ? (

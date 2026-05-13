@@ -30,10 +30,7 @@ const { t } = useTranslation();
       style={styles.background}
       resizeMode="cover"
     >
-      <GradientIconBar
-        activeKey={'referEarn'}
-        onPress={() => {}}
-      />
+      <GradientIconBar />
 
       <View style={styles.content}>
         <Image

@@ -58,7 +58,6 @@ const PaymentSelection = () => {
   const route = useRoute<RouteProp<HomeStackParamList, 'PaymentSelection'>>()
   const { ID, amount } = route.params
   const navigation = useNavigation<any>()
-  const [activeTopKey, setActiveTopKey] = useState('')
 
   // ── Payments ──────────────────────────────────────────────────────────────
   const [payments, setPayments] = useState<IKillerPaymentItem[]>([])
@@ -169,16 +168,6 @@ const PaymentSelection = () => {
     }
   }
 
-  const handleTopBarPress = useCallback(
-    (item: { key: string }) => {
-      setActiveTopKey(item.key)
-      if (item.key === 'gameRules') navigation.navigate('GameRules')
-      else if (item.key === 'referEarn') navigation.navigate('Refer')
-      else if (item.key === 'gamesList') navigation.navigate('Home')
-    },
-    [navigation]
-  )
-
   // ── Render a single payment item ──────────────────────────────────────────
   const renderPayment = (item: IKillerPaymentItem, index: number) => {
     if (item.type === 'qrImage') {
@@ -218,7 +207,7 @@ const PaymentSelection = () => {
       style={styles.background}
       resizeMode="cover"
     >
-      <GradientIconBar activeKey={activeTopKey} onPress={handleTopBarPress} />
+      <GradientIconBar />
 
       <KeyboardAwareScrollView
         contentContainerStyle={styles.scrollContent}

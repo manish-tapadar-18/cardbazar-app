@@ -8,7 +8,7 @@ import {
     View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import moment from 'moment';
 import GradientIconBar from '../../../components/GradientIconBar';
 import CustomText from '../../../components/CustomText';
@@ -87,10 +87,8 @@ const buildPayload = (userId: string, typeFilter: TypeFilter, date: string): ITr
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 const TransactionHistory = () => {
-    const navigation = useNavigation<any>();
     const { userDetails } = useUserStore();
 
-    const [activeTopKey, setActiveTopKey] = useState('');
     const [transactions, setTransactions] = useState<ITransactionItem[]>([]);
     const [total, setTotal] = useState(0);
     const [pageNum, setPageNum] = useState(0);
@@ -103,16 +101,6 @@ const TransactionHistory = () => {
     const flatListRef = useRef<FlatList<ITransactionItem>>(null);
     // Prevents onEndReached firing multiple times while a page request is in flight
     const isFetchingMore = useRef(false);
-
-    const handleTopBarPress = useCallback(
-        (item: { key: string }) => {
-            setActiveTopKey(item.key);
-            if (item.key === 'gameRules') navigation.navigate('GameRules');
-            else if (item.key === 'referEarn') navigation.navigate('Refer');
-            else if (item.key === 'gamesList') navigation.navigate('Home');
-        },
-        [navigation]
-    );
 
     // ── Fetch user details — logout if INACTIVE ───────────────────────────────
     const fetchUserDetails = useCallback(async () => {
@@ -267,7 +255,7 @@ const TransactionHistory = () => {
 
     return (
         <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.background} resizeMode="cover">
-            <GradientIconBar activeKey={activeTopKey} onPress={handleTopBarPress} />
+            <GradientIconBar />
 
             {/* ── Filter Bar ────────────────────────────────────────────────────── */}
             <LinearGradient

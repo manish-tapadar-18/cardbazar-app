@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import moment from 'moment';
 import GradientIconBar from '../../../components/GradientIconBar';
 import CustomText from '../../../components/CustomText';
@@ -54,10 +54,8 @@ const buildPayload = (
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 const PlayHistory = () => {
-  const navigation = useNavigation<any>();
   const { userDetails } = useUserStore();
 
-  const [activeTopKey, setActiveTopKey] = useState('');
   const [categories, setCategories] = useState<IGameCategoryResponse[]>([]);
   const [activeCategory, setActiveCategory] = useState('');
   const [history, setHistory] = useState<IPlayHistoryItem[]>([]);
@@ -73,16 +71,6 @@ const PlayHistory = () => {
   const isFetchingMore = useRef(false);
   const activeCatRef = useRef('');
   const activeDateRef = useRef('');
-
-  const handleTopBarPress = useCallback(
-    (item: { key: string }) => {
-      setActiveTopKey(item.key);
-      if (item.key === 'gameRules') navigation.navigate('GameRules');
-      else if (item.key === 'referEarn') navigation.navigate('Refer');
-      else if (item.key === 'gamesList') navigation.navigate('Home');
-    },
-    [navigation]
-  );
 
   // ── Fetch user — logout if INACTIVE ───────────────────────────────────────
   const fetchUserDetails = useCallback(async () => {
@@ -235,7 +223,7 @@ const PlayHistory = () => {
 
   return (
     <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.background} resizeMode="cover">
-      <GradientIconBar activeKey={activeTopKey} onPress={handleTopBarPress} />
+      <GradientIconBar />
 
       {/* ── Category Tabs ─────────────────────────────────────────────────── */}
       {!isCatLoading && categories.length > 0 && (

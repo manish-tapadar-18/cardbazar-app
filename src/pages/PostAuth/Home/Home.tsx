@@ -43,7 +43,6 @@ const SkeletonList: React.FC = () => (
 )
 
 const Home = () => {
-  const [activeTopKey, setActiveTopKey] = useState('')
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const navigation = useNavigation();
@@ -195,10 +194,7 @@ const Home = () => {
       style={styles.background}
       resizeMode="cover"
     >
-      <GradientIconBar
-        activeKey={activeTopKey}
-        onPress={(item) => setActiveTopKey(item.key)}
-      />
+      <GradientIconBar />
       {isLoading && gameCategories.length === 0 ? (
         <SkeletonList />
       ) : (

@@ -75,7 +75,6 @@ const GameDetails = () => {
 
   useFocusEffect(
     useCallback(() => {
-      setActiveTopKey('');
       fetchWalletBalance();
     }, [])
   )
@@ -89,17 +88,6 @@ const GameDetails = () => {
     } catch { }
   }, [userDetails?.ID]);
   const navigation = useNavigation<any>()
-  const [activeTopKey, setActiveTopKey] = useState('')
-
-  const handleTopBarPress = useCallback(
-    (item: { key: string }) => {
-      setActiveTopKey(item.key)
-      if (item.key === 'gameRules') navigation.navigate('GameRules')
-      else if (item.key === 'referEarn') navigation.navigate('Refer')
-      else if (item.key === 'gamesList') navigation.navigate('Home')
-    },
-    [navigation]
-  )
 
   const onGameCardClick = (schedule: IScheduleDetail) => {
     const { ID } = schedule
@@ -223,10 +211,7 @@ const GameDetails = () => {
 
   return (
     <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.background} resizeMode="cover">
-      <GradientIconBar
-        activeKey={activeTopKey}
-        onPress={handleTopBarPress}
-      />
+      <GradientIconBar />
 
       {/* ── Category Tab Bar — resolves independently from game list ── */}
       {isCategoriesLoading ? (

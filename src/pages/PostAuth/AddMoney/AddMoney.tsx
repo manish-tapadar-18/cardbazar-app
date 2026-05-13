@@ -33,7 +33,6 @@ const AddMoney = () => {
   const { userDetails } = useUserStore()
   const { adminDetails } = useAdminDetailsStore()
   const navigation = useNavigation<any>()
-  const [activeTopKey, setActiveTopKey] = useState('')
 
   // ── Flags from API ────────────────────────────────────────────────────────
   const [userAddMoneyFlag, setUserAddMoneyFlag] = useState(0)
@@ -94,7 +93,6 @@ const AddMoney = () => {
 
   useFocusEffect(
     useCallback(() => {
-      setActiveTopKey('')
       fetchInitData()
     }, [fetchInitData])
   )
@@ -184,23 +182,13 @@ const AddMoney = () => {
     }
   }
 
-  const handleTopBarPress = useCallback(
-    (item: { key: string }) => {
-      setActiveTopKey(item.key)
-      if (item.key === 'gameRules') navigation.navigate('GameRules')
-      else if (item.key === 'referEarn') navigation.navigate('Refer')
-      else if (item.key === 'gamesList') navigation.navigate('Home')
-    },
-    [navigation]
-  )
-
   return (
     <ImageBackground
       source={Images.DASHBOARD_SPLASH}
       style={styles.background}
       resizeMode="cover"
     >
-      <GradientIconBar activeKey={activeTopKey} onPress={handleTopBarPress} />
+      <GradientIconBar />
 
       <View style={styles.content}>
         {isInitLoading ? (

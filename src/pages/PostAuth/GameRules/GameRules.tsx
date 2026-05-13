@@ -64,7 +64,6 @@ const EmptyGameRules = () => (
 
 const GameRules = () => {
   const { setAdminDetails } = useAdminDetailsStore();
-  const [activeTopKey, setActiveTopKey] = useState('gameRules');
   const [activeTab, setActiveTab] = useState('');
   const { adminDetails } = useAdminDetailsStore();
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -135,10 +134,7 @@ const GameRules = () => {
       resizeMode="cover"
     >
       {/* Top icon scroll bar */}
-      <GradientIconBar
-        activeKey={activeTopKey}
-        onPress={(item) => setActiveTopKey(item.key)}
-      />
+      <GradientIconBar />
 
       {/* Min / Max Withdrawal */}
       <View style={styles.withdrawalContainer}>

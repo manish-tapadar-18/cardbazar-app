@@ -111,7 +111,6 @@ const EmptyTimings = () => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const GameTimings = () => {
-  const [activeTopKey, setActiveTopKey] = useState('gameRules');
   const [activeTab, setActiveTab] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [games, setGames] = useState<IGameItem[]>([]);
@@ -198,10 +197,7 @@ const GameTimings = () => {
       resizeMode="cover"
     >
       {/* Top icon bar */}
-      <GradientIconBar
-        activeKey={activeTopKey}
-        onPress={(item) => setActiveTopKey(item.key)}
-      />
+      <GradientIconBar />
 
       <GradientSpacer colors={Colors.GRADIENT.SPACER} height={2} />
 

@@ -8,8 +8,7 @@ import {
   View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import GradientIconBar from '../../../components/GradientIconBar';
 import CustomText from '../../../components/CustomText';
 import { Images } from '../../../utils/Images';
@@ -18,26 +17,11 @@ import { Repository } from '../../../repository/Repository';
 import { Toast } from '../../../utils/toast';
 import { useUserStore } from '../../../stores/userStore';
 import { clearAllStores } from '../../../stores/clearAllStores';
-import { HomeStackParamList } from '../../../navigation/RouteTypes';
 import { styles } from './styles';
 
-type Nav = NativeStackNavigationProp<HomeStackParamList>;
-
 const Refer = () => {
-  const [activeTopKey, setActiveTopKey] = useState('');
   const [referralBonus, setReferralBonus] = useState<string | null>(null);
-  const navigation = useNavigation<Nav>();
   const { userDetails } = useUserStore();
-
-  const handleTopBarPress = useCallback(
-    (item: { key: string }) => {
-      setActiveTopKey(item.key);
-      if (item.key === 'gameRules') navigation.navigate('GameRules');
-      else if (item.key === 'referEarn') navigation.navigate('Refer');
-      else if (item.key === 'gamesList') navigation.navigate('Home');
-    },
-    [navigation]
-  );
 
   const fetchUserAndReferralBonus = useCallback(async () => {
     const email = userDetails?.EMAIL;
@@ -90,7 +74,7 @@ const Refer = () => {
 
   return (
     <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.background} resizeMode="cover">
-      <GradientIconBar activeKey={activeTopKey} onPress={handleTopBarPress} />
+      <GradientIconBar />
 
       <ScrollView
         style={styles.scroll}

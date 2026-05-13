@@ -65,7 +65,6 @@ const formatCardName = (name: string | null): string => {
 const Result = () => {
   const { userDetails } = useUserStore();
 
-  const [activeTopKey, setActiveTopKey] = useState('');
   const [categories, setCategories] = useState<IGameCategoryResponse[]>([]);
   const [activeCategory, setActiveCategory] = useState('');
   const [resultList, setResultList] = useState<FlatResultItem[]>([]);
@@ -287,10 +286,7 @@ const Result = () => {
       style={styles.background}
       resizeMode="cover"
     >
-      <GradientIconBar
-        activeKey={activeTopKey}
-        onPress={(item) => setActiveTopKey(item.key)}
-      />
+      <GradientIconBar />
 
       {!isCatLoading && categories.length > 0 && (
         <HorizontalTabBar
