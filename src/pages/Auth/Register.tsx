@@ -24,6 +24,9 @@ import { VerifyOtpValidationSchema } from '../../validations/schemas/VerifyOtpVa
 import { Images } from '../../utils/Images';
 import { Repository } from "../../repository/Repository";
 import { FontFamilyWithWeight } from '../../utils/FontFamilyWithWeight';
+import { OtpVerificationPayload } from '../../services/interfaces/IAuthenticationService';
+import { useUserStore } from '../../stores/userStore';
+import { useAdminDetailsStore } from '../../stores/adminDetailsStore';
 
 const Register = () => {
 
@@ -33,10 +36,12 @@ const Register = () => {
 
     const [isLoading, setLoading] = useState(false);
     const [showRegForm, setRegFormVisibility] = useState<boolean>(true);
-    const [otp, setOtp] = useState<string>("");
+    const [otpData, setOtpData] = useState<OtpVerificationPayload | null>(null);
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const { setUserSession, setAuthenticationStatus, setToken } = useUserStore();
+    const { setAdminDetails } = useAdminDetailsStore();
 
     useEffect(() => {
         const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -78,6 +83,7 @@ const Register = () => {
         handleBlur: OtpHandleBlur,
         handleSubmit: OtpHandleSubmit,
         setFieldValue: OtpSetFieldValue,
+        resetForm: OtpResetForm,
     } = useFormik<IVerifyOtpValues>({
         initialValues: {
             otp: "",
@@ -85,9 +91,23 @@ const Register = () => {
         validationSchema: VerifyOtpValidationSchema,
         validateOnMount: false,
         onSubmit: (values) => {
-            verifyOtp(values.otp);
+            verifyOtp();
         },
     });
+
+    const getUserDetails = async (email: string) => {
+        const userDetailsResponse = await Repository.User.userDetails({ EMAIL: email });
+        const { isSuccess, data, message } = userDetailsResponse;
+        if (isSuccess && data) return data;
+        throw new Error(message ?? 'Failed to fetch user details');
+    };
+
+    const getAdminDetails = async () => {
+        const adminDetailsResponse = await Repository.User.adminDetails();
+        const { isSuccess, data, message } = adminDetailsResponse;
+        if (isSuccess && data) return data;
+        throw new Error(message ?? 'Failed to fetch admin details');
+    };
 
     const sendOTP = async (MOBILE: string) => {
         try {
@@ -96,7 +116,7 @@ const Register = () => {
             const { isSuccess, data, message } = response;
             if (isSuccess && data) {
                 setRegFormVisibility(false);
-                setOtp(data.OTP);
+                setOtpData({ otp: data.OTP, verificationId: data.code });
             } else {
                 Toast.error(message);
             }
@@ -114,11 +134,19 @@ const Register = () => {
             const response = await Repository.Auth.registerUser(payload);
             const { isSuccess, message } = response;
             if (isSuccess) {
-                let loginResponse = await Repository.Auth.login({ EMAIL: payload.EMAIL, PASSWORD: payload.PASSWORD });
-                const { isSuccess, message } = loginResponse;
-                if (isSuccess) {
-                    Toast.success(message);
+                let loginResponse = await Repository.Auth.login({ EMAIL: payload.MOBILE, PASSWORD: payload.PASSWORD });
+                const { isSuccess: loginSuccess, data: loginData, message: loginMessage } = loginResponse;
+                if (!isSuccess || !loginData) {
+                    Toast.error(`Error:- ${loginMessage}`, { placement: "bottom", duration: 3000 });
+                    return;
                 }
+                const [userDetailsData, adminDetailsData] = await Promise.all([
+                    getUserDetails(loginData.EMAIL),
+                    getAdminDetails(),
+                ]);
+                setUserSession({ ...loginData, ...userDetailsData });
+                setAdminDetails(adminDetailsData);
+                setAuthenticationStatus(true);
             } else {
                 Toast.error(message);
             }
@@ -129,11 +157,14 @@ const Register = () => {
         }
     };
 
-    const verifyOtp = (userOTP: string) => {
-        if (userOTP == otp) {
-            registerUser();
-        } else {
-            Toast.error("Invalid Otp");
+    const verifyOtp = async () => {
+        if (otpData) {
+            const { isSuccess, message } = await Repository.Auth.verifyOTP({otp:OtpValues.otp,verificationId:otpData.verificationId});
+            if (isSuccess) {
+                registerUser();
+            } else {
+                Toast.error(message);
+            }
         }
     };
 
@@ -352,7 +383,7 @@ const Register = () => {
                             <View style={styles.goldDivider} />
 
                             <TouchableOpacity
-                                onPress={() => setRegFormVisibility(true)}
+                                onPress={() => { setRegFormVisibility(true); OtpResetForm(); setFieldValue("EMAIL", generateEmail()); }}
                                 style={styles.editNumberRow}
                             >
                                 <Image source={Images.EDIT_PEN} style={styles.editPenIcon} resizeMode="contain" />

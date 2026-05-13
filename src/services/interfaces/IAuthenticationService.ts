@@ -4,6 +4,10 @@ import { ISendOtpResponse } from "../../response/module/ISendOtpResponse";
 import { ILoginFormValues, IRegisterFormValues } from "../../validations/interfaces";
 
 type ISendOtpPayload = Pick<IRegisterFormValues, 'MOBILE'>;
+export type OtpVerificationPayload = {
+  otp: string;
+  verificationId: string;
+};
 export interface IAuthenticationService {
 
   login(
@@ -14,5 +18,8 @@ export interface IAuthenticationService {
   ): Promise<ICustomResponse<ISendOtpResponse>>;
   registerUser(
     payload: IRegisterFormValues
+  ): Promise<ICustomResponse<null>>;
+  verifyOTP(
+    payload: OtpVerificationPayload
   ): Promise<ICustomResponse<null>>;
 }

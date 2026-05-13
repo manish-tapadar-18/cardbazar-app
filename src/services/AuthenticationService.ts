@@ -8,7 +8,7 @@ import { genericResponseParser } from "../response/parser/genericResponseParser"
 import { http } from "../utils/http";
 import { UriRepo } from "../utils/UriRepo";
 import { ILoginFormValues, IRegisterFormValues } from "../validations/interfaces";
-import { IAuthenticationService } from "./interfaces/IAuthenticationService";
+import { IAuthenticationService, OtpVerificationPayload } from "./interfaces/IAuthenticationService";
 
 type ISendOtpPayload = Pick<IRegisterFormValues, 'MOBILE'>;
 class AuthenticationService implements IAuthenticationService {
@@ -57,6 +57,20 @@ class AuthenticationService implements IAuthenticationService {
                 payload
             );
 
+            const result = response.data;
+            return genericResponseParser<null>(result);
+
+        } catch (error: any) {
+            return genericErrorParser<null>(error);
+        }
+    }
+
+    async verifyOTP(payload: OtpVerificationPayload): Promise<ICustomResponse<null>> {
+        try {
+            const response = await http.post<IApiResponse<null>>(
+                UriRepo.VERIFYOTP,
+                payload
+            );
             const result = response.data;
             return genericResponseParser<null>(result);
 
