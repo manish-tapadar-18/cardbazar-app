@@ -17,7 +17,7 @@ import { rf, rh, rw } from '../../utils/responsive';
 import { styles as authStyles } from './styles';
 import { ILoginFormValues } from '../../validations/interfaces';
 import { LoginValidationSchema } from '../../validations/schemas/LoginValidationSchema';
-import { useFormik } from "formik";
+import { useFormik } from 'formik';
 import CustomText from '../../components/CustomText';
 import { useUserStore } from '../../stores/userStore';
 import { useAdminDetailsStore } from '../../stores/adminDetailsStore';
@@ -34,6 +34,7 @@ const Login = () => {
     const [isLoading, setLoading] = useState<boolean>(false);
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [focusedField, setFocusedField] = useState<'EMAIL' | 'PASSWORD' | null>(null);
 
     useEffect(() => {
         const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -52,15 +53,10 @@ const Login = () => {
         handleSubmit,
         setFieldValue,
     } = useFormik<ILoginFormValues>({
-        initialValues: {
-            EMAIL: "",
-            PASSWORD: "",
-        },
+        initialValues: { EMAIL: '', PASSWORD: '' },
         validationSchema: LoginValidationSchema,
         validateOnMount: false,
-        onSubmit: (values) => {
-            login(values);
-        },
+        onSubmit: (vals) => login(vals),
     });
 
     const { setUserSession, setAuthenticationStatus, setToken } = useUserStore();
@@ -68,31 +64,29 @@ const Login = () => {
     const { setDemoMode } = useDemoStore();
 
     const getUserDetails = async (email: string) => {
-        const userDetailsResponse = await Repository.User.userDetails({ EMAIL: email });
-        const { isSuccess, data, message } = userDetailsResponse;
+        const { isSuccess, data, message } = await Repository.User.userDetails({ EMAIL: email });
         if (isSuccess && data) return data;
         throw new Error(message ?? 'Failed to fetch user details');
     };
 
     const getAdminDetails = async () => {
-        const adminDetailsResponse = await Repository.User.adminDetails();
-        const { isSuccess, data, message } = adminDetailsResponse;
+        const { isSuccess, data, message } = await Repository.User.adminDetails();
         if (isSuccess && data) return data;
         throw new Error(message ?? 'Failed to fetch admin details');
     };
 
-    const login = async (values: ILoginFormValues) => {
-        if (values.EMAIL === DEMO_MOBILE && values.PASSWORD === DEMO_PASSWORD) {
+    const login = async (vals: ILoginFormValues) => {
+        if (vals.EMAIL === DEMO_MOBILE && vals.PASSWORD === DEMO_PASSWORD) {
             setDemoMode(true);
             return;
         }
         try {
             Keyboard.dismiss();
             setLoading(true);
-            const loginResponse = await Repository.Auth.login(values);
+            const loginResponse = await Repository.Auth.login(vals);
             const { isSuccess, data: loginData, message: loginMessage } = loginResponse;
             if (!isSuccess || !loginData) {
-                Toast.error(`Error:- ${loginMessage}`, { placement: "bottom", duration: 3000 });
+                Toast.error(`Error:- ${loginMessage}`, { placement: 'bottom', duration: 3000 });
                 return;
             }
             setToken(loginData.ACCESS_TOKEN);
@@ -104,77 +98,74 @@ const Login = () => {
             setAdminDetails(adminDetailsData);
             setAuthenticationStatus(true);
         } catch (error: any) {
-            Toast.error(error.message, { placement: "bottom", duration: 3000 });
+            Toast.error(error.message, { placement: 'bottom', duration: 3000 });
         } finally {
             setLoading(false);
         }
     };
 
+    const mobileInputFocused = focusedField === 'EMAIL';
+    const passwordInputFocused = focusedField === 'PASSWORD';
+
     return (
         <View style={styles.root}>
-            <LinearGradient
-                colors={['#1B0535', '#2D0A6E', '#3A0D7A', '#2D0A6E', '#1B0535']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradientBg}
+            <KeyboardAwareScrollView
+                enableOnAndroid
+                extraScrollHeight={70}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
             >
-                {/* Decorative watermark */}
-                <Image
-                    source={require('../../assets/images/spade_card.png')}
-                    style={styles.watermark}
-                    resizeMode="contain"
-                />
-
-                <KeyboardAwareScrollView
-                    enableOnAndroid
-                    extraScrollHeight={70}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.scrollContent}
+                {/* ── Gradient-border card ── */}
+                <LinearGradient
+                    colors={['rgba(255,215,0,0.45)', 'rgba(255,255,255,0.05)', 'rgba(255,215,0,0.45)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.cardBorder}
                 >
-                    {/* ── Branding ── */}
-                    <View style={styles.brandSection}>
-                        <Image
-                            source={require('../../assets/logo/logo.png')}
-                            style={styles.logo}
-                            resizeMode="contain"
-                        />
-                        <CustomText style={styles.appName}>Card Bazar</CustomText>
-                        <CustomText style={styles.tagline}>
-                            Your Ultimate Card Gaming Platform
-                        </CustomText>
-                    </View>
+                    <View style={styles.cardInner}>
 
-                    {/* ── Form card ── */}
-                    <View style={styles.card}>
-
-                        {/* Header */}
+                        {/* Card header */}
                         <View style={styles.cardHeaderRow}>
-                            <View style={styles.cardAccent} />
+                            <LinearGradient
+                                colors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 0, y: 1 }}
+                                style={styles.cardAccent}
+                            />
                             <View>
                                 <CustomText style={styles.cardTitle}>Welcome Back</CustomText>
                                 <CustomText style={styles.cardSubtitle}>Sign in to your account</CustomText>
                             </View>
                         </View>
 
-                        {/* Solid gold divider — same as Account.tsx */}
-                        <View style={styles.goldDivider} />
+                        {/* Gradient rule under header */}
+                        <LinearGradient
+                            colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.headerRule}
+                        />
 
-                        {/* Mobile field */}
+                        {/* ── Mobile field ── */}
                         <View style={styles.fieldGroup}>
                             <CustomText style={styles.fieldLabel}>Mobile Number</CustomText>
-                            <View style={styles.inputRow}>
+                            <View style={mobileInputFocused
+                                ? [styles.inputRow, styles.inputRowFocused]
+                                : styles.inputRow
+                            }>
                                 <Image source={Images.PHONE} style={styles.inputIcon} resizeMode="contain" />
                                 <View style={styles.inputFlex}>
                                     <CustomTextInput
                                         onChangeText={(value: string) =>
-                                            setFieldValue("EMAIL", value.replace(/[^0-9]/g, ""))
+                                            setFieldValue('EMAIL', value.replace(/[^0-9]/g, ''))
                                         }
-                                        onBlur={handleBlur("EMAIL")}
+                                        onBlur={(e) => { handleBlur('EMAIL')(e); setFocusedField(null); }}
+                                        onFocus={() => setFocusedField('EMAIL')}
                                         value={values.EMAIL}
-                                        placeholder='Enter mobile number'
-                                        keyboardType='number-pad'
-                                        returnKeyType='next'
+                                        placeholder="Enter mobile number"
+                                        keyboardType="number-pad"
+                                        returnKeyType="next"
                                         style={styles.textInput}
                                         focusedPlaceholderColor={Colors.GOLD}
                                         unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -186,18 +177,22 @@ const Login = () => {
                             )}
                         </View>
 
-                        {/* Password field */}
+                        {/* ── Password field ── */}
                         <View style={styles.fieldGroup}>
                             <CustomText style={styles.fieldLabel}>Password</CustomText>
-                            <View style={styles.inputRow}>
+                            <View style={passwordInputFocused
+                                ? [styles.inputRow, styles.inputRowFocused]
+                                : styles.inputRow
+                            }>
                                 <Image source={Images.DATA_SECURITY} style={styles.inputIcon} resizeMode="contain" />
                                 <View style={styles.inputFlex}>
                                     <CustomTextInput
                                         secureTextEntry={!showPassword}
-                                        onChangeText={handleChange("PASSWORD")}
-                                        onBlur={handleBlur("PASSWORD")}
+                                        onChangeText={handleChange('PASSWORD')}
+                                        onBlur={(e) => { handleBlur('PASSWORD')(e); setFocusedField(null); }}
+                                        onFocus={() => setFocusedField('PASSWORD')}
                                         value={values.PASSWORD}
-                                        placeholder='Enter password'
+                                        placeholder="Enter password"
                                         style={styles.textInput}
                                         focusedPlaceholderColor={Colors.GOLD}
                                         unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -208,11 +203,7 @@ const Login = () => {
                                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                                 >
                                     <Image
-                                        source={
-                                            showPassword
-                                                ? require('../../assets/images/eye_on.png')
-                                                : require('../../assets/images/eye_off.png')
-                                        }
+                                        source={showPassword ? Images.EYE_ON : Images.EYE_OFF}
                                         style={styles.eyeIcon}
                                         resizeMode="contain"
                                     />
@@ -223,12 +214,12 @@ const Login = () => {
                             )}
                         </View>
 
-                        {/* Decorative gold gradient rule */}
+                        {/* Decorative gradient rule before button */}
                         <LinearGradient
                             colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
-                            style={styles.decorativeDivider}
+                            style={styles.footerRule}
                         />
 
                         <CustomButton
@@ -241,9 +232,10 @@ const Login = () => {
                             gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
                         />
                     </View>
-                </KeyboardAwareScrollView>
-            </LinearGradient>
+                </LinearGradient>
+            </KeyboardAwareScrollView>
 
+            {/* ── iOS / Android "Done" keyboard toolbar ── */}
             {keyboardHeight > 0 && (
                 <View style={[styles.keyboardToolbar, { bottom: keyboardHeight }]}>
                     <TouchableOpacity onPress={Keyboard.dismiss} style={styles.doneButton}>
@@ -260,63 +252,27 @@ export default Login;
 const styles = StyleSheet.create({
     root: {
         flex: 1,
-        backgroundColor: Colors.PRIMARY_BG,
-    },
-    gradientBg: {
-        flex: 1,
-    },
-    watermark: {
-        position: 'absolute',
-        width: rw(75),
-        height: rw(75),
-        opacity: 0.05,
-        bottom: rh(-4),
-        right: rw(-12),
-        tintColor: Colors.GOLD,
     },
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: rw(5),
-        paddingBottom: rh(5),
+        paddingVertical: rh(2),
     },
 
-    // ─── Branding ─────────────────────────────────────────────────────────────
-    brandSection: {
-        alignItems: 'center',
-        paddingTop: rh(7),
-        paddingBottom: rh(3.5),
+    // ─── Gradient-border card ────────────────────────────────────────────────────
+    cardBorder: {
+        borderRadius: rh(2),
+        padding: 1,
     },
-    logo: {
-        width: rw(24),
-        height: rw(24),
-        marginBottom: rh(1.2),
-    },
-    appName: {
-        color: Colors.GOLD,
-        fontSize: rf(7.5),
-        fontFamily: FontFamilyWithWeight[700],
-        letterSpacing: 1.5,
-    },
-    tagline: {
-        color: Colors.WHITE_75,
-        fontSize: rf(3.5),
-        fontFamily: FontFamilyWithWeight[400],
-        marginTop: rh(0.5),
-        textAlign: 'center',
+    cardInner: {
+        backgroundColor: 'rgba(18, 4, 45, 0.96)',
+        borderRadius: rh(2) - 1,
+        paddingHorizontal: rw(4.5),
+        paddingTop: rh(2.5),
+        paddingBottom: rh(3),
     },
 
-    // ─── Card ─────────────────────────────────────────────────────────────────
-    card: {
-        backgroundColor: Colors.CARD_BG,
-        borderRadius: rh(1.5),
-        borderWidth: 1,
-        borderColor: Colors.BORDER_WHITE_08,
-        paddingHorizontal: rw(4),
-        paddingTop: rh(2),
-        paddingBottom: rh(2.5),
-    },
-
-    // ─── Card Header ──────────────────────────────────────────────────────────
+    // ─── Card header ─────────────────────────────────────────────────────────────
     cardHeaderRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -325,9 +281,8 @@ const styles = StyleSheet.create({
     },
     cardAccent: {
         width: rw(1),
-        height: rh(3.5),
+        height: rh(4),
         borderRadius: 4,
-        backgroundColor: Colors.GOLD,
     },
     cardTitle: {
         color: Colors.WHITE,
@@ -336,21 +291,19 @@ const styles = StyleSheet.create({
         lineHeight: rf(6.5),
     },
     cardSubtitle: {
-        color: Colors.WHITE_75,
+        color: Colors.WHITE_55,
         fontSize: rf(3.3),
         fontFamily: FontFamilyWithWeight[400],
     },
-
-    // ─── Solid gold divider (matches Account.tsx) ─────────────────────────────
-    goldDivider: {
+    headerRule: {
         height: 1,
-        backgroundColor: Colors.GOLD,
-        marginBottom: rh(2),
+        borderRadius: 1,
+        marginBottom: rh(2.2),
     },
 
-    // ─── Field group (label + input + error) ─────────────────────────────────
+    // ─── Field group ──────────────────────────────────────────────────────────────
     fieldGroup: {
-        marginBottom: rh(1.8),
+        marginBottom: rh(2),
     },
     fieldLabel: {
         fontSize: rf(3.2),
@@ -361,12 +314,16 @@ const styles = StyleSheet.create({
     inputRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.06)',
+        backgroundColor: 'rgba(255,255,255,0.05)',
         borderRadius: rh(1),
         borderWidth: 1,
-        borderColor: 'rgba(255,215,0,0.2)',
+        borderColor: 'rgba(255,215,0,0.18)',
         paddingHorizontal: rw(3),
         height: rh(6.5),
+    },
+    inputRowFocused: {
+        borderColor: Colors.GOLD,
+        backgroundColor: 'rgba(255,215,0,0.07)',
     },
     inputIcon: {
         width: rw(4.5),
@@ -394,11 +351,11 @@ const styles = StyleSheet.create({
         marginLeft: rw(2),
     },
 
-    // ─── Decorative divider + button ──────────────────────────────────────────
-    decorativeDivider: {
+    // ─── Footer rule + button ──────────────────────────────────────────────────
+    footerRule: {
         height: 1,
         borderRadius: 1,
-        marginBottom: rh(2),
+        marginBottom: rh(2.2),
     },
     actionButton: {
         height: rh(7),

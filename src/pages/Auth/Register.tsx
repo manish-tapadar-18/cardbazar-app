@@ -22,7 +22,7 @@ import CustomText from '../../components/CustomText';
 import { Toast } from '../../utils/toast';
 import { VerifyOtpValidationSchema } from '../../validations/schemas/VerifyOtpValidationSchema';
 import { Images } from '../../utils/Images';
-import { Repository } from "../../repository/Repository";
+import { Repository } from '../../repository/Repository';
 import { FontFamilyWithWeight } from '../../utils/FontFamilyWithWeight';
 import { OtpVerificationPayload } from '../../services/interfaces/IAuthenticationService';
 import { useUserStore } from '../../stores/userStore';
@@ -40,6 +40,8 @@ const Register = () => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
+    const [focusedField, setFocusedField] = useState<string | null>(null);
+
     const { setUserSession, setAuthenticationStatus, setToken } = useUserStore();
     const { setAdminDetails } = useAdminDetailsStore();
 
@@ -61,19 +63,17 @@ const Register = () => {
         setFieldValue,
     } = useFormik<IRegisterFormValues>({
         initialValues: {
-            FIRST_NAME: "",
-            LAST_NAME: "",
-            MOBILE: "",
-            PASSWORD: "",
-            CONFIRM_PASSWORD: "",
-            REFERRAL_CODE: "",
+            FIRST_NAME: '',
+            LAST_NAME: '',
+            MOBILE: '',
+            PASSWORD: '',
+            CONFIRM_PASSWORD: '',
+            REFERRAL_CODE: '',
             EMAIL: generateEmail(),
         },
         validationSchema: RegisterValidationSchema,
         validateOnMount: false,
-        onSubmit: (values) => {
-            sendOTP(values.MOBILE);
-        },
+        onSubmit: (vals) => sendOTP(vals.MOBILE),
     });
 
     const {
@@ -85,26 +85,20 @@ const Register = () => {
         setFieldValue: OtpSetFieldValue,
         resetForm: OtpResetForm,
     } = useFormik<IVerifyOtpValues>({
-        initialValues: {
-            otp: "",
-        },
+        initialValues: { otp: '' },
         validationSchema: VerifyOtpValidationSchema,
         validateOnMount: false,
-        onSubmit: (values) => {
-            verifyOtp();
-        },
+        onSubmit: () => verifyOtp(),
     });
 
     const getUserDetails = async (email: string) => {
-        const userDetailsResponse = await Repository.User.userDetails({ EMAIL: email });
-        const { isSuccess, data, message } = userDetailsResponse;
+        const { isSuccess, data, message } = await Repository.User.userDetails({ EMAIL: email });
         if (isSuccess && data) return data;
         throw new Error(message ?? 'Failed to fetch user details');
     };
 
     const getAdminDetails = async () => {
-        const adminDetailsResponse = await Repository.User.adminDetails();
-        const { isSuccess, data, message } = adminDetailsResponse;
+        const { isSuccess, data, message } = await Repository.User.adminDetails();
         if (isSuccess && data) return data;
         throw new Error(message ?? 'Failed to fetch admin details');
     };
@@ -129,15 +123,14 @@ const Register = () => {
 
     const registerUser = async () => {
         try {
-            setLoading(true);
             const { CONFIRM_PASSWORD, ...payload } = values;
             const response = await Repository.Auth.registerUser(payload);
             const { isSuccess, message } = response;
             if (isSuccess) {
-                let loginResponse = await Repository.Auth.login({ EMAIL: payload.MOBILE, PASSWORD: payload.PASSWORD });
+                const loginResponse = await Repository.Auth.login({ EMAIL: payload.MOBILE, PASSWORD: payload.PASSWORD });
                 const { isSuccess: loginSuccess, data: loginData, message: loginMessage } = loginResponse;
-                if (!isSuccess || !loginData) {
-                    Toast.error(`Error:- ${loginMessage}`, { placement: "bottom", duration: 3000 });
+                if (!loginSuccess || !loginData) {
+                    Toast.error(`Error:- ${loginMessage}`, { placement: 'bottom', duration: 3000 });
                     return;
                 }
                 setToken(loginData.ACCESS_TOKEN);
@@ -160,7 +153,11 @@ const Register = () => {
 
     const verifyOtp = async () => {
         if (otpData) {
-            const { isSuccess, message } = await Repository.Auth.verifyOTP({otp:OtpValues.otp,verificationId:otpData.verificationId});
+            setLoading(true);
+            const { isSuccess, message } = await Repository.Auth.verifyOTP({
+                otp: OtpValues.otp,
+                verificationId: otpData.verificationId,
+            });
             if (isSuccess) {
                 registerUser();
             } else {
@@ -169,66 +166,66 @@ const Register = () => {
         }
     };
 
+    const focus = (field: string) => () => setFocusedField(field);
+    const blur = (formikBlur: (e: any) => void) => (e: any) => {
+        formikBlur(e);
+        setFocusedField(null);
+    };
+
     return (
         <View style={styles.root}>
-            <LinearGradient
-                colors={['#1B0535', '#2D0A6E', '#3A0D7A', '#2D0A6E', '#1B0535']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.gradientBg}
+            <KeyboardAwareScrollView
+                enableOnAndroid
+                extraScrollHeight={70}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
             >
-                {/* Decorative watermark */}
-                <Image
-                    source={Images.HEART_CARD}
-                    style={styles.watermark}
-                    resizeMode="contain"
-                />
+                {/* ── Registration form card ── */}
+                {showRegForm && (
+                    <LinearGradient
+                        colors={['rgba(255,215,0,0.45)', 'rgba(255,255,255,0.05)', 'rgba(255,215,0,0.45)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.cardBorder}
+                    >
+                        <View style={styles.cardInner}>
 
-                <KeyboardAwareScrollView
-                    enableOnAndroid
-                    extraScrollHeight={70}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.scrollContent}
-                >
-                    {/* ── Branding ── */}
-                    <View style={styles.brandSection}>
-                        <Image
-                            source={require('../../assets/logo/logo.png')}
-                            style={styles.logo}
-                            resizeMode="contain"
-                        />
-                        <CustomText style={styles.appName}>Card Bazar</CustomText>
-                        <CustomText style={styles.tagline}>
-                            Join the ultimate card gaming platform
-                        </CustomText>
-                    </View>
-
-                    {/* ── Registration form ── */}
-                    {showRegForm && (
-                        <View style={styles.card}>
-
+                            {/* Card header */}
                             <View style={styles.cardHeaderRow}>
-                                <View style={styles.cardAccent} />
+                                <LinearGradient
+                                    colors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 0, y: 1 }}
+                                    style={styles.cardAccent}
+                                />
                                 <View>
                                     <CustomText style={styles.cardTitle}>Create Account</CustomText>
                                     <CustomText style={styles.cardSubtitle}>Fill in your details below</CustomText>
                                 </View>
                             </View>
-                            <View style={styles.goldDivider} />
+
+                            <LinearGradient
+                                colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.headerRule}
+                            />
 
                             <FieldRow
                                 label="First Name"
                                 icon={Images.USERS}
+                                focused={focusedField === 'FIRST_NAME'}
                                 error={touched.FIRST_NAME && errors.FIRST_NAME ? errors.FIRST_NAME : undefined}
                             >
                                 <CustomTextInput
                                     onChangeText={(text: string) =>
-                                        setFieldValue("FIRST_NAME", text.replace(/[^A-Za-z\s]/g, ""))
+                                        setFieldValue('FIRST_NAME', text.replace(/[^A-Za-z\s]/g, ''))
                                     }
-                                    onBlur={handleBlur("FIRST_NAME")}
+                                    onBlur={blur(handleBlur('FIRST_NAME'))}
+                                    onFocus={focus('FIRST_NAME')}
                                     value={values.FIRST_NAME}
-                                    placeholder='Enter first name'
+                                    placeholder="Enter first name"
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -238,15 +235,17 @@ const Register = () => {
                             <FieldRow
                                 label="Last Name"
                                 icon={Images.USERS}
+                                focused={focusedField === 'LAST_NAME'}
                                 error={touched.LAST_NAME && errors.LAST_NAME ? errors.LAST_NAME : undefined}
                             >
                                 <CustomTextInput
                                     onChangeText={(text: string) =>
-                                        setFieldValue("LAST_NAME", text.replace(/[^A-Za-z\s]/g, ""))
+                                        setFieldValue('LAST_NAME', text.replace(/[^A-Za-z\s]/g, ''))
                                     }
-                                    onBlur={handleBlur("LAST_NAME")}
+                                    onBlur={blur(handleBlur('LAST_NAME'))}
+                                    onFocus={focus('LAST_NAME')}
                                     value={values.LAST_NAME}
-                                    placeholder='Enter last name'
+                                    placeholder="Enter last name"
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -256,17 +255,19 @@ const Register = () => {
                             <FieldRow
                                 label="Mobile Number"
                                 icon={Images.PHONE}
+                                focused={focusedField === 'MOBILE'}
                                 error={touched.MOBILE && errors.MOBILE ? errors.MOBILE : undefined}
                             >
                                 <CustomTextInput
                                     onChangeText={(value: string) =>
-                                        setFieldValue("MOBILE", value.replace(/[^0-9]/g, ""))
+                                        setFieldValue('MOBILE', value.replace(/[^0-9]/g, ''))
                                     }
-                                    onBlur={handleBlur("MOBILE")}
+                                    onBlur={blur(handleBlur('MOBILE'))}
+                                    onFocus={focus('MOBILE')}
                                     value={values.MOBILE}
-                                    placeholder='Enter mobile number'
-                                    keyboardType='number-pad'
-                                    returnKeyType='next'
+                                    placeholder="Enter mobile number"
+                                    keyboardType="number-pad"
+                                    returnKeyType="next"
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -276,6 +277,7 @@ const Register = () => {
                             <FieldRow
                                 label="Password"
                                 icon={Images.DATA_SECURITY}
+                                focused={focusedField === 'PASSWORD'}
                                 error={touched.PASSWORD && errors.PASSWORD ? errors.PASSWORD : undefined}
                                 rightSlot={
                                     <TouchableOpacity
@@ -292,10 +294,11 @@ const Register = () => {
                             >
                                 <CustomTextInput
                                     secureTextEntry={!showPassword}
-                                    placeholder='Enter password'
+                                    placeholder="Enter password"
                                     value={values.PASSWORD}
-                                    onChangeText={handleChange("PASSWORD")}
-                                    onBlur={handleBlur("PASSWORD")}
+                                    onChangeText={handleChange('PASSWORD')}
+                                    onBlur={blur(handleBlur('PASSWORD'))}
+                                    onFocus={focus('PASSWORD')}
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -305,6 +308,7 @@ const Register = () => {
                             <FieldRow
                                 label="Confirm Password"
                                 icon={Images.DATA_SECURITY}
+                                focused={focusedField === 'CONFIRM_PASSWORD'}
                                 error={touched.CONFIRM_PASSWORD && errors.CONFIRM_PASSWORD ? errors.CONFIRM_PASSWORD : undefined}
                                 rightSlot={
                                     <TouchableOpacity
@@ -321,10 +325,11 @@ const Register = () => {
                             >
                                 <CustomTextInput
                                     secureTextEntry={!showConfirmPassword}
-                                    placeholder='Re-enter password'
-                                    value={values.CONFIRM_PASSWORD || ""}
-                                    onChangeText={handleChange("CONFIRM_PASSWORD")}
-                                    onBlur={handleBlur("CONFIRM_PASSWORD")}
+                                    placeholder="Re-enter password"
+                                    value={values.CONFIRM_PASSWORD || ''}
+                                    onChangeText={handleChange('CONFIRM_PASSWORD')}
+                                    onBlur={blur(handleBlur('CONFIRM_PASSWORD'))}
+                                    onFocus={focus('CONFIRM_PASSWORD')}
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -334,15 +339,17 @@ const Register = () => {
                             <FieldRow
                                 label="Referral Code (Optional)"
                                 icon={Images.TROPHY}
+                                focused={focusedField === 'REFERRAL_CODE'}
                                 error={undefined}
                             >
                                 <CustomTextInput
-                                    value={values.REFERRAL_CODE || ""}
+                                    value={values.REFERRAL_CODE || ''}
                                     onChangeText={(text: string) =>
-                                        setFieldValue("REFERRAL_CODE", text.replace(/[^A-Za-z0-9]/g, ""))
+                                        setFieldValue('REFERRAL_CODE', text.replace(/[^A-Za-z0-9]/g, ''))
                                     }
-                                    onBlur={handleBlur("REFERRAL_CODE")}
-                                    placeholder='Enter referral code'
+                                    onBlur={blur(handleBlur('REFERRAL_CODE'))}
+                                    onFocus={focus('REFERRAL_CODE')}
+                                    placeholder="Enter referral code"
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -353,11 +360,11 @@ const Register = () => {
                                 colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
-                                style={styles.decorativeDivider}
+                                style={styles.footerRule}
                             />
 
                             <CustomButton
-                                title={isLoading ? "Please Wait..." : "Continue"}
+                                title={isLoading ? 'Please Wait...' : 'Continue'}
                                 containerStyle={styles.actionButton}
                                 textStyle={authStyles.buttonText}
                                 disabled={isLoading}
@@ -366,14 +373,27 @@ const Register = () => {
                                 gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
                             />
                         </View>
-                    )}
+                    </LinearGradient>
+                )}
 
-                    {/* ── OTP form ── */}
-                    {!showRegForm && (
-                        <View style={styles.card}>
+                {/* ── OTP verification card ── */}
+                {!showRegForm && (
+                    <LinearGradient
+                        colors={['rgba(255,215,0,0.45)', 'rgba(255,255,255,0.05)', 'rgba(255,215,0,0.45)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.cardBorder}
+                    >
+                        <View style={styles.cardInner}>
 
+                            {/* Card header */}
                             <View style={styles.cardHeaderRow}>
-                                <View style={styles.cardAccent} />
+                                <LinearGradient
+                                    colors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 0, y: 1 }}
+                                    style={styles.cardAccent}
+                                />
                                 <View>
                                     <CustomText style={styles.cardTitle}>Verify OTP</CustomText>
                                     <CustomText style={styles.cardSubtitle}>
@@ -381,10 +401,20 @@ const Register = () => {
                                     </CustomText>
                                 </View>
                             </View>
-                            <View style={styles.goldDivider} />
+
+                            <LinearGradient
+                                colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.headerRule}
+                            />
 
                             <TouchableOpacity
-                                onPress={() => { setRegFormVisibility(true); OtpResetForm(); setFieldValue("EMAIL", generateEmail()); }}
+                                onPress={() => {
+                                    setRegFormVisibility(true);
+                                    OtpResetForm();
+                                    setFieldValue('EMAIL', generateEmail());
+                                }}
                                 style={styles.editNumberRow}
                             >
                                 <Image source={Images.EDIT_PEN} style={styles.editPenIcon} resizeMode="contain" />
@@ -394,16 +424,18 @@ const Register = () => {
                             <FieldRow
                                 label="Enter OTP"
                                 icon={Images.CIRCLE_CHECK}
+                                focused={focusedField === 'otp'}
                                 error={OtpTouched.otp && OtpErrors.otp ? OtpErrors.otp : undefined}
                             >
                                 <CustomTextInput
                                     onChangeText={(text: string) =>
-                                        OtpSetFieldValue("otp", text.replace(/[^A-Za-z0-9\s]/g, ""))
+                                        OtpSetFieldValue('otp', text.replace(/[^A-Za-z0-9\s]/g, ''))
                                     }
-                                    onBlur={OtpHandleBlur("otp")}
+                                    onBlur={blur(OtpHandleBlur('otp'))}
+                                    onFocus={focus('otp')}
                                     value={OtpValues.otp}
-                                    placeholder='Enter OTP'
-                                    keyboardType='number-pad'
+                                    placeholder="Enter OTP"
+                                    keyboardType="number-pad"
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -414,11 +446,11 @@ const Register = () => {
                                 colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
                                 start={{ x: 0, y: 0 }}
                                 end={{ x: 1, y: 0 }}
-                                style={styles.decorativeDivider}
+                                style={styles.footerRule}
                             />
 
                             <CustomButton
-                                title={isLoading ? "Please Wait..." : "Verify OTP"}
+                                title={isLoading ? 'Please Wait...' : 'Verify OTP'}
                                 containerStyle={styles.actionButton}
                                 textStyle={authStyles.buttonText}
                                 disabled={isLoading}
@@ -427,10 +459,11 @@ const Register = () => {
                                 gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
                             />
                         </View>
-                    )}
-                </KeyboardAwareScrollView>
-            </LinearGradient>
+                    </LinearGradient>
+                )}
+            </KeyboardAwareScrollView>
 
+            {/* ── iOS / Android "Done" keyboard toolbar ── */}
             {keyboardHeight > 0 && (
                 <View style={[styles.keyboardToolbar, { bottom: keyboardHeight }]}>
                     <TouchableOpacity onPress={Keyboard.dismiss} style={styles.doneButton}>
@@ -442,19 +475,20 @@ const Register = () => {
     );
 };
 
-// ─── Field row: label + icon input + error ────────────────────────────────────
+// ─── Field row: label + icon + focused-border + error ────────────────────────
 type FieldRowProps = {
     label: string;
     icon: any;
     error?: string;
+    focused?: boolean;
     rightSlot?: React.ReactNode;
     children: React.ReactNode;
 };
 
-const FieldRow: React.FC<FieldRowProps> = ({ label, icon, error, rightSlot, children }) => (
+const FieldRow: React.FC<FieldRowProps> = ({ label, icon, error, focused, rightSlot, children }) => (
     <View style={styles.fieldGroup}>
         <CustomText style={styles.fieldLabel}>{label}</CustomText>
-        <View style={styles.inputRow}>
+        <View style={focused ? [styles.inputRow, styles.inputRowFocused] : styles.inputRow}>
             <Image source={icon} style={styles.inputIcon} resizeMode="contain" />
             <View style={styles.inputFlex}>{children}</View>
             {rightSlot}
@@ -468,63 +502,27 @@ export default Register;
 const styles = StyleSheet.create({
     root: {
         flex: 1,
-        backgroundColor: Colors.PRIMARY_BG,
-    },
-    gradientBg: {
-        flex: 1,
-    },
-    watermark: {
-        position: 'absolute',
-        width: rw(75),
-        height: rw(75),
-        opacity: 0.05,
-        bottom: rh(-4),
-        left: rw(-12),
-        tintColor: Colors.GOLD,
     },
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: rw(5),
-        paddingBottom: rh(5),
+        paddingVertical: rh(2),
     },
 
-    // ─── Branding ─────────────────────────────────────────────────────────────
-    brandSection: {
-        alignItems: 'center',
-        paddingTop: rh(5),
+    // ─── Gradient-border card ────────────────────────────────────────────────────
+    cardBorder: {
+        borderRadius: rh(2),
+        padding: 1,
+    },
+    cardInner: {
+        backgroundColor: 'rgba(18, 4, 45, 0.96)',
+        borderRadius: rh(2) - 1,
+        paddingHorizontal: rw(4.5),
+        paddingTop: rh(2.5),
         paddingBottom: rh(3),
     },
-    logo: {
-        width: rw(20),
-        height: rw(20),
-        marginBottom: rh(1),
-    },
-    appName: {
-        color: Colors.GOLD,
-        fontSize: rf(7.5),
-        fontFamily: FontFamilyWithWeight[700],
-        letterSpacing: 1.5,
-    },
-    tagline: {
-        color: Colors.WHITE_75,
-        fontSize: rf(3.5),
-        fontFamily: FontFamilyWithWeight[400],
-        marginTop: rh(0.5),
-        textAlign: 'center',
-    },
 
-    // ─── Card ─────────────────────────────────────────────────────────────────
-    card: {
-        backgroundColor: Colors.CARD_BG,
-        borderRadius: rh(1.5),
-        borderWidth: 1,
-        borderColor: Colors.BORDER_WHITE_08,
-        paddingHorizontal: rw(4),
-        paddingTop: rh(2),
-        paddingBottom: rh(2.5),
-    },
-
-    // ─── Card Header ──────────────────────────────────────────────────────────
+    // ─── Card header ─────────────────────────────────────────────────────────────
     cardHeaderRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -533,9 +531,8 @@ const styles = StyleSheet.create({
     },
     cardAccent: {
         width: rw(1),
-        height: rh(3.5),
+        height: rh(4),
         borderRadius: 4,
-        backgroundColor: Colors.GOLD,
     },
     cardTitle: {
         color: Colors.WHITE,
@@ -544,19 +541,17 @@ const styles = StyleSheet.create({
         lineHeight: rf(6.5),
     },
     cardSubtitle: {
-        color: Colors.WHITE_75,
+        color: Colors.WHITE_55,
         fontSize: rf(3.3),
         fontFamily: FontFamilyWithWeight[400],
     },
-
-    // ─── Solid gold divider (matches Account.tsx) ─────────────────────────────
-    goldDivider: {
+    headerRule: {
         height: 1,
-        backgroundColor: Colors.GOLD,
-        marginBottom: rh(1.5),
+        borderRadius: 1,
+        marginBottom: rh(2),
     },
 
-    // ─── Field group (label + input + error) ──────────────────────────────────
+    // ─── Field group ──────────────────────────────────────────────────────────────
     fieldGroup: {
         marginBottom: rh(1.5),
     },
@@ -569,12 +564,16 @@ const styles = StyleSheet.create({
     inputRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.06)',
+        backgroundColor: 'rgba(255,255,255,0.05)',
         borderRadius: rh(1),
         borderWidth: 1,
-        borderColor: 'rgba(255,215,0,0.2)',
+        borderColor: 'rgba(255,215,0,0.18)',
         paddingHorizontal: rw(3),
         height: rh(6.5),
+    },
+    inputRowFocused: {
+        borderColor: Colors.GOLD,
+        backgroundColor: 'rgba(255,215,0,0.07)',
     },
     inputIcon: {
         width: rw(4.5),
@@ -602,11 +601,11 @@ const styles = StyleSheet.create({
         marginLeft: rw(2),
     },
 
-    // ─── Decorative divider + button ──────────────────────────────────────────
-    decorativeDivider: {
+    // ─── Footer rule + button ──────────────────────────────────────────────────
+    footerRule: {
         height: 1,
         borderRadius: 1,
-        marginBottom: rh(2),
+        marginBottom: rh(2.2),
     },
     actionButton: {
         height: rh(7),
@@ -621,7 +620,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         gap: rw(2),
         paddingVertical: rh(0.5),
-        marginBottom: rh(0.5),
+        marginBottom: rh(1),
     },
     editPenIcon: {
         width: rw(4),

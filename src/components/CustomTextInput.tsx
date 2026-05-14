@@ -23,6 +23,8 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
   style,
   focusedPlaceholderColor = Colors.HIGHLIGHT_PURPLE,
   unfocusedPlaceholderColor = 'gray',
+  onFocus: onFocusProp,
+  onBlur: onBlurProp,
   ...rest
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -36,8 +38,14 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
       }
       allowFontScaling={false}
       style={[styles.input, style]}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+      onFocus={(e) => {
+        setIsFocused(true);
+        onFocusProp?.(e);
+      }}
+      onBlur={(e) => {
+        setIsFocused(false);
+        onBlurProp?.(e);
+      }}
       {...rest}
     />
   );
