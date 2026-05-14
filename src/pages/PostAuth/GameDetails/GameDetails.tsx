@@ -23,6 +23,7 @@ import GameDetailsSkeletonBox from './components/GameDetailsSkeletonBox'
 import GameDetailsEmptyState from './components/GameDetailsEmptyState'
 import GameCard from './components/GameCard'
 import GameDetailsSectionHeader from './components/GameDetailsSectionHeader'
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type GameStatus = 'RUNNING' | 'UPCOMING' | 'EXPIRED'
@@ -72,9 +73,15 @@ const GameDetails = () => {
   const { categoryId } = route.params
   const { userDetails } = useUserStore();
   const { setWallet } = useWalletStore();
+  const { setAdminDetails } = useAdminDetailsStore();
 
   useFocusEffect(
     useCallback(() => {
+      const fetchAdminDetails = async () => {
+        const { isSuccess, data } = await Repository.User.adminDetails();
+        if (isSuccess && data != null) setAdminDetails(data);
+      };
+      fetchAdminDetails();
       fetchWalletBalance();
     }, [])
   )

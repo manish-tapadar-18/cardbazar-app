@@ -23,6 +23,7 @@ import { getFCMToken } from '../../../utils/PushNotificationUtils'
 import DeviceInfo, { getUniqueId } from 'react-native-device-info';
 import { FilterPayloadContainer, UpdateDeviceRequestBody } from '../../../services/interfaces/IUserService'
 import { useDeviceModalStore } from '../../../stores/deviceModalStore'
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
 import DeviceBlockModal from '../../../components/DeviceBlockModal'
 import MultiLoginModal from '../../../components/MultiLoginModal'
 const SKELETON_COUNT = 4
@@ -49,6 +50,7 @@ const Home = () => {
   const { userDetails } = useUserStore();
   const { setWallet } = useWalletStore();
   const { openDeviceBlock, closeDeviceBlock, openMultiLogin, closeMultiLogin } = useDeviceModalStore();
+  const { setAdminDetails } = useAdminDetailsStore();
 
   // Runs once on mount: fetch full profile then sync FCM token if it changed
   useEffect(() => {
@@ -149,6 +151,14 @@ const Home = () => {
 
   useFocusEffect(React.useCallback(() => {
     fetchWalletBalance();
+  }, []))
+
+  useFocusEffect(React.useCallback(() => {
+    const fetchAdminDetails = async () => {
+      const { isSuccess, data } = await Repository.User.adminDetails();
+      if (isSuccess && data != null) setAdminDetails(data);
+    };
+    fetchAdminDetails();
   }, []))
 
   const fetchWalletBalance = useCallback(async () => {

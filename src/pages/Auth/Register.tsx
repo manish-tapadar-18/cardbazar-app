@@ -140,6 +140,7 @@ const Register = () => {
                     Toast.error(`Error:- ${loginMessage}`, { placement: "bottom", duration: 3000 });
                     return;
                 }
+                setToken(loginData.ACCESS_TOKEN);
                 const [userDetailsData, adminDetailsData] = await Promise.all([
                     getUserDetails(loginData.EMAIL),
                     getAdminDetails(),

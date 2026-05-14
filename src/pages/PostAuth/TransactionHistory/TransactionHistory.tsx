@@ -24,6 +24,7 @@ import { clearAllStores } from '../../../stores/clearAllStores';
 import { ITransactionItem } from '../../../response/module/ITransactionResponse';
 import { ITransactionRequest } from '../../../request/module/ITransactionRequest';
 import { styles } from './styles';
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PER_PAGE = 14;
@@ -97,7 +98,7 @@ const TransactionHistory = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
-
+    const { setAdminDetails } = useAdminDetailsStore();
     const flatListRef = useRef<FlatList<ITransactionItem>>(null);
     // Prevents onEndReached firing multiple times while a page request is in flight
     const isFetchingMore = useRef(false);
@@ -149,6 +150,11 @@ const TransactionHistory = () => {
     // On screen focus: reset to ALL + today
     useFocusEffect(
         useCallback(() => {
+            const fetchAdminDetails = async () => {
+                const { isSuccess, data } = await Repository.User.adminDetails();
+                if (isSuccess && data != null) setAdminDetails(data);
+            };
+            fetchAdminDetails();
             fetchUserDetails();
             setTypeFilter('');
             setSelectedDate(TODAY);
@@ -344,7 +350,7 @@ const TransactionHistory = () => {
             </LinearGradient>
 
             {/* ── Table Header ──────────────────────────────────────────────────── */}
-            {transactions.length>0 && <LinearGradient
+            {transactions.length > 0 && <LinearGradient
                 colors={['#E76402', '#EB7602', '#FBC601']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}

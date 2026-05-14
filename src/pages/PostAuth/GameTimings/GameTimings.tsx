@@ -15,6 +15,7 @@ import { IGameCategoryResponse } from '../../../response/module/IGameCategoryRes
 import { IGameItem, IScheduleDetail } from '../../../response/module/IGetAllGamesListResponse';
 import { IGameListFilterRequest } from '../../../request/module/IGameListFilterRequest';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 
 
 const formatTime = (time: string) => moment(time, 'HH:mm').format('hh:mm A');
@@ -58,38 +59,39 @@ type TimingCardProps = {
 
 const TimingCard: React.FC<TimingCardProps> = ({ schedule }) => {
   const { t } = useTranslation();
-  return(
-  <View style={styles.wrapper}>
-    <View style={styles.badgeRow}>
-      <LinearGradient
-        colors={Colors.GRADIENT.GOLD}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.badge}
-      >
-        <Text style={styles.badgeText}>{schedule.NAME}</Text>
-      </LinearGradient>
-    </View>
-    <View style={styles.card}>
-      <View style={styles.timingRow}>
-        <View style={styles.timeColumn}>
-          <Text style={styles.timeValue}>{formatTime(schedule.START_TIME)}</Text>
-          <Text style={styles.startLabel}>{t('start_time')}</Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.timeColumn}>
-          <Text style={styles.timeValue}>{formatTime(schedule.END_TIME)}</Text>
-          <Text style={styles.endLabel}>{t('end_time')}</Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.timeColumn}>
-          <Text style={styles.timeValue}>{formatTime(schedule.RESULT_TIME)}</Text>
-          <Text style={styles.resultLabel}>{t('result_time')}</Text>
+  return (
+    <View style={styles.wrapper}>
+      <View style={styles.badgeRow}>
+        <LinearGradient
+          colors={Colors.GRADIENT.GOLD}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.badge}
+        >
+          <Text style={styles.badgeText}>{schedule.NAME}</Text>
+        </LinearGradient>
+      </View>
+      <View style={styles.card}>
+        <View style={styles.timingRow}>
+          <View style={styles.timeColumn}>
+            <Text style={styles.timeValue}>{formatTime(schedule.START_TIME)}</Text>
+            <Text style={styles.startLabel}>{t('start_time')}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.timeColumn}>
+            <Text style={styles.timeValue}>{formatTime(schedule.END_TIME)}</Text>
+            <Text style={styles.endLabel}>{t('end_time')}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.timeColumn}>
+            <Text style={styles.timeValue}>{formatTime(schedule.RESULT_TIME)}</Text>
+            <Text style={styles.resultLabel}>{t('result_time')}</Text>
+          </View>
         </View>
       </View>
     </View>
-  </View>
-)};
+  )
+};
 
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
@@ -115,7 +117,8 @@ const GameTimings = () => {
   const [isLoading, setLoading] = useState(false);
   const [games, setGames] = useState<IGameItem[]>([]);
   const [categoryTabs, setCategoryTabs] = useState<IGameCategoryResponse[]>([]);
-  
+  const { setAdminDetails } = useAdminDetailsStore();
+
   const buildPayload = (): IGameListFilterRequest => ({
     filters: {
       search: [
@@ -180,6 +183,11 @@ const GameTimings = () => {
           setLoading(false);
         }
       };
+      const fetchAdminDetails = async () => {
+        const { isSuccess, data } = await Repository.User.adminDetails();
+        if (isSuccess && data != null) setAdminDetails(data);
+      };
+      fetchAdminDetails();
       fetchGames();
     }, [])
   );
@@ -228,8 +236,8 @@ const GameTimings = () => {
         {isLoading
           ? [1, 2, 3].map((i) => <TimingCardSkeleton key={i} />)
           : activeSchedules.length === 0
-          ? <EmptyTimings />
-          : activeSchedules.map((schedule) => (
+            ? <EmptyTimings />
+            : activeSchedules.map((schedule) => (
               <TimingCard key={schedule.ID} schedule={schedule} />
             ))}
       </ScrollView>

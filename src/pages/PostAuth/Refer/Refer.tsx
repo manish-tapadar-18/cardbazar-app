@@ -18,11 +18,12 @@ import { Toast } from '../../../utils/toast';
 import { useUserStore } from '../../../stores/userStore';
 import { clearAllStores } from '../../../stores/clearAllStores';
 import { styles } from './styles';
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 
 const Refer = () => {
   const [referralBonus, setReferralBonus] = useState<string | null>(null);
   const { userDetails } = useUserStore();
-
+  const { setAdminDetails } = useAdminDetailsStore();
   const fetchUserAndReferralBonus = useCallback(async () => {
     const email = userDetails?.EMAIL;
     if (!email) return;
@@ -53,8 +54,13 @@ const Refer = () => {
 
   useFocusEffect(
     useCallback(() => {
+      const fetchAdminDetails = async () => {
+        const { isSuccess, data } = await Repository.User.adminDetails();
+        if (isSuccess && data != null) setAdminDetails(data);
+      };
+      fetchAdminDetails();
       fetchUserAndReferralBonus();
-    }, [fetchUserAndReferralBonus])
+    }, [])
   );
 
   const onShareNow = async () => {
@@ -123,7 +129,7 @@ const Refer = () => {
         <View style={styles.divider} />
 
         {/* View Referral History */}
-        <Pressable style={styles.historyBtn} onPress={() => {}}>
+        <Pressable style={styles.historyBtn} onPress={() => { }}>
           <CustomText style={styles.historyBtnText}>View Referral history</CustomText>
         </Pressable>
       </ScrollView>

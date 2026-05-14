@@ -26,6 +26,7 @@ import { IGameCategoryResponse } from '../../../response/module/IGameCategoryRes
 import { IPlayHistoryItem } from '../../../response/module/IPlayHistoryResponse';
 import { IPlayHistoryRequest } from '../../../request/module/IPlayHistoryRequest';
 import { styles } from './styles';
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PER_PAGE = 14;
@@ -66,7 +67,7 @@ const PlayHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-
+  const { setAdminDetails } = useAdminDetailsStore();
   const flatListRef = useRef<FlatList<IPlayHistoryItem>>(null);
   const isFetchingMore = useRef(false);
   const activeCatRef = useRef('');
@@ -139,8 +140,13 @@ const PlayHistory = () => {
 
   useFocusEffect(
     useCallback(() => {
+      const fetchAdminDetails = async () => {
+        const { isSuccess, data } = await Repository.User.adminDetails();
+        if (isSuccess && data != null) setAdminDetails(data);
+      };
       fetchUserDetails();
       fetchCategories();
+      fetchAdminDetails();
     }, [])
   );
 

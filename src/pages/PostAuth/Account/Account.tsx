@@ -23,6 +23,8 @@ import { Toast } from '../../../utils/toast';
 import { IUserDetailsResponse } from '../../../response/module/IUserDetailsResponse';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { FontFamilyWithWeight } from '../../../utils/FontFamilyWithWeight';
+import { useFocusEffect } from '@react-navigation/native';
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 
 const SectionHeader = ({
   title,
@@ -49,7 +51,7 @@ const Account = () => {
   const [bankDetailsLocked, setBankDetailsLocked] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const { t } = useTranslation();
-
+  const { setAdminDetails } = useAdminDetailsStore();
   const {
     values,
     errors,
@@ -77,16 +79,21 @@ const Account = () => {
   });
 
   useEffect(() => {
-    fetchUserDetails();
-  }, []);
-
-  useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
     const show = Keyboard.addListener(showEvent, (e) => setKeyboardHeight(e.endCoordinates.height));
     const hide = Keyboard.addListener(hideEvent, () => setKeyboardHeight(0));
     return () => { show.remove(); hide.remove(); };
   }, []);
+
+  useFocusEffect(React.useCallback(() => {
+    const fetchAdminDetails = async () => {
+      const { isSuccess, data } = await Repository.User.adminDetails();
+      if (isSuccess && data != null) setAdminDetails(data);
+    };
+    fetchAdminDetails();
+    fetchUserDetails();
+  }, []))
 
   const fetchUserDetails = async () => {
     if (!userDetails?.EMAIL) return;
@@ -171,7 +178,7 @@ const Account = () => {
             <View style={styles.halfInput}>
               <CustomTextInput
                 value={values.FIRST_NAME}
-                onChangeText={() => {}}
+                onChangeText={() => { }}
                 placeholder="First Name"
                 editable={false}
                 style={{ color: Colors.WHITE }}
@@ -182,7 +189,7 @@ const Account = () => {
             <View style={styles.halfInput}>
               <CustomTextInput
                 value={values.LAST_NAME}
-                onChangeText={() => {}}
+                onChangeText={() => { }}
                 placeholder="Last Name"
                 editable={false}
                 style={{ color: Colors.WHITE }}
@@ -195,7 +202,7 @@ const Account = () => {
           <View style={[styles.fullInput, { marginTop: rh(1.2) }]}>
             <CustomTextInput
               value={userDetails?.MOBILE ?? ''}
-              onChangeText={() => {}}
+              onChangeText={() => { }}
               placeholder="Mobile No."
               keyboardType="number-pad"
               editable={false}

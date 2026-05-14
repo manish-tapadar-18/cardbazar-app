@@ -24,6 +24,7 @@ import { IGameCategoryResponse } from '../../../response/module/IGameCategoryRes
 import { IResultScheduleDetail } from '../../../response/module/IGameResultResponse';
 import { IGameResultRequest } from '../../../request/module/IGameResultRequest';
 import { styles } from './styles';
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PER_PAGE = 10;
@@ -72,7 +73,7 @@ const Result = () => {
   const [isCatLoading, setIsCatLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+  const { setAdminDetails } = useAdminDetailsStore();
   const flatListRef = useRef<FlatList<FlatResultItem>>(null);
   const isFetchingMore = useRef(false);
   const activeCatRef = useRef('');
@@ -160,8 +161,13 @@ const Result = () => {
 
   useFocusEffect(
     useCallback(() => {
+      const fetchAdminDetails = async () => {
+        const { isSuccess, data } = await Repository.User.adminDetails();
+        if (isSuccess && data != null) setAdminDetails(data);
+      };
       fetchUserDetails();
       fetchCategories();
+      fetchAdminDetails()
     }, [])
   );
 

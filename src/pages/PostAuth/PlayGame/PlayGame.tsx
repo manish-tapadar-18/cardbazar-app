@@ -27,6 +27,7 @@ import { styles } from './styles';
 import { IGameTypeResponse } from '../../../response/module/IGameTypeResponse';
 import CardItem, { PlayOption, formatCardName } from '../../../components/CardItem';
 import SectionDivider from '../../../components/SectionDivider';
+import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface LineItem {
@@ -64,7 +65,7 @@ const PlayGame: React.FC = () => {
   const route = useRoute<RouteProp<HomeStackParamList, 'PlayGame'>>();
   const { userDetails } = useUserStore();
   const { GAME_MASTER_SCHEDULE_ID, GAME_CATEGORY, cardImages } = route.params;
-
+  const { setAdminDetails } = useAdminDetailsStore();
   const { balance, setWallet } = useWalletStore();
 
   const cardGroups = useMemo<CardGroup[]>(() => {
@@ -145,6 +146,11 @@ const PlayGame: React.FC = () => {
   }, [userDetails?.ID, setWallet]);
 
   useFocusEffect(useCallback(() => {
+    const fetchAdminDetails = async () => {
+      const { isSuccess, data } = await Repository.User.adminDetails();
+      if (isSuccess && data != null) setAdminDetails(data);
+    };
+    fetchAdminDetails();
     fetchGameTypes();
     fetchGameRules();
     fetchWalletBalance();
