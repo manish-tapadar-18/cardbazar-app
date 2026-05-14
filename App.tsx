@@ -19,6 +19,7 @@ import {
     storePermissionModalDismissed,
     subscribeToAppTopic,
 } from './src/utils/PushNotificationUtils';
+import { initCrashlytics } from './src/utils/CrashlyticsUtils';
 
 interface SecurityViolation {
     reason: string;
@@ -131,6 +132,10 @@ let _permissionPromptShown = false;
 export default function App() {
     const [violation, setViolation] = React.useState<SecurityViolation | null>(null);
     const [showPermissionModal, setShowPermissionModal] = React.useState(false);
+
+    React.useEffect(() => {
+        initCrashlytics();
+    }, []);
 
     React.useEffect(() => {
         runSecurityChecks();

@@ -24,6 +24,7 @@ import DeviceInfo, { getUniqueId } from 'react-native-device-info';
 import { FilterPayloadContainer, UpdateDeviceRequestBody } from '../../../services/interfaces/IUserService'
 import { useDeviceModalStore } from '../../../stores/deviceModalStore'
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
+import { clLog, clRecordError, clSetAttribute, clSetUser, TAGS } from '../../../utils/CrashlyticsUtils'
 import DeviceBlockModal from '../../../components/DeviceBlockModal'
 import MultiLoginModal from '../../../components/MultiLoginModal'
 const SKELETON_COUNT = 4
@@ -58,94 +59,107 @@ const Home = () => {
   }, []);
 
   const updateFCMTokenAPI = async (userId: string): Promise<void> => {
+    clLog(TAGS.HOME, `updateFCMTokenAPI — userId: ${userId}`);
     try {
       const fcmToken = await getFCMToken();
       if (!fcmToken) return;
       await Repository.User.UpdateUserFcm(userId);
     } catch (error: any) {
+      clRecordError(TAGS.HOME, error, 'updateFCMTokenAPI');
       console.warn('[FCM] Token sync failed:', error?.message);
     }
   };
 
   const getProfileDetails = async (): Promise<void> => {
+    clLog(TAGS.HOME, 'getProfileDetails — start');
     if (!userDetails?.EMAIL) return;
     try {
       const { isSuccess, data } = await Repository.User.userDetails({ EMAIL: userDetails.EMAIL });
       if (!isSuccess || !data || data.STATUS == 'INACTIVE') return;
+      clSetUser(data.ID);
+      clSetAttribute('email', data.EMAIL);
       const fcmToken = await getFCMToken();
       if (fcmToken && fcmToken !== data.FCM_TOKEN) {
         await updateFCMTokenAPI(data.ID);
       }
       checkDeviceId(data.ID);
     } catch (error: any) {
+      clRecordError(TAGS.HOME, error, 'getProfileDetails');
       Toast.error(error?.message ?? 'Failed to load profile.', { placement: 'bottom', duration: 3000 });
     }
   };
 
   const checkDeviceId = async (userId: string) => {
-    let deviceId = await getUniqueId();
-    const filter: FilterPayloadContainer = {
-      filters: {
-        search: [
-          {
-            FIELD_NAME: 'U1.USER_ID',
-            FIELD_VALUE: `${userId}`,
-            OPT: '=',
-          },
-          {
+    clLog(TAGS.HOME, `checkDeviceId — userId: ${userId}`);
+    try {
+      const deviceId = await getUniqueId();
+      clSetAttribute('deviceId', deviceId);
+      const filter: FilterPayloadContainer = {
+        filters: {
+          search: [
+            {
+              FIELD_NAME: 'U1.USER_ID',
+              FIELD_VALUE: `${userId}`,
+              OPT: '=',
+            },
+            {
+              FIELD_NAME: 'DEVICE_MASTER.ID',
+              FIELD_VALUE: '',
+              OPT: '=',
+            },
+            {
+              FIELD_NAME: 'DEVICE_MASTER.UNIQUE_ID',
+              FIELD_VALUE: `${deviceId}`,
+              OPT: '=',
+            },
+            {
+              FIELD_NAME: 'U2.MOBILE',
+              FIELD_VALUE: '',
+              OPT: '=',
+            },
+          ],
+          sortFilter: {
             FIELD_NAME: 'DEVICE_MASTER.ID',
-            FIELD_VALUE: '',
-            OPT: '=',
+            SORT_ORDER: 'DESC',
           },
-          {
-            FIELD_NAME: 'DEVICE_MASTER.UNIQUE_ID',
-            FIELD_VALUE: `${deviceId}`,
-            OPT: '=',
-          },
-          {
-            FIELD_NAME: 'U2.MOBILE',
-            FIELD_VALUE: '',
-            OPT: '=',
-          },
-        ],
-        sortFilter: {
-          FIELD_NAME: 'DEVICE_MASTER.ID',
-          SORT_ORDER: 'DESC',
-        },
-      },
-    };
-    const { isSuccess, data } = await Repository.User.GetDeviceDetails(filter);
-    if (!isSuccess || !data) return;
-    if (data.DATA.length) {
-      let status = data.DATA[0].STATUS;
-      if (status == 1) {
-        closeDeviceBlock();
-      } else {
-        openDeviceBlock();
-      }
-    } else {
-      let requestBody: UpdateDeviceRequestBody = {
-        USER_ID: userId,
-        DEVICE_ID: deviceId,
-        DEVICE_DETAILS: {
-          mode: Platform.OS,
-          model: DeviceInfo.getModel(),
-          manufacturer: await DeviceInfo.getManufacturer(),
-          brand: DeviceInfo.getBrand(),
-          os: DeviceInfo.getSystemName(),
-          osVersion: DeviceInfo.getSystemVersion(),
-          appVersion: DeviceInfo.getVersion(),
-          appBuild: DeviceInfo.getBuildNumber(),
-          appVersionCode: DeviceInfo.getVersion(),
-          appPackageName: DeviceInfo.getBundleId()
         },
       };
-      const { isSuccess, } = await Repository.User.UpdateDevice(requestBody);
-      if (isSuccess) {
-        closeMultiLogin();
+      const { isSuccess, data } = await Repository.User.GetDeviceDetails(filter);
+      if (!isSuccess || !data) return;
+      if (data.DATA.length) {
+        const status = data.DATA[0].STATUS;
+        clLog(TAGS.HOME, `checkDeviceId — device status: ${status}`);
+        if (status == 1) {
+          closeDeviceBlock();
+        } else {
+          openDeviceBlock();
+        }
       } else {
-        openMultiLogin();
+        const requestBody: UpdateDeviceRequestBody = {
+          USER_ID: userId,
+          DEVICE_ID: deviceId,
+          DEVICE_DETAILS: {
+            mode: Platform.OS,
+            model: DeviceInfo.getModel(),
+            manufacturer: await DeviceInfo.getManufacturer(),
+            brand: DeviceInfo.getBrand(),
+            os: DeviceInfo.getSystemName(),
+            osVersion: DeviceInfo.getSystemVersion(),
+            appVersion: DeviceInfo.getVersion(),
+            appBuild: DeviceInfo.getBuildNumber(),
+            appVersionCode: DeviceInfo.getVersion(),
+            appPackageName: DeviceInfo.getBundleId(),
+          },
+        };
+        const { isSuccess: updated } = await Repository.User.UpdateDevice(requestBody);
+        if (updated) {
+          closeMultiLogin();
+        } else {
+          openMultiLogin();
+        }
       }
+    } catch (error: any) {
+      clRecordError(TAGS.HOME, error, 'checkDeviceId');
     }
   }
 
@@ -155,8 +169,13 @@ const Home = () => {
 
   useFocusEffect(React.useCallback(() => {
     const fetchAdminDetails = async () => {
-      const { isSuccess, data } = await Repository.User.adminDetails();
-      if (isSuccess && data != null) setAdminDetails(data);
+      clLog(TAGS.HOME, 'fetchAdminDetails — start');
+      try {
+        const { isSuccess, data } = await Repository.User.adminDetails();
+        if (isSuccess && data != null) setAdminDetails(data);
+      } catch (error: any) {
+        clRecordError(TAGS.HOME, error, 'fetchAdminDetails');
+      }
     };
     fetchAdminDetails();
   }, []))
@@ -164,10 +183,13 @@ const Home = () => {
   const fetchWalletBalance = useCallback(async () => {
     const userId = userDetails?.ID;
     if (!userId) return;
+    clLog(TAGS.HOME, `fetchWalletBalance — userId: ${userId}`);
     try {
       const { isSuccess, data } = await Repository.User.getUserBalance(userId);
       if (isSuccess && data) setWallet(data);
-    } catch { }
+    } catch (error: any) {
+      clRecordError(TAGS.HOME, error, 'fetchWalletBalance');
+    }
   }, [userDetails?.ID]);
 
   const navigateToGameDetails = (id: string) => {
@@ -175,6 +197,7 @@ const Home = () => {
   }
 
   const fetchAllGameCategories = useCallback(async () => {
+    clLog(TAGS.HOME, 'fetchAllGameCategories — start');
     try {
       setIsLoading(true)
       const catResponse = await Repository.Game.getAllGameCategories()
@@ -185,6 +208,7 @@ const Home = () => {
         setGameCategories(data)
       }
     } catch (error: any) {
+      clRecordError(TAGS.HOME, error, 'fetchAllGameCategories');
       Toast.error(`${error.message}`, { placement: 'bottom', duration: 3000 })
     } finally {
       setIsLoading(false)
