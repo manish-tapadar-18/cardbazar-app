@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
     Image,
     StyleSheet,
     TouchableOpacity,
     View,
 } from 'react-native';
+import ConfirmModal from '../../components/ConfirmModal';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -35,6 +35,8 @@ const ForgetPassword = () => {
     const [resendCooldown, setResendCooldown] = useState(0);
     const [showPassword, setShowPassword] = useState(false);
     const [focusedField, setFocusedField] = useState<'MOBILE' | 'TOKEN' | 'PASSWORD' | null>(null);
+    const [sendOtpModalVisible, setSendOtpModalVisible] = useState(false);
+    const [editModalVisible, setEditModalVisible] = useState(false);
 
     const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -89,15 +91,8 @@ const ForgetPassword = () => {
         }
     };
 
-    const confirmAndSendOtp = (mobile: string) => {
-        Alert.alert(
-            'Confirm',
-            `Send OTP to ${mobile}?`,
-            [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Send', onPress: () => callSendOtp(mobile) },
-            ],
-        );
+    const confirmAndSendOtp = (_mobile: string) => {
+        setSendOtpModalVisible(true);
     };
 
     const handleResend = () => {
@@ -126,25 +121,18 @@ const ForgetPassword = () => {
     };
 
     const handleEditNumber = () => {
-        Alert.alert(
-            'Edit Number',
-            'Do you want to change the mobile number? This will reset the form.',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Edit',
-                    onPress: () => {
-                        if (cooldownRef.current) {
-                            clearInterval(cooldownRef.current);
-                            cooldownRef.current = null;
-                        }
-                        setPhase('mobile');
-                        setResendCooldown(0);
-                        otpForm.resetForm();
-                    },
-                },
-            ],
-        );
+        setEditModalVisible(true);
+    };
+
+    const confirmEditNumber = () => {
+        setEditModalVisible(false);
+        if (cooldownRef.current) {
+            clearInterval(cooldownRef.current);
+            cooldownRef.current = null;
+        }
+        setPhase('mobile');
+        setResendCooldown(0);
+        otpForm.resetForm();
     };
 
     const mobileFocused = focusedField === 'MOBILE';
@@ -372,6 +360,33 @@ const ForgetPassword = () => {
                     </View>
                 </LinearGradient>
             </KeyboardAwareScrollView>
+
+            {/* Send OTP confirmation modal */}
+            <ConfirmModal
+                visible={sendOtpModalVisible}
+                title="Send OTP?"
+                message={`An OTP will be sent to\n${mobileForm.values.MOBILE}`}
+                iconEmoji="📱"
+                confirmText="Send"
+                cancelText="Cancel"
+                onConfirm={() => {
+                    setSendOtpModalVisible(false);
+                    callSendOtp(mobileForm.values.MOBILE);
+                }}
+                onCancel={() => setSendOtpModalVisible(false)}
+            />
+
+            {/* Edit mobile number confirmation modal */}
+            <ConfirmModal
+                visible={editModalVisible}
+                title="Edit Number?"
+                message="Changing the mobile number will reset the entire form and clear the OTP."
+                iconEmoji="✏️"
+                confirmText="Edit"
+                cancelText="Cancel"
+                onConfirm={confirmEditNumber}
+                onCancel={() => setEditModalVisible(false)}
+            />
         </View>
     );
 };
