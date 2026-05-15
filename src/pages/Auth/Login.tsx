@@ -19,6 +19,9 @@ import { ILoginFormValues } from '../../validations/interfaces';
 import { LoginValidationSchema } from '../../validations/schemas/LoginValidationSchema';
 import { useFormik } from 'formik';
 import CustomText from '../../components/CustomText';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../types/NavigationStack';
 import { useUserStore } from '../../stores/userStore';
 import { useAdminDetailsStore } from '../../stores/adminDetailsStore';
 import { Toast } from '../../utils/toast';
@@ -31,6 +34,7 @@ const DEMO_MOBILE = '9087561198';
 const DEMO_PASSWORD = '123456';
 
 const Login = () => {
+    const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
     const [isLoading, setLoading] = useState<boolean>(false);
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -231,6 +235,14 @@ const Login = () => {
                             onPress={handleSubmit}
                             gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
                         />
+
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('ForgetPassword')}
+                            style={styles.forgotPasswordLink}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                            <CustomText style={styles.forgotPasswordText}>Forgot Password?</CustomText>
+                        </TouchableOpacity>
                     </View>
                 </LinearGradient>
             </KeyboardAwareScrollView>
@@ -361,6 +373,16 @@ const styles = StyleSheet.create({
         height: rh(7),
         borderRadius: rh(1),
         overflow: 'hidden',
+    },
+
+    forgotPasswordLink: {
+        alignSelf: 'center',
+        marginTop: rh(1.5),
+    },
+    forgotPasswordText: {
+        color: Colors.GOLD,
+        fontSize: rf(3.3),
+        fontFamily: FontFamilyWithWeight[500],
     },
 
     // ─── Keyboard toolbar ─────────────────────────────────────────────────────

@@ -22,4 +22,7 @@ export interface IAuthenticationService {
   verifyOTP(
     payload: OtpVerificationPayload
   ): Promise<ICustomResponse<null>>;
+  updatePasswordWithOtp(
+    payload: { MOBILE: string; TOKEN: string; PASSWORD: string }
+  ): Promise<ICustomResponse<null>>;
 }

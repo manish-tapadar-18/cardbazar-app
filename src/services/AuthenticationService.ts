@@ -78,6 +78,21 @@ class AuthenticationService implements IAuthenticationService {
             return genericErrorParser<null>(error);
         }
     }
+
+    async updatePasswordWithOtp(
+        payload: { MOBILE: string; TOKEN: string; PASSWORD: string }
+    ): Promise<ICustomResponse<null>> {
+        try {
+            const response = await http.put<IApiResponse<null>>(
+                UriRepo.UPDATEPASSWORDWITHOTP,
+                payload
+            );
+            const result = response.data;
+            return genericResponseParser<null>(result);
+        } catch (error: any) {
+            return genericErrorParser<null>(error);
+        }
+    }
 }
 
 export const authenticationService = new AuthenticationService();

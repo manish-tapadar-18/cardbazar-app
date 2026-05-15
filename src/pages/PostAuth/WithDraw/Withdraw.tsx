@@ -114,13 +114,13 @@ const Withdraw = () => {
         ])
 
         if (userRes?.isSuccess && userRes.data) {
-          if (userRes.data.STATUS === 'INACTIVE') {
+          if (userRes.data.STATUS == 'INACTIVE') {
             clearAllStores()
             setAuthStatus(false)
             return
           }
           setProfileData(userRes.data)
-          setUserWithdrawEnabled(userRes.data.WITHDRAW_MONEY_ENABLE === 1)
+          setUserWithdrawEnabled(userRes.data.WITHDRAW_MONEY_ENABLE == 1)
           setFieldValue('BANK_IFSC', userRes.data.BANK_IFSC ?? '')
           setFieldValue(
             'BANK_ACCOUNT_HOLDER_NAME',
@@ -135,7 +135,7 @@ const Withdraw = () => {
           setAutoWithdrawMode(autoRes.data.VALUE)
         }
 
-        setAdminWithdrawEnabled(adminDetails?.WITHDRAW_MONEY_ENABLE === 1)
+        setAdminWithdrawEnabled(adminDetails?.WITHDRAW_MONEY_ENABLE == 1)
       } catch (error: any) {
         Toast.error(error?.message ?? 'Failed to load. Please try again.')
       } finally {
@@ -169,10 +169,10 @@ const Withdraw = () => {
     const userFlag = userRes?.isSuccess ? userRes.data?.WITHDRAW_MONEY_ENABLE ?? 0 : 0
     const adminFlag = adminRes?.isSuccess ? adminRes.data?.WITHDRAW_MONEY_ENABLE ?? 0 : 0
 
-    if (userFlag === 0) setUserWithdrawEnabled(false)
-    if (adminFlag === 0) setAdminWithdrawEnabled(false)
+    if (userFlag == 0) setUserWithdrawEnabled(false)
+    if (adminFlag == 0) setAdminWithdrawEnabled(false)
 
-    return userFlag === 1 && adminFlag === 1
+    return userFlag == 1 && adminFlag == 1
   }
 
   // ─── Wallet balance refresh ────────────────────────────────────────────────
@@ -348,7 +348,7 @@ const Withdraw = () => {
                           onChangeText={text => {
                             setGlobalError('')
                             const clean = text.replace(/[^0-9]/g, '')
-                            if (clean.length === 0 || clean[0] !== '0') setManualAmount(clean)
+                            if (clean.length == 0 || clean[0] !== '0') setManualAmount(clean)
                           }}
                         />
                       </View>

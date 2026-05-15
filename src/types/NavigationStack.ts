@@ -1,6 +1,7 @@
 export type AuthStackParamList = {
     Splash: undefined;
     Authentication: undefined;
+    ForgetPassword: undefined;
 }
 
 export type DemoStackParamList = {
