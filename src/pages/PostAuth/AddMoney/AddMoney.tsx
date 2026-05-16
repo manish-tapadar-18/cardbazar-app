@@ -81,7 +81,7 @@ const AddMoney = () => {
       if (adminRes?.isSuccess && adminRes.data) {
         setAdminAddMoneyFlag(adminRes.data.ADD_MONEY_ENABLE)
         setMinDeposit(Number(adminRes.data.MIN_DEPOSIT) || 0)
-        setMaxDeposit(Number(adminRes.data.MAX_DEPOSIT) || 999999)
+        setMaxDeposit(Number(adminRes.data.MAX_DEPOSIT) || 0)
       }
     } catch (error: any) {
       Toast.error(error?.message ?? 'Failed to load. Please try again.')

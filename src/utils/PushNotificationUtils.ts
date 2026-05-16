@@ -1,4 +1,12 @@
-import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import {
+    getMessaging,
+    getToken,
+    subscribeToTopic,
+    onMessage,
+    onNotificationOpenedApp,
+    getInitialNotification,
+    FirebaseMessagingTypes,
+} from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 import { Alert, Platform } from 'react-native';
 import EncryptedStorage from 'react-native-encrypted-storage';
@@ -69,7 +77,7 @@ export const getFCMToken = async (): Promise<string | null> => {
         const status = await getNotificationPermissionStatus();
         // 'unavailable' means Android < 13 — notifications work without a grant
         if (status !== 'granted' && status !== 'unavailable') return null;
-        const token = await messaging().getToken();
+        const token = await getToken(getMessaging());
         return token;
     } catch (e) {
         console.warn('[FCM] getToken failed:', e);
@@ -125,7 +133,7 @@ export const onNotifeeBackgroundPress = async (): Promise<void> => {
 // ── Topic subscription ────────────────────────────────────────────────────────
 export const subscribeToAppTopic = async (): Promise<void> => {
     try {
-        await messaging().subscribeToTopic('cardbazar-notify');
+        await subscribeToTopic(getMessaging(), 'cardbazar-notify');
         console.log('[FCM] Subscribed to topic: cardbazar-notify');
     } catch (e) {
         console.warn('[FCM] Topic subscription failed:', e);
@@ -134,9 +142,9 @@ export const subscribeToAppTopic = async (): Promise<void> => {
 
 // ── Setup foreground handlers  (call inside App useEffect) ───────────────────
 export const setupPushNotificationHandlers = (): (() => void) => {
-    const unsubFcmForeground = messaging().onMessage(displayNotificationFromRemote);
+    const unsubFcmForeground = onMessage(getMessaging(), displayNotificationFromRemote);
 
-    const unsubFcmBackgroundOpened = messaging().onNotificationOpenedApp(() => {
+    const unsubFcmBackgroundOpened = onNotificationOpenedApp(getMessaging(), () => {
         showOpenedFromAlert('Background');
     });
 
@@ -155,7 +163,7 @@ export const setupPushNotificationHandlers = (): (() => void) => {
 
 // ── Initial notification check  (call once on app mount) ─────────────────────
 export const checkInitialNotification = async (): Promise<void> => {
-    const fcmInitial = await messaging().getInitialNotification();
+    const fcmInitial = await getInitialNotification(getMessaging());
     if (fcmInitial) {
         showOpenedFromAlert('Quit State');
         return;

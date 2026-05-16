@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomText from './CustomText';
-import { rh, rw } from '../utils/responsive';
+import { rf, rh, rw } from '../utils/responsive';
 import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight';
 import { Fonts } from '../utils/Fontsizes';
 import { Colors } from '../utils/Colors';
@@ -58,14 +58,12 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: rw(8),
     paddingVertical: rh(1),
-    borderRadius: rh(1.5),
-    borderWidth: 2,
-    borderColor: Colors.SECONDARY_BG,
+    borderRadius: rh(1.5)
   },
   badgeText: {
     color: Colors.BADGE_TEXT,
-    fontSize: Fonts.smaller,
-    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(4),
+    fontWeight:"bold",
     letterSpacing: 1.5,
   },
   card: {
@@ -81,8 +79,8 @@ const styles = StyleSheet.create({
   },
   detailText: {
     color: Colors.WHITE,
-    fontSize: Fonts.smallest,
-    fontFamily: FontFamilyWithWeight[400],
+    fontSize: rf(5),
+    fontWeight:"bold",
     textAlign: 'center',
   },
 });

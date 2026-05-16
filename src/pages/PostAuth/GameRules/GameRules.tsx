@@ -63,9 +63,8 @@ const EmptyGameRules = () => (
 );
 
 const GameRules = () => {
-  const { setAdminDetails } = useAdminDetailsStore();
+  const { setAdminDetails, adminDetails } = useAdminDetailsStore();
   const [activeTab, setActiveTab] = useState('');
-  const { adminDetails } = useAdminDetailsStore();
   const [isLoading, setLoading] = useState<boolean>(false);
   const [gameCategoryTabs, setGameCategoryTabs] = useState<IGameCategoryResponse[]>([]);
   const [gameRules, setGameRules] = useState<IGameRulesItem[]>([]);
@@ -104,7 +103,7 @@ const GameRules = () => {
         setAdminDetails(adminDetailsData);
         const { isSuccess: catSuccess, data: catData, message: catMsg } = catResponse;
         if (!catSuccess || !catData) {
-          Toast.error(`Error 1 ${catMsg}`, { placement: "bottom", duration: 3000 });
+          Toast.error(`${catMsg}`, { placement: "bottom", duration: 3000 });
         } else {
           setGameCategoryTabs(catData);
           if (catData.length) {
@@ -114,12 +113,12 @@ const GameRules = () => {
 
         const { isSuccess: rulesSuccess, data: rulesData, message: rulesMsg } = rulesResponse;
         if (!rulesSuccess || !rulesData) {
-          Toast.error(`Error 2 ${rulesMsg}`, { placement: "bottom", duration: 3000 });
+          Toast.error(`${rulesMsg}`, { placement: "bottom", duration: 3000 });
         } else {
           setGameRules(rulesData.DATA);
         }
       } catch (error: any) {
-        Toast.error(`Error 3 {error.message}`, { placement: "bottom", duration: 3000 });
+        Toast.error(`${error.message}`, { placement: "bottom", duration: 3000 });
       } finally {
         setLoading(false);
       }
@@ -149,7 +148,7 @@ const GameRules = () => {
             colors={Colors.GRADIENT.TEXT_WHITE}
             style={styles.withdrawalValue}
           >
-            INR {adminDetails?.MIN_DEPOSIT}
+            INR {adminDetails?.MIN_DEPOSIT ? adminDetails?.MIN_DEPOSIT: 0}
           </GradientText>
         </View>
         <View style={styles.withdrawalRow}>
@@ -163,7 +162,7 @@ const GameRules = () => {
             colors={Colors.GRADIENT.TEXT_WHITE}
             style={styles.withdrawalValue}
           >
-            INR {adminDetails?.MAX_DEPOSIT}
+            INR {adminDetails?.MAX_DEPOSIT ? adminDetails?.MAX_DEPOSIT: 0}
           </GradientText>
         </View>
       </View>
@@ -186,7 +185,6 @@ const GameRules = () => {
           tabs={gameCategoryTabs}
           activeKey={activeTab}
           onPress={(tab) => setActiveTab(tab.ID)}
-          activeGradientColors={Colors.GRADIENT.GOLD}
         />
       )}
 
@@ -206,7 +204,7 @@ const GameRules = () => {
                 detail={{
                   seriesName: rule.TYPE_NAME,
                   singleRate: `Single INR ${rule.BASE_AMOUNT} = INR ${rule.GAIN_AMOUNT}`,
-                  minBet: `Minimum Bet Amount = INR ${rule.MIN_BET}`,
+                  minBet: `Minimum Bet Amount = INR  ${rule.MIN_BET}`,
                   maxBet: `Maximum Bet Amount = INR ${rule.MAX_BET}`,
                 }}
               />

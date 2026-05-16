@@ -7,7 +7,7 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import CustomText from './CustomText';
-import { rh, rw } from '../utils/responsive';
+import { rf, rh, rw } from '../utils/responsive';
 import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight';
 import { Fonts } from '../utils/Fontsizes';
 import { Colors } from '../utils/Colors';
@@ -69,13 +69,13 @@ const styles = StyleSheet.create({
     gap: rh(0.5),
   },
   icon: {
-    width: rh(2.5),
-    height: rh(2.5),
+    width: rh(3),
+    height: rh(3),
     resizeMode: 'contain',
   },
   text: {
     color: Colors.WHITE,
-    fontSize: Fonts.smallest,
+    fontSize: rf(3.5),
     fontFamily: FontFamilyWithWeight[500],
     textAlign: 'center',
   },

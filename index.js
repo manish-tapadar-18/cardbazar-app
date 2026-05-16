@@ -5,7 +5,7 @@
 import { AppRegistry, LogBox } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
-import messaging from '@react-native-firebase/messaging';
+import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 import {
     handleBackgroundMessage,
@@ -14,7 +14,7 @@ import {
 
 // Handles FCM messages when the app is in background or quit state.
 // Displays the notification via notifee so we have full control over the UI.
-messaging().setBackgroundMessageHandler(handleBackgroundMessage);
+setBackgroundMessageHandler(getMessaging(), handleBackgroundMessage);
 
 // Handles notifee events (press, dismiss, actions) when app is in background.
 // On PRESS we persist a flag so App.tsx can show the correct "opened from
