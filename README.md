@@ -361,6 +361,190 @@ import MultiLoginModal from 'src/components/MultiLoginModal';
 
 ---
 
+---
+
+## Play History Screen — `src/pages/PostAuth/PlayHistory/PlayHistory.tsx`
+
+### Purpose
+
+The Play History screen lets an authenticated user browse their past game plays. Records are filtered by **game category** (horizontal tab bar) and an optional **date** (calendar modal), loaded in pages of 14, and displayed as date-grouped cards. The screen also silently validates the session and refreshes admin config on every focus.
+
+---
+
+### State Architecture
+
+| State | Type | Role |
+|---|---|---|
+| `categories` | `IGameCategoryResponse[]` | All game categories fetched from backend |
+| `activeCategory` | `string` | ID of the currently selected tab |
+| `history` | `IPlayHistoryItem[]` | Flat list of play records accumulated across pages |
+| `total` | `number` | Total record count from backend — used to stop pagination |
+| `pageNum` | `number` | Current zero-based page index |
+| `selectedDate` | `string` | Date chosen in the picker, shown in the filter bar (`YYYY-MM-DD`) |
+| `isCatLoading` | `boolean` | Hides tab bar while categories are loading |
+| `isLoading` | `boolean` | Shows skeleton on first page load |
+| `isRefreshing` | `boolean` | Drives `FlatList` pull-to-refresh spinner |
+| `showDatePicker` | `boolean` | Controls `DatePickerModal` visibility |
+
+Two refs (`activeCatRef`, `activeDateRef`) mirror the active category and date. They exist to prevent **stale closure** bugs: async callbacks (`fetchHistory`, `onEndReached`) capture refs, not state, so they always read the latest values even after React batches re-renders.
+
+`isFetchingMore` ref acts as a mutex to prevent duplicate pagination calls when the user scrolls quickly.
+
+---
+
+### Business Logic
+
+#### 1. Session Validation (on every focus)
+
+`fetchUserDetails` runs on every `useFocusEffect` cycle. It re-fetches the user profile using the stored email. If the backend returns `STATUS = 'INACTIVE'`, `clearAllStores()` is called immediately, which triggers a logout by wiping all Zustand stores.
+
+#### 2. Category Load & Auto-select (on every focus)
+
+`fetchCategories` fetches the full list of game categories. On success it:
+- Stores the list in `categories` state.
+- Auto-selects the **first category** (`data[0].ID`).
+- Writes that ID into both `activeCategory` state and `activeCatRef`.
+- Immediately calls `fetchHistory` for that category and whatever date is in `activeDateRef` (preserving an active date filter across focus cycles).
+
+While categories are loading, the tab bar is hidden entirely (`isCatLoading`).
+
+#### 3. History Fetch (`fetchHistory`)
+
+`fetchHistory(categoryId, date, page, append)` is the single source of truth for loading records.
+
+The API payload (`buildPayload`) sends four search filters:
+- `USER_GAME_PLAY.USER_ID = userId` — scopes to the logged-in user.
+- `USER_GAME_PLAY.RESULT_PUBLISH = ''` — only published results (empty-string equals filter means "published").
+- `USER_GAME_PLAY.DATE = date` — optional date filter; empty string means all dates.
+- `GAME_CATEGORY.ID = categoryId` — scopes to the selected category.
+
+Pagination is offset-based: `offset = PER_PAGE * page`, `limit = PER_PAGE` (14 records).
+
+When `append = true` the new records are merged with existing history (`[...prev, ...data.DATA]`); when `false` the list is replaced. The skeleton is only shown for `page === 0` loads.
+
+#### 4. Category Tab Switch
+
+Pressing a tab calls `onTabPress`. If the same tab is already active the call is a no-op. Otherwise:
+- Updates `activeCategory` state and `activeCatRef`.
+- Resets `pageNum` to 0 and clears `history`.
+- Scrolls `FlatList` back to the top.
+- Fetches history for the new category, keeping the current date filter from `activeDateRef`.
+
+#### 5. Date Filter
+
+The filter bar shows a clock icon with the label **FILTER DATE**. Tapping it opens `DatePickerModal`.
+
+When the user confirms a date (`onDateConfirmed`):
+- Closes the modal.
+- Stores the selected date in `selectedDate` state and `activeDateRef`.
+- Resets to page 0, clears history, scrolls to top.
+- Fetches history for the current category with the new date.
+
+The **✕ clear button** (`onClearDate`) does the same but sets the date back to an empty string, which the API interprets as "no date filter".
+
+The clear button is visually disabled (opacity 0.3) when no date is selected.
+
+#### 6. Date Grouping (`groupedHistory`)
+
+The flat `history` array is transformed into `DateGroup[]` via `useMemo`. A `Map<string, DateGroup>` is built in a single pass:
+- Key: `YYYY-MM-DD` (UTC-normalised via `moment.utc().format`).
+- Value: display label `DD-MM-YYYY` plus an array of items for that date.
+
+The `Map` preserves insertion order, so groups appear chronologically as returned by the API (newest first, since the server sorts by `CREATED_AT DESC`). This grouping re-runs automatically whenever pagination appends new records to `history`.
+
+#### 7. Pagination (Infinite Scroll)
+
+`onEndReached` fires when the user scrolls within 30% of the list bottom (`onEndReachedThreshold={0.3}`). It is guarded by:
+- `distanceFromEnd >= 0` — avoids a known React Native false-positive on mount.
+- `history.length > 0` — no trigger on empty list.
+- `!isLoading && !isFetchingMore.current` — prevents concurrent fetches.
+- `history.length < total` — stops when all records are loaded.
+
+On a valid trigger, `pageNum` increments and `fetchHistory` is called with `append = true`.
+
+#### 8. Pull-to-Refresh
+
+`onRefresh` sets `isRefreshing = true` and re-fetches from page 0 with `append = false`, replacing the list. `isRefreshing` is reset to `false` inside the `finally` block of `fetchHistory`.
+
+---
+
+### Component Reference
+
+#### `DatePickerModal`
+
+**File:** `src/components/DatePickerModal.tsx`
+
+A reusable calendar modal for selecting a single past date.
+
+| Detail | Value |
+|---|---|
+| Props | `visible: boolean`, `onConfirm: (date: string) => void`, `onClose: () => void` |
+| Returns | `YYYY-MM-DD` string via `onConfirm` |
+| Max selectable date | Today (`TODAY` constant, computed once at module load) |
+
+**Internal state:**
+
+| State | Role |
+|---|---|
+| `selectedDate` | The day the user tapped; empty string if nothing chosen |
+| `currentMonth` | The `YYYY-MM-DD` string whose year-month is currently displayed; starts at today |
+
+**Month navigation logic:**
+
+The calendar header is fully custom (`renderHeader`). Default library arrows are hidden (`hideArrows`). The `‹` / `›` arrows call `prevMonth` / `nextMonth`:
+
+- `prevMonth`: pure integer arithmetic — decrements `month` by 1, wraps December→January and decrements year. Sets `currentMonth` as `YYYY-MM-01`. No `Date` object or `toISOString` is used, which avoids UTC timezone offset shifting the date across a month boundary.
+- `nextMonth`: only navigates forward if the target year-month is strictly before today's year-month. The forward arrow is disabled (`isNextDisabled`) when the displayed month equals today's month.
+
+The calendar is re-mounted when the month changes (`key={currentMonth.substring(0, 7)}`), ensuring `react-native-calendars` always renders the correct month grid.
+
+**Confirmation flow:**
+- Tapping a day sets `selectedDate`. The selected row below the calendar shows the chosen date.
+- **Confirm** button (gold gradient) calls `onConfirm(selectedDate)` and resets `selectedDate` to `''`.
+- **Cancel** button (red background) calls `onClose()` and resets `selectedDate` to `''`.
+- Tapping the overlay backdrop also closes and resets.
+- Confirm is disabled (greyed out, 50% opacity) until a day is selected.
+
+---
+
+#### `PlayHistoryCard`
+
+**File:** `src/components/PlayHistoryCard.tsx`
+
+A pure presentational component. Renders all play records that share a single date as one visual card.
+
+| Detail | Value |
+|---|---|
+| Props | `date: string` (DD-MM-YYYY display label), `items: IPlayHistoryItem[]` |
+| No internal state | Stateless functional component |
+
+**Layout structure:**
+
+```
+┌─ [date badge] ─────────────────────────────────┐   ← gold gradient, floated above card (zIndex 99999)
+│                                                 │
+│  [card body — dark purple gradient]             │
+│  ┌─ row ─────────────────────────────────────┐ │
+│  │  [schedule name — gold gradient text]     │ │
+│  │  [card image] [card name in uppercase]    │ │
+│  └───────────────────────────────────────────┘ │
+│  ─────────────────── divider ─────────────────  │   ← only between rows, not after last
+│  ┌─ row ─────────────────────────────────────┐ │
+│  │  ...                                      │ │
+│  └───────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────┘
+```
+
+- **Date badge**: absolutely positioned (`top: -rh(2)`) so it overlaps the card top edge, styled as a gold-to-amber gradient pill.
+- **Schedule name**: rendered via `GradientText` with the project-wide `GOLD` gradient at `180°` angle.
+- **Card image**: loaded from `ENV.BASE_URL + item.CARD_IMAGE_URL` with a local fallback (`Images.SMALL_CARD`) for broken URLs.
+- **Card name**: displayed in uppercase with a `numberOfLines={1}` clamp.
+- **Divider**: a 1px white line rendered between items using `index < items.length - 1` guard.
+
+Each item is keyed by `item.ID` so React can reconcile efficiently during pagination appends.
+
+---
+
 # Learn More
 
 To learn more about React Native, take a look at the following resources:

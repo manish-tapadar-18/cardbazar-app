@@ -55,6 +55,7 @@ export const Colors = {
         GRADIENTHEADER: ['#541770','#451863','#451863'],
         // Metallic gold — top highlight → rich gold → deep amber (top-to-bottom, angle 180)
         GOLD: ['#FFD540', '#FFE600', '#FFF177', '#A300DC'],
+        BUTTON_GOLD: ['#FFD540','#cf67f5', '#FFE600', '#FFF177',],
         GOLD_LOCATIONS: [0, 0.25, 0.5, 0.75, 1] as number[],
         SPACER: ['transparent', '#B8860B', '#FFD700', '#FFA500', '#B8860B', 'transparent'],
         SPACER_CORE: ['#B8860B', '#FFD700', '#FFA500', '#B8860B'],
