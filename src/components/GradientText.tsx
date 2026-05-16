@@ -9,13 +9,18 @@ interface GradientTextProps {
   style?: TextStyle | TextStyle[];
   children: React.ReactNode;
   angle?: number;
+  /** Gradient stop positions (0–1), must match length of `colors` */
+  locations?: number[];
+  numberOfLines?: number;
 }
 
 const GradientText: React.FC<GradientTextProps> = ({
   colors,
   style,
   children,
-  angle = 90,
+  angle = 180,
+  locations,
+  numberOfLines,
 }) => {
   return (
     <MaskedView
@@ -23,6 +28,7 @@ const GradientText: React.FC<GradientTextProps> = ({
         <Text
           style={[styles.defaultText, style, { backgroundColor: Colors.TRANSPARENT }]}
           allowFontScaling={false}
+          numberOfLines={numberOfLines}
         >
           {children}
         </Text>
@@ -30,6 +36,7 @@ const GradientText: React.FC<GradientTextProps> = ({
     >
       <LinearGradient
         colors={colors}
+        locations={locations}
         useAngle
         angle={angle}
         angleCenter={{ x: 0.5, y: 0.5 }}
@@ -37,6 +44,7 @@ const GradientText: React.FC<GradientTextProps> = ({
         <Text
           style={[styles.defaultText, style, { opacity: 0 }]}
           allowFontScaling={false}
+          numberOfLines={numberOfLines}
         >
           {children}
         </Text>

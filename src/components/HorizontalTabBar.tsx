@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import GradientText from './GradientText';
 import CustomText from './CustomText';
-import { rh, rw } from '../utils/responsive';
+import { rf, rh, rw } from '../utils/responsive';
 import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight';
 import { Fonts } from '../utils/Fontsizes';
 import { Colors } from '../utils/Colors';
@@ -41,14 +41,15 @@ const HorizontalTabBar: React.FC<Props> = ({
           >
             {isActive ? (
               <GradientText
-                colors={activeGradientColors}
-                style={styles.activeLabel}
-                angle={90}
+                colors={Colors.GRADIENT.GOLD}
+                locations={Colors.GRADIENT.GOLD_LOCATIONS}
+                style={styles.categoryName}
+                angle={180}
               >
                 {tab.NAME}
               </GradientText>
             ) : (
-              <CustomText style={styles.inactiveLabel}>{tab.NAME}</CustomText>
+              <CustomText style={styles.categoryName}>{tab.NAME}</CustomText>
             )}
           </TouchableOpacity>
         );
@@ -85,4 +86,10 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilyWithWeight[500],
     color: Colors.WHITE_55,
   },
+  categoryName: {
+    color: Colors.WHITE,
+    fontSize: rf(6.5),
+    fontWeight: "bold",
+    letterSpacing: 0.5,
+  }
 });

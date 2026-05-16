@@ -84,17 +84,15 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardTitle: {
-    color: Colors.BROWN,
-    fontSize: rf(5),
-    fontFamily: FontFamilyWithWeight[700],
+    color: "#330000",
+    fontSize: rf(5.5),
+    fontWeight:"bold",
     marginBottom: rh(0.4),
   },
-
-  // ─── Time Texts ─────────────────────────────────────────────────────────────
   runningTime: {
-    color: Colors.BLOOD_RED,
+    color: "#A60A00",
     fontSize: rf(4),
-    fontFamily: FontFamilyWithWeight[500],
+    fontWeight:"bold",
     opacity: 0.92,
   },
   upcomingTimeRow: {
@@ -103,22 +101,20 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   upcomingTime: {
-    color: Colors.BLOOD_RED,
+    color: "#A60A00",
     fontSize: rf(4),
-    fontFamily: FontFamilyWithWeight[400],
+    fontWeight:"bold",
     opacity: 0.92,
   },
   upcomingTimeSpacer: {
     color: Colors.TRANSPARENT,
   },
   expiredTime: {
-    color: Colors.BLOOD_RED,
+    color: "#A60A00",
     fontSize: rf(4),
-    fontFamily: FontFamilyWithWeight[400],
+    fontWeight:"bold",
     opacity: 0.92,
   },
-
-  // ─── Skeleton Card ───────────────────────────────────────────────────────────
   skeletonCard: {
     flexDirection: 'row',
     alignItems: 'center',

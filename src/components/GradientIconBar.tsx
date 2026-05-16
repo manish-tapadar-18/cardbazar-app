@@ -49,7 +49,7 @@ const GradientIconBar: React.FC = () => {
 
   return (
     <LinearGradient
-      colors={Colors.GRADIENT.HEADER}
+      colors={Colors.GRADIENT.GRADIENTHEADER}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
     >

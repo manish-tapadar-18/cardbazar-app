@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Image } from 'react-native'
+import { View, Image, TouchableOpacity } from 'react-native'
 import { styles } from "./styles"
 import { Images } from "../../utils/Images"
 import CustomButton from '../../components/CustomButton'
@@ -17,15 +17,9 @@ const Splash = () => {
 
     return (
         <View style={{ justifyContent: "flex-end", flex: 1 }}>
-            <Image source={Images.MAIN_SPLASH_SCREEN} style={styles.backgroundImage} />
-            <CustomText children={"Card Bazar"} style={{ ...styles.apptext, marginTop: top }} />
-            <CustomButton
-                title="Start Your Winnings"
-                containerStyle={{ ...styles.bottomButton, marginBottom: bottom }}
-                textStyle={styles.bottomButtonText}
-                onPress={() => { navigation.navigate("Authentication"); }}
-                gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
-            />
+            <TouchableOpacity onPress={() => { navigation.navigate("Authentication"); }} style={{ flex: 1 }}>
+                <Image source={Images.MAIN_LAND_SCREEN} style={styles.backgroundImage} />
+            </TouchableOpacity>
         </View>
     )
 }

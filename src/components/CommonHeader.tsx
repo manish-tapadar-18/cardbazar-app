@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import LinearGradient from 'react-native-linear-gradient'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Images } from '../utils/Images'
-import { rh, rw } from '../utils/responsive'
+import { rf, rh, rw } from '../utils/responsive'
 import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight'
 import { Fonts } from '../utils/Fontsizes'
 import CustomText from './CustomText'
@@ -26,6 +26,8 @@ const CommonHeader = ({ onMenuPress, balance, onPhonePress, onWhatsappPress }: C
             <LinearGradient
                 colors={Colors.GRADIENT.HEADER}
                 start={{ x: 0, y: 0 }}
+                angle={60}
+                useAngle
                 end={{ x: 1, y: 0 }}
                 style={[styles.container, { paddingTop: top }]}
             >
@@ -50,7 +52,7 @@ const CommonHeader = ({ onMenuPress, balance, onPhonePress, onWhatsappPress }: C
 
                 {/* Right actions */}
                 <View style={styles.rightActions}>
-                    <TouchableOpacity onPress={onPhonePress} style={styles.actionBtn} activeOpacity={0.7}>
+                    <TouchableOpacity onPress={onPhonePress} activeOpacity={0.7}>
                         <Image source={Images.PHONE} style={styles.actionIcon} tintColor={Colors.WHITE} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={onWhatsappPress} style={[styles.actionBtn, styles.whatsappBtn]} activeOpacity={0.7}>
@@ -89,10 +91,7 @@ const styles = StyleSheet.create({
     walletPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: Colors.OVERLAY_DARK,
-        borderRadius: rh(1.5),
-        borderWidth: 1,
-        borderColor: Colors.BORDER_WHITE_12,
+        backgroundColor: "#3d1867",
         paddingHorizontal: rw(3),
         paddingVertical: rh(0.5),
         gap: rw(2),
@@ -108,29 +107,30 @@ const styles = StyleSheet.create({
     balanceText: {
         color: Colors.WHITE,
         fontSize: Fonts.smaller,
-        fontFamily: FontFamilyWithWeight[700],
+        fontWeight: "bold",
         lineHeight: rh(2.4),
     },
     walletLabel: {
         color: Colors.WHITE_75,
-        fontSize: Fonts.smallest,
-        fontFamily: FontFamilyWithWeight[400],
+        fontSize: rf(3.5),
+        fontWeight: "bold",
         lineHeight: rh(1.8),
     },
     rightActions: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: rw(2),
+        gap: rw(5),
     },
     actionBtn: {
         width: rh(4.5),
         height: rh(4.5),
         borderRadius: rh(1),
-        backgroundColor: Colors.OVERLAY_DARK,
+        backgroundColor: "#f4f4f4",
         borderWidth: 1,
         borderColor: Colors.BORDER_WHITE_12,
         alignItems: 'center',
         justifyContent: 'center',
+        marginRight:20
     },
     whatsappBtn: {
         backgroundColor: Colors.WHITE,

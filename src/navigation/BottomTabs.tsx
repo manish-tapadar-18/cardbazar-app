@@ -6,11 +6,21 @@ import { PlayHistoryStack } from "./PlayHistoryStack";
 import { ResultStack } from "./ResultStack";
 import { WithdrawMoneyStack } from "./WithdrawMoneyStack";
 import CustomText from "../components/CustomText";
-import { Image } from "react-native";
+import { Image, StyleSheet } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import { rh, rw } from "../utils/responsive";
 import { Images } from "../utils/Images";
 import { Colors } from "../utils/Colors";
 import { useTranslation } from "../hooks/useTranslation";
+
+const TabBarBackground = () => (
+    <LinearGradient
+        colors={['#44004F','#260030']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={StyleSheet.absoluteFill}
+    />
+);
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -21,9 +31,12 @@ export const BottomTabs = () => {
             initialRouteName="HomeTab"
             screenOptions={{
                 headerShown: false,
-                tabBarStyle:{
-                    backgroundColor: Colors.TAB_ACTIVE_BG
-                }
+                tabBarBackground: () => <TabBarBackground />,
+                tabBarStyle: {
+                    backgroundColor: Colors.TRANSPARENT,
+                    borderTopWidth: 0,
+                    elevation: 0,
+                },
             }}
         >
             <Tab.Screen
@@ -37,8 +50,8 @@ export const BottomTabs = () => {
                         <Image
                             source={Images.HOME}
                             style={{
-                                width: rw(focused?5:4),
-                                height: rw(focused?5:4),
+                                width: rw(focused?5.5:5.5),
+                                height: rw(focused?5.5:5.2),
                                 resizeMode: 'contain',
                                 tintColor: Colors.WHITE,
                             }}
@@ -59,8 +72,8 @@ export const BottomTabs = () => {
                         <Image
                             source={Images.ADD_MONEY}
                             style={{
-                                width: rw(focused?5:4),
-                                height: rw(focused?5:4),
+                               width: rw(focused?5.5:5.5),
+                                height: rw(focused?5.5:5.2),
                                 resizeMode: 'contain',
                                 tintColor: Colors.WHITE,
                             }}
@@ -88,8 +101,8 @@ export const BottomTabs = () => {
                         <Image
                             source={Images.WITHDRAWAL}
                             style={{
-                                width: rw(focused?5:4),
-                                height: rw(focused?5:4),
+                                width: rw(focused?5.5:5.5),
+                                height: rw(focused?5.5:5.2),
                                 resizeMode: 'contain',
                                 tintColor: Colors.WHITE,
                             }}
@@ -117,8 +130,8 @@ export const BottomTabs = () => {
                         <Image
                             source={Images.HISTORY}
                             style={{
-                                width: rw(focused?5:4),
-                                height: rw(focused?5:4),
+                                width: rw(focused?5.5:5.5),
+                                height: rw(focused?5.5:5.2),
                                 resizeMode: 'contain',
                                 tintColor: Colors.WHITE,
                             }}
@@ -146,8 +159,8 @@ export const BottomTabs = () => {
                         <Image
                             source={Images.RESULT}
                             style={{
-                                width: rw(focused?5:4),
-                                height: rw(focused?5:4),
+                                width: rw(focused?5.5:5.5),
+                                height: rw(focused?5.5:5.2),
                                 resizeMode: 'contain',
                                 tintColor: Colors.WHITE,
                             }}

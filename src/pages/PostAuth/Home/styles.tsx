@@ -120,8 +120,8 @@ export const styles = StyleSheet.create({
   },
   listHeaderText: {
     color: Colors.WHITE,
-    fontSize: rf(4),
-    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(5.4),
+    fontWeight:"bold",
     letterSpacing: 1.2,
   },
 
@@ -150,14 +150,14 @@ export const styles = StyleSheet.create({
   },
   categoryName: {
     color: Colors.WHITE,
-    fontSize: rf(4.2),
-    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(6.5),
+    fontWeight:"bold",
     marginBottom: rh(0.8),
     letterSpacing: 0.5,
   },
   categoryDesc: {
     color: Colors.WHITE_75,
-    fontSize: rf(3.2),
+    fontSize: rf(5),
     fontFamily: FontFamilyWithWeight[400],
     lineHeight: rf(4.8),
     flex: 1,
@@ -165,20 +165,22 @@ export const styles = StyleSheet.create({
   categoryFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     marginTop: rh(1.8),
   },
+  contestsBadgeWrapper: {
+    borderRadius: rh(3),
+    overflow: 'hidden',
+  },
   contestsBadge: {
-    backgroundColor: Colors.GOLD,
-    paddingHorizontal: rw(3.5),
-    paddingVertical: rh(0.6),
-    borderRadius: rh(0.8),
+    paddingHorizontal: rw(3),
+    paddingVertical: rh(0.8),
   },
   contestsText: {
     color: Colors.BADGE_TEXT,
-    fontSize: rf(3),
-    fontFamily: FontFamilyWithWeight[700],
-    letterSpacing: 0.5,
+    fontSize: rf(4),
+    fontWeight:"bold",
+    letterSpacing: 0.8,
   },
   playBtn: {
     flexDirection: 'row',
@@ -191,8 +193,8 @@ export const styles = StyleSheet.create({
   },
   playText: {
     color: Colors.WHITE,
-    fontSize: rf(3.2),
-    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(4),
+    fontWeight: "bold",
     letterSpacing: 0.5,
   },
 

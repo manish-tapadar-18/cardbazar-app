@@ -27,6 +27,7 @@ export const Images = {
     HISTORY : require('../assets/images/history.png'),
     LANGUAGE : require('../assets/images/language.png'),
     MAIN_SPLASH_SCREEN : require('../assets/images/main_splash_screen.png'),
+    MAIN_LAND_SCREEN : require('../assets/images/landscreen.png'),
     CARD_ICON : require('../assets/images/card_icon.png'),
     LOGOUT : require('../assets/images/logout.png'),
     ACCOUNT : require('../assets/images/account.png'),

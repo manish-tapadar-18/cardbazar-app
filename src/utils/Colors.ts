@@ -38,7 +38,7 @@ export const Colors = {
 
     // ─── UI Components ──────────────────────────────────────────────────────────
     BADGE_BG: '#E8A020',            // SeriesCard badge background
-    BADGE_TEXT: '#1A0040',          // SeriesCard badge text
+    BADGE_TEXT: '#330000',          // SeriesCard badge text
     DISABLED_BG: '#aaa',            // disabled button background
     INPUT_BORDER: '#ccc',           // text input border
     TRANSPARENT: 'transparent',
@@ -51,8 +51,11 @@ export const Colors = {
 
     // ─── Gradients ──────────────────────────────────────────────────────────────
     GRADIENT: {
-        HEADER: ['#1B0535', '#3A0D7A'],
-        GOLD: ['#FFD700', '#FFA500'],
+        HEADER: ['#44004F','#3b1e60','#3b2263'],
+        GRADIENTHEADER: ['#541770','#451863','#451863'],
+        // Metallic gold — top highlight → rich gold → deep amber (top-to-bottom, angle 180)
+        GOLD: ['#FFD540', '#FFE600', '#FFF177', '#A300DC'],
+        GOLD_LOCATIONS: [0, 0.25, 0.5, 0.75, 1] as number[],
         SPACER: ['transparent', '#B8860B', '#FFD700', '#FFA500', '#B8860B', 'transparent'],
         SPACER_CORE: ['#B8860B', '#FFD700', '#FFA500', '#B8860B'],
         TEXT_WHITE: ['#FFFFFF', '#DDDDDD'],
