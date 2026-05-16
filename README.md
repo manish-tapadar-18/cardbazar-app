@@ -150,6 +150,217 @@ After both complete successfully, go to Android Studio and do:
 
 The sync will now succeed because the worklets prefab is already in place when reanimated's CMake configuration runs.
 
+---
+
+## Home Screen — `src/pages/PostAuth/Home/Home.tsx`
+
+### Purpose
+
+The `Home` screen is the primary landing page after authentication. It displays all available game categories in a scrollable list, syncs the user's device and wallet state on every focus, and enforces device-level access control via modals.
+
+---
+
+### Business Logic
+
+#### 1. Profile & FCM Token Sync (on mount)
+
+`getProfileDetails` runs once when the screen mounts via `useEffect`. It:
+
+- Fetches the full user profile from the backend using the stored email.
+- Sets Crashlytics attributes (`user ID`, `email`).
+- Compares the locally retrieved FCM token against the token stored on the server. If they differ, `updateFCMTokenAPI` is called to push the new token.
+- Calls `checkDeviceId` with the resolved user ID.
+
+#### 2. Device Access Control (`checkDeviceId`)
+
+Runs immediately after `getProfileDetails` resolves. It:
+
+- Retrieves the device's unique hardware ID (`react-native-device-info`).
+- Queries the backend (`Repository.User.GetDeviceDetails`) to see if this device is already registered for the user.
+- **Device found & `STATUS = 1`** → normal flow, `DeviceBlockModal` is closed.
+- **Device found & `STATUS ≠ 1`** → device is blocked; `DeviceBlockModal` is shown.
+- **Device not found** → registers the device with full hardware metadata via `Repository.User.UpdateDevice`. On success `MultiLoginModal` is closed; on failure it is shown (indicating the account is active on another device).
+
+#### 3. Wallet Balance (on every screen focus)
+
+`fetchWalletBalance` is called via `useFocusEffect` every time the screen comes into focus. It fetches the user's wallet balance and writes it to the `walletStore`.
+
+#### 4. Admin Details (on every screen focus)
+
+`fetchAdminDetails` is also called via `useFocusEffect`. It fetches global admin configuration (e.g., support phone number) and writes it to `adminDetailsStore`. This data is consumed by `MultiLoginModal`.
+
+#### 5. Game Categories (on every screen focus)
+
+`fetchAllGameCategories` is called via `useFocusEffect`. It fetches the list of game categories from `Repository.Game.getAllGameCategories` and stores them in local state. While loading with an empty list, a skeleton UI is rendered. Pull-to-refresh invokes the same function.
+
+#### 6. Navigation
+
+`navigateToGameDetails(id)` navigates to the `GameDetails` screen, passing the selected `categoryId` as a route param.
+
+---
+
+### Component Reference
+
+The following components are defined in or directly imported by `Home.tsx`. Each entry notes where the component lives so other screens can reuse it.
+
+---
+
+#### `ListHeader`
+
+**File:** inline in `src/pages/PostAuth/Home/Home.tsx`
+
+A stateless header rendered above the game category list.
+
+| Detail | Value |
+|--------|-------|
+| Renders | `"ALL GAMES"` label in a styled view |
+| Used by | `SkeletonList`, `FlatList.ListHeaderComponent` |
+
+---
+
+#### `SkeletonList`
+
+**File:** inline in `src/pages/PostAuth/Home/Home.tsx`
+
+Renders `ListHeader` followed by 4 `CardSkeleton` placeholders. Shown only when `isLoading === true` and `gameCategories` is empty (first load).
+
+| Detail | Value |
+|--------|-------|
+| Skeleton count | `SKELETON_COUNT = 4` |
+| Depends on | `ListHeader`, `CardSkeleton` |
+
+---
+
+#### `CardSkeleton`
+
+**File:** `src/pages/PostAuth/Home/components/CardSkeleton.tsx`
+
+A placeholder card that mirrors the visual structure of `CategoryCard`. Composed of `SkeletonBox` elements that pulse during loading.
+
+| Detail | Value |
+|--------|-------|
+| Props | none |
+| Depends on | `SkeletonBox` |
+| Reusable | Yes — import from the path above for any list that needs card-shaped skeletons |
+
+```tsx
+import CardSkeleton from 'src/pages/PostAuth/Home/components/CardSkeleton';
+```
+
+---
+
+#### `SkeletonBox`
+
+**File:** `src/pages/PostAuth/Home/components/SkeletonBox.tsx`
+
+A generic animated placeholder block. Uses `Animated.timing` in a loop to pulse opacity between `0.4` and `1.0` (700 ms each way, native driver).
+
+| Detail | Value |
+|--------|-------|
+| Props | `style: any` — forwarded to `Animated.View` |
+| Animation | Opacity pulse loop, starts on mount, stops on unmount |
+| Reusable | Yes — pass any `StyleSheet` shape as `style` |
+
+```tsx
+import SkeletonBox from 'src/pages/PostAuth/Home/components/SkeletonBox';
+
+<SkeletonBox style={{ width: '80%', height: 16, borderRadius: 4, backgroundColor: '#333' }} />
+```
+
+---
+
+#### `CategoryCard`
+
+**File:** `src/pages/PostAuth/Home/components/CategoryCard.tsx`
+
+Renders a single game category as a tappable gradient card.
+
+| Detail | Value |
+|--------|-------|
+| Props | `item: IGameCategoryResponse`, `onPress: (id: string) => void`, `contestCount?: number` |
+| Layout | Dark-purple gradient card with gold category name (`GradientText`), description (2-line clamp), a yellow badge for contest count, and a "LET'S PLAY" button |
+| Navigation trigger | `onPress(item.ID)` — caller decides the destination |
+| Reusable | Yes — works with any `IGameCategoryResponse` data |
+
+```tsx
+import CategoryCard from 'src/pages/PostAuth/Home/components/CategoryCard';
+
+<CategoryCard
+  item={gameCategoryItem}
+  onPress={(id) => navigation.navigate('GameDetails', { categoryId: id })}
+  contestCount={10}
+/>
+```
+
+---
+
+#### `GradientIconBar`
+
+**File:** `src/components/GradientIconBar.tsx`
+
+A horizontal top-navigation bar wrapped in a gradient header. Reads the active route name to highlight the correct tab.
+
+| Detail | Value |
+|--------|-------|
+| Props | none |
+| Items | Games List, Game Rules, Refer & Earn, Switch Language |
+| Active tab detection | Derived from `useRoute().name` via `ROUTE_ACTIVE_KEY` map |
+| Navigation | Uses `navigation.navigate` to `MainTabs > HomeTab > {Screen}` |
+| Language switch | Opens the language modal via `useLanguageModalStore` |
+| Reusable | Yes — can be dropped into any screen that is part of `HomeTab` stack |
+
+```tsx
+import GradientIconBar from 'src/components/GradientIconBar';
+
+<GradientIconBar />
+```
+
+---
+
+#### `DeviceBlockModal`
+
+**File:** `src/components/DeviceBlockModal.tsx`
+
+A full-screen modal shown when the user's device has been blocked by an admin. Visibility is driven by `useDeviceModalStore.isDeviceBlockVisible`.
+
+| Detail | Value |
+|--------|-------|
+| Props | `onCheckDevice: (userId: string) => void` |
+| Behaviour | "Refresh" button re-fetches the user profile and calls `onCheckDevice` to re-run device status check |
+| Dismissable | No — `onRequestClose` is a no-op; only clears when device status becomes active |
+| Store | `useDeviceModalStore` — `isDeviceBlockVisible`, `openDeviceBlock`, `closeDeviceBlock` |
+| Reusable | Yes — pass the same `checkDeviceId` function from any screen that needs device-gate enforcement |
+
+```tsx
+import DeviceBlockModal from 'src/components/DeviceBlockModal';
+
+<DeviceBlockModal onCheckDevice={(userId) => checkDeviceId(userId)} />
+```
+
+---
+
+#### `MultiLoginModal`
+
+**File:** `src/components/MultiLoginModal.tsx`
+
+A full-screen modal shown when the backend detects the account is already active on another device. Visibility is driven by `useDeviceModalStore.isMultiLoginVisible`.
+
+| Detail | Value |
+|--------|-------|
+| Props | none |
+| Actions | **Support** — dials `adminDetails.DEVICE_SUPPORT_NUMBER` or `adminDetails.MOBILE` via `Linking`; **Logout** — clears all stores and sets auth status to `false` |
+| Dismissable | No — user must call support or log out |
+| Stores consumed | `useDeviceModalStore`, `useAdminDetailsStore`, `useSwitchStackStore` |
+| Reusable | Yes — drop it anywhere in the post-auth tree; it self-manages visibility via the store |
+
+```tsx
+import MultiLoginModal from 'src/components/MultiLoginModal';
+
+<MultiLoginModal />
+```
+
+---
+
 # Learn More
 
 To learn more about React Native, take a look at the following resources:
