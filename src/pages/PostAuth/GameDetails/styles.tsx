@@ -49,8 +49,8 @@ export const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: Colors.WHITE,
-    fontSize: rf(3.2),
-    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(4),
+    fontWeight: "bold",
     marginHorizontal: rw(3),
     letterSpacing: 2,
   },

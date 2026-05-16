@@ -228,7 +228,6 @@ const GameDetails = () => {
           tabs={gameCategories}
           activeKey={activeTab}
           onPress={handleTabPress}
-          activeGradientColors={Colors.GRADIENT.GOLD}
         />
       )}
 

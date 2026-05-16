@@ -466,11 +466,12 @@ const styles = StyleSheet.create({
     width: rh(2.2),
     height: rh(2.2),
     resizeMode: "contain",
+    tintColor:Colors.PRIMARY_BG
   },
   menuLabel: {
-    fontSize: rh(1.9),
-    fontFamily: FontFamilyWithWeight[500],
-    color: Colors.BLAKISH_GRAY,
+    fontSize: rh(2),
+    fontWeight:"semibold",
+    color: Colors.PRIMARY_BG,
     letterSpacing: 0.2,
   },
   menuLabelActive: {

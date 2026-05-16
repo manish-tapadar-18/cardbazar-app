@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: Colors.BLACK,
     fontSize: rf(4.5),
-    fontFamily: FontFamilyWithWeight[700],
+    fontWeight:"bold",
     letterSpacing: 2,
   },
   headerLoader: {
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   dataLabel: {
     color: Colors.WHITE_55,
-    fontSize: rf(2.8),
+    fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[500],
     letterSpacing: 0.8,
     marginBottom: rh(0.6),
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   warningText: {
     flex: 1,
     color: '#C4B5FD',
-    fontSize: rf(3),
+    fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[500],
     letterSpacing: 0.2,
   },
@@ -407,8 +407,8 @@ const styles = StyleSheet.create({
   },
   reloadBtnText: {
     color: '#C4B5FD',
-    fontSize: rf(4),
-    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(5),
+    fontWeight:"bold"
   },
 
   // Gold divider
@@ -446,13 +446,13 @@ const styles = StyleSheet.create({
     gap: rw(1.5),
   },
   actionBtnIcon: {
-    width: rw(4),
-    height: rw(4),
+    width: rw(5),
+    height: rw(5),
     tintColor: Colors.BLACK,
   },
   actionBtnText: {
     color: Colors.BLACK,
-    fontSize: rf(2.8),
+    fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[700],
     letterSpacing: 0.5,
   },
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
   },
   cancelBtnText: {
     color: Colors.WHITE_55,
-    fontSize: rf(2.8),
+    fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[600],
     letterSpacing: 0.5,
     textAlign: 'center',

@@ -52,7 +52,7 @@ export const styles = StyleSheet.create({
   },
   pageSubtitle: {
     color: Colors.WHITE_55,
-    fontSize: rf(3),
+    fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[400],
     marginTop: rh(0.3),
     letterSpacing: 0.4,
@@ -76,14 +76,14 @@ export const styles = StyleSheet.create({
   },
   limitLabel: {
     color: Colors.WHITE_55,
-    fontSize: rf(2.8),
+    fontSize: rf(3.5),
     fontFamily: FontFamilyWithWeight[400],
     letterSpacing: 0.6,
     marginBottom: rh(0.4),
   },
   limitValue: {
     color: Colors.GOLD,
-    fontSize: rf(3.8),
+    fontSize: rf(4.2),
     fontFamily: FontFamilyWithWeight[700],
     letterSpacing: 0.5,
   },
@@ -97,7 +97,7 @@ export const styles = StyleSheet.create({
   // ─── Section Label ─────────────────────────────────────────────────────────
   sectionLabel: {
     color: Colors.WHITE_75,
-    fontSize: rf(3.2),
+    fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[600],
     letterSpacing: 1,
     marginBottom: rh(1.8),
@@ -107,12 +107,11 @@ export const styles = StyleSheet.create({
   chipsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -rw(1.5),
     marginBottom: rh(1),
   },
   chip: {
-    width: '22%',
-    marginHorizontal: '1.5%',
+    width: '23%',
+    marginHorizontal: '1%',
     marginBottom: rh(1.8),
     paddingVertical: rh(1.6),
     borderRadius: rh(1),
@@ -128,7 +127,7 @@ export const styles = StyleSheet.create({
   },
   chipText: {
     color:Colors.WHITE,
-    fontSize: rf(3.2),
+    fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[600],
   },
   chipTextSelected: {
@@ -155,7 +154,7 @@ export const styles = StyleSheet.create({
   },
   otherInputHint: {
     color: Colors.WHITE_55,
-    fontSize: rf(2.8),
+    fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[400],
     marginBottom: rh(1.2),
     letterSpacing: 0.3,
