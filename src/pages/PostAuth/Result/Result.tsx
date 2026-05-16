@@ -299,7 +299,6 @@ const Result = () => {
           tabs={categories}
           activeKey={activeCategory}
           onPress={onTabPress}
-          activeGradientColors={Colors.GRADIENT.GOLD}
         />
       )}
 

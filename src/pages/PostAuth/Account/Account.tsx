@@ -6,8 +6,10 @@ import {
   Text,
   StyleSheet,
   Platform,
+  ImageBackground,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import LinearGradient from 'react-native-linear-gradient';
 import { useFormik } from 'formik';
 import CustomTextInput from '../../../components/CustomTextInput';
 import CustomButton from '../../../components/CustomButton';
@@ -25,6 +27,29 @@ import { useTranslation } from '../../../hooks/useTranslation';
 import { FontFamilyWithWeight } from '../../../utils/FontFamilyWithWeight';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
+import { Images } from '../../../utils/Images';
+
+const CARD_GRADIENT: string[] = [
+  'rgba(255,215,0,0.45)',
+  'rgba(255,255,255,0.05)',
+  'rgba(255,215,0,0.45)',
+];
+const RULE_GRADIENT: string[] = [
+  'transparent',
+  Colors.GOLD,
+  Colors.ORANGE,
+  Colors.GOLD,
+  'transparent',
+];
+
+const GradientRule = () => (
+  <LinearGradient
+    colors={RULE_GRADIENT}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 0 }}
+    style={styles.gradientRule}
+  />
+);
 
 const SectionHeader = ({
   title,
@@ -34,7 +59,12 @@ const SectionHeader = ({
   locked?: boolean;
 }) => (
   <View style={styles.sectionHeaderRow}>
-    <View style={styles.sectionAccent} />
+    <LinearGradient
+      colors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.sectionAccent}
+    />
     <CustomText style={styles.sectionTitle}>{title}</CustomText>
     {locked && (
       <View style={styles.lockedBadge}>
@@ -50,6 +80,7 @@ const Account = () => {
   const [isLoading, setLoading] = useState(false);
   const [bankDetailsLocked, setBankDetailsLocked] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const { t } = useTranslation();
   const { setAdminDetails } = useAdminDetailsStore();
   const {
@@ -93,7 +124,7 @@ const Account = () => {
     };
     fetchAdminDetails();
     fetchUserDetails();
-  }, []))
+  }, []));
 
   const fetchUserDetails = async () => {
     if (!userDetails?.EMAIL) return;
@@ -160,8 +191,21 @@ const Account = () => {
     }
   };
 
+  const iRow = (field: string) =>
+    focusedField === field
+      ? [styles.inputRow, styles.inputRowFocused]
+      : styles.inputRow;
+
+  const bankRow = bankDetailsLocked
+    ? [styles.inputRow, styles.inputRowLocked]
+    : undefined;
+
   return (
-    <View style={styles.bg}>
+    <ImageBackground
+      source={Images.DASHBOARD_SPLASH}
+      style={{ flex: 1, backgroundColor: Colors.DEEP_PURPLE }}
+      resizeMode="cover"
+    >
       <KeyboardAwareScrollView
         enableOnAndroid
         extraScrollHeight={70}
@@ -170,170 +214,225 @@ const Account = () => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* ── Account Details ── */}
-        <View style={styles.card}>
-          <SectionHeader title={t('account_details')} />
-          <View style={styles.divider} />
+        <LinearGradient
+          colors={CARD_GRADIENT}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardBorder}
+        >
+          <View style={styles.cardInner}>
+            <SectionHeader title={t('account_details')} />
+            <GradientRule />
 
-          <View style={styles.inputRow}>
-            <View style={styles.halfInput}>
-              <CustomTextInput
-                value={values.FIRST_NAME}
-                onChangeText={() => { }}
-                placeholder="First Name"
-                editable={false}
-                style={{ color: Colors.WHITE }}
-                focusedPlaceholderColor={Colors.GOLD}
-                unfocusedPlaceholderColor={Colors.WHITE_55}
-              />
+            <View style={styles.nameRow}>
+              <View style={styles.halfFieldGroup}>
+                <CustomText style={styles.fieldLabel}>First Name</CustomText>
+                <View style={[styles.inputRow, styles.inputRowLocked]}>
+                  <CustomTextInput
+                    value={values.FIRST_NAME}
+                    onChangeText={() => {}}
+                    placeholder="First Name"
+                    editable={false}
+                    style={styles.textInput}
+                    focusedPlaceholderColor={Colors.GOLD}
+                    unfocusedPlaceholderColor={Colors.WHITE_55}
+                  />
+                </View>
+              </View>
+              <View style={styles.halfFieldGroup}>
+                <CustomText style={styles.fieldLabel}>Last Name</CustomText>
+                <View style={[styles.inputRow, styles.inputRowLocked]}>
+                  <CustomTextInput
+                    value={values.LAST_NAME}
+                    onChangeText={() => {}}
+                    placeholder="Last Name"
+                    editable={false}
+                    style={styles.textInput}
+                    focusedPlaceholderColor={Colors.GOLD}
+                    unfocusedPlaceholderColor={Colors.WHITE_55}
+                  />
+                </View>
+              </View>
             </View>
-            <View style={styles.halfInput}>
-              <CustomTextInput
-                value={values.LAST_NAME}
-                onChangeText={() => { }}
-                placeholder="Last Name"
-                editable={false}
-                style={{ color: Colors.WHITE }}
-                focusedPlaceholderColor={Colors.GOLD}
-                unfocusedPlaceholderColor={Colors.WHITE_55}
-              />
+
+            <View style={styles.fieldGroup}>
+              <CustomText style={styles.fieldLabel}>Mobile No.</CustomText>
+              <View style={[styles.inputRow, styles.inputRowLocked]}>
+                <CustomTextInput
+                  value={userDetails?.MOBILE ?? ''}
+                  onChangeText={() => {}}
+                  placeholder="Mobile No."
+                  keyboardType="number-pad"
+                  editable={false}
+                  style={styles.textInput}
+                  focusedPlaceholderColor={Colors.GOLD}
+                  unfocusedPlaceholderColor={Colors.WHITE_55}
+                />
+              </View>
             </View>
           </View>
-
-          <View style={[styles.fullInput, { marginTop: rh(1.2) }]}>
-            <CustomTextInput
-              value={userDetails?.MOBILE ?? ''}
-              onChangeText={() => { }}
-              placeholder="Mobile No."
-              keyboardType="number-pad"
-              editable={false}
-              style={{ color: Colors.WHITE }}
-              focusedPlaceholderColor={Colors.GOLD}
-              unfocusedPlaceholderColor={Colors.WHITE_55}
-            />
-          </View>
-        </View>
+        </LinearGradient>
 
         {/* ── UPI Details ── */}
-        <View style={styles.card}>
-          <SectionHeader title={t('upi_id_details')} />
-          <View style={styles.divider} />
+        <LinearGradient
+          colors={CARD_GRADIENT}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardBorder}
+        >
+          <View style={styles.cardInner}>
+            <SectionHeader title={t('upi_id_details')} />
+            <GradientRule />
 
-          <CustomText style={styles.fieldLabel}>{t('paytm')}</CustomText>
-          <View style={styles.fullInput}>
-            <CustomTextInput
-              value={values.PAYTM_DETAILS}
-              onChangeText={(text) => setFieldValue('PAYTM_DETAILS', text)}
-              onBlur={handleBlur('PAYTM_DETAILS')}
-              placeholder="Enter Paytm UPI ID"
-              style={{ color: Colors.WHITE }}
-              focusedPlaceholderColor={Colors.GOLD}
-              unfocusedPlaceholderColor={Colors.WHITE_55}
-            />
-          </View>
-          {touched.PAYTM_DETAILS && errors.PAYTM_DETAILS && (
-            <CustomText style={styles.errorText}>{errors.PAYTM_DETAILS}</CustomText>
-          )}
+            <View style={styles.fieldGroup}>
+              <CustomText style={styles.fieldLabel}>{t('paytm')}</CustomText>
+              <View style={iRow('PAYTM_DETAILS')}>
+                <CustomTextInput
+                  value={values.PAYTM_DETAILS}
+                  onChangeText={(text) => setFieldValue('PAYTM_DETAILS', text)}
+                  onBlur={(e) => { handleBlur('PAYTM_DETAILS')(e); setFocusedField(null); }}
+                  onFocus={() => setFocusedField('PAYTM_DETAILS')}
+                  placeholder="Enter Paytm UPI ID"
+                  style={styles.textInput}
+                  focusedPlaceholderColor={Colors.GOLD}
+                  unfocusedPlaceholderColor={Colors.WHITE_55}
+                />
+              </View>
+              {touched.PAYTM_DETAILS && errors.PAYTM_DETAILS && (
+                <CustomText style={styles.errorText}>{errors.PAYTM_DETAILS}</CustomText>
+              )}
+            </View>
 
-          <CustomText style={styles.fieldLabel}>{t('phonepe')}</CustomText>
-          <View style={styles.fullInput}>
-            <CustomTextInput
-              value={values.PHONEPE_DETAILS}
-              onChangeText={(text) => setFieldValue('PHONEPE_DETAILS', text)}
-              onBlur={handleBlur('PHONEPE_DETAILS')}
-              placeholder="Enter PhonePe UPI ID"
-              style={{ color: Colors.WHITE }}
-              focusedPlaceholderColor={Colors.GOLD}
-              unfocusedPlaceholderColor={Colors.WHITE_55}
-            />
-          </View>
-          {touched.PHONEPE_DETAILS && errors.PHONEPE_DETAILS && (
-            <CustomText style={styles.errorText}>{errors.PHONEPE_DETAILS}</CustomText>
-          )}
+            <View style={styles.fieldGroup}>
+              <CustomText style={styles.fieldLabel}>{t('phonepe')}</CustomText>
+              <View style={iRow('PHONEPE_DETAILS')}>
+                <CustomTextInput
+                  value={values.PHONEPE_DETAILS}
+                  onChangeText={(text) => setFieldValue('PHONEPE_DETAILS', text)}
+                  onBlur={(e) => { handleBlur('PHONEPE_DETAILS')(e); setFocusedField(null); }}
+                  onFocus={() => setFocusedField('PHONEPE_DETAILS')}
+                  placeholder="Enter PhonePe UPI ID"
+                  style={styles.textInput}
+                  focusedPlaceholderColor={Colors.GOLD}
+                  unfocusedPlaceholderColor={Colors.WHITE_55}
+                />
+              </View>
+              {touched.PHONEPE_DETAILS && errors.PHONEPE_DETAILS && (
+                <CustomText style={styles.errorText}>{errors.PHONEPE_DETAILS}</CustomText>
+              )}
+            </View>
 
-          <CustomText style={styles.fieldLabel}>{t('gpay')}</CustomText>
-          <View style={styles.fullInput}>
-            <CustomTextInput
-              value={values.UPI_DETAILS}
-              onChangeText={(text) => setFieldValue('UPI_DETAILS', text)}
-              onBlur={handleBlur('UPI_DETAILS')}
-              placeholder="Enter GPay UPI ID"
-              style={{ color: Colors.WHITE }}
-              focusedPlaceholderColor={Colors.GOLD}
-              unfocusedPlaceholderColor={Colors.WHITE_55}
-            />
+            <View style={styles.fieldGroup}>
+              <CustomText style={styles.fieldLabel}>{t('gpay')}</CustomText>
+              <View style={iRow('UPI_DETAILS')}>
+                <CustomTextInput
+                  value={values.UPI_DETAILS}
+                  onChangeText={(text) => setFieldValue('UPI_DETAILS', text)}
+                  onBlur={(e) => { handleBlur('UPI_DETAILS')(e); setFocusedField(null); }}
+                  onFocus={() => setFocusedField('UPI_DETAILS')}
+                  placeholder="Enter GPay UPI ID"
+                  style={styles.textInput}
+                  focusedPlaceholderColor={Colors.GOLD}
+                  unfocusedPlaceholderColor={Colors.WHITE_55}
+                />
+              </View>
+              {touched.UPI_DETAILS && errors.UPI_DETAILS && (
+                <CustomText style={styles.errorText}>{errors.UPI_DETAILS}</CustomText>
+              )}
+            </View>
           </View>
-          {touched.UPI_DETAILS && errors.UPI_DETAILS && (
-            <CustomText style={styles.errorText}>{errors.UPI_DETAILS}</CustomText>
-          )}
-        </View>
+        </LinearGradient>
 
         {/* ── Bank Details ── */}
-        <View style={styles.card}>
-          <SectionHeader title={t('bank_details')} locked={bankDetailsLocked} />
-          <View style={styles.divider} />
+        <LinearGradient
+          colors={CARD_GRADIENT}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardBorder}
+        >
+          <View style={styles.cardInner}>
+            <SectionHeader title={t('bank_details')} locked={bankDetailsLocked} />
+            <GradientRule />
 
-          <CustomText style={styles.fieldLabel}>{t('account_holder_name')}</CustomText>
-          <View style={styles.fullInput}>
-            <CustomTextInput
-              value={values.BANK_ACCOUNT_HOLDER_NAME}
-              onChangeText={(text) => {
-                const filtered = text.replace(/[^A-Za-z\s]/g, '');
-                setFieldValue('BANK_ACCOUNT_HOLDER_NAME', filtered);
-              }}
-              onBlur={handleBlur('BANK_ACCOUNT_HOLDER_NAME')}
-              placeholder="Account Holder Name"
-              editable={!bankDetailsLocked}
-              style={{ color: Colors.WHITE }}
-              focusedPlaceholderColor={Colors.GOLD}
-              unfocusedPlaceholderColor={Colors.WHITE_55}
-            />
-          </View>
-          {touched.BANK_ACCOUNT_HOLDER_NAME && errors.BANK_ACCOUNT_HOLDER_NAME && (
-            <CustomText style={styles.errorText}>{errors.BANK_ACCOUNT_HOLDER_NAME}</CustomText>
-          )}
+            <View style={styles.fieldGroup}>
+              <CustomText style={styles.fieldLabel}>{t('account_holder_name')}</CustomText>
+              <View style={bankRow ?? iRow('BANK_ACCOUNT_HOLDER_NAME')}>
+                <CustomTextInput
+                  value={values.BANK_ACCOUNT_HOLDER_NAME}
+                  onChangeText={(text) => {
+                    const filtered = text.replace(/[^A-Za-z\s]/g, '');
+                    setFieldValue('BANK_ACCOUNT_HOLDER_NAME', filtered);
+                  }}
+                  onBlur={(e) => { handleBlur('BANK_ACCOUNT_HOLDER_NAME')(e); setFocusedField(null); }}
+                  onFocus={() => { if (!bankDetailsLocked) setFocusedField('BANK_ACCOUNT_HOLDER_NAME'); }}
+                  placeholder="Account Holder Name"
+                  editable={!bankDetailsLocked}
+                  style={styles.textInput}
+                  focusedPlaceholderColor={Colors.GOLD}
+                  unfocusedPlaceholderColor={Colors.WHITE_55}
+                />
+              </View>
+              {touched.BANK_ACCOUNT_HOLDER_NAME && errors.BANK_ACCOUNT_HOLDER_NAME && (
+                <CustomText style={styles.errorText}>{errors.BANK_ACCOUNT_HOLDER_NAME}</CustomText>
+              )}
+            </View>
 
-          <CustomText style={styles.fieldLabel}>{t('account_number')}</CustomText>
-          <View style={styles.fullInput}>
-            <CustomTextInput
-              value={values.BANK_ACCOUNT_NO}
-              onChangeText={(text) => {
-                const filtered = text.replace(/[^0-9]/g, '');
-                setFieldValue('BANK_ACCOUNT_NO', filtered);
-              }}
-              onBlur={handleBlur('BANK_ACCOUNT_NO')}
-              placeholder="Account Number"
-              keyboardType="number-pad"
-              editable={!bankDetailsLocked}
-              style={{ color: Colors.WHITE }}
-              focusedPlaceholderColor={Colors.GOLD}
-              unfocusedPlaceholderColor={Colors.WHITE_55}
-            />
-          </View>
-          {touched.BANK_ACCOUNT_NO && errors.BANK_ACCOUNT_NO && (
-            <CustomText style={styles.errorText}>{errors.BANK_ACCOUNT_NO}</CustomText>
-          )}
+            <View style={styles.fieldGroup}>
+              <CustomText style={styles.fieldLabel}>{t('account_number')}</CustomText>
+              <View style={bankRow ?? iRow('BANK_ACCOUNT_NO')}>
+                <CustomTextInput
+                  value={values.BANK_ACCOUNT_NO}
+                  onChangeText={(text) => {
+                    const filtered = text.replace(/[^0-9]/g, '');
+                    setFieldValue('BANK_ACCOUNT_NO', filtered);
+                  }}
+                  onBlur={(e) => { handleBlur('BANK_ACCOUNT_NO')(e); setFocusedField(null); }}
+                  onFocus={() => { if (!bankDetailsLocked) setFocusedField('BANK_ACCOUNT_NO'); }}
+                  placeholder="Account Number"
+                  keyboardType="number-pad"
+                  editable={!bankDetailsLocked}
+                  style={styles.textInput}
+                  focusedPlaceholderColor={Colors.GOLD}
+                  unfocusedPlaceholderColor={Colors.WHITE_55}
+                />
+              </View>
+              {touched.BANK_ACCOUNT_NO && errors.BANK_ACCOUNT_NO && (
+                <CustomText style={styles.errorText}>{errors.BANK_ACCOUNT_NO}</CustomText>
+              )}
+            </View>
 
-          <CustomText style={styles.fieldLabel}>{t('ifsc_code')}</CustomText>
-          <View style={styles.fullInput}>
-            <CustomTextInput
-              value={values.BANK_IFSC}
-              onChangeText={(text) => {
-                const filtered = text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-                setFieldValue('BANK_IFSC', filtered);
-              }}
-              onBlur={handleBlur('BANK_IFSC')}
-              placeholder="IFSC Code"
-              autoCapitalize="characters"
-              editable={!bankDetailsLocked}
-              style={{ color: Colors.WHITE }}
-              focusedPlaceholderColor={Colors.GOLD}
-              unfocusedPlaceholderColor={Colors.WHITE_55}
-            />
+            <View style={styles.fieldGroup}>
+              <CustomText style={styles.fieldLabel}>{t('ifsc_code')}</CustomText>
+              <View style={bankRow ?? iRow('BANK_IFSC')}>
+                <CustomTextInput
+                  value={values.BANK_IFSC}
+                  onChangeText={(text) => {
+                    const filtered = text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                    setFieldValue('BANK_IFSC', filtered);
+                  }}
+                  onBlur={(e) => { handleBlur('BANK_IFSC')(e); setFocusedField(null); }}
+                  onFocus={() => { if (!bankDetailsLocked) setFocusedField('BANK_IFSC'); }}
+                  placeholder="IFSC Code"
+                  autoCapitalize="characters"
+                  editable={!bankDetailsLocked}
+                  style={styles.textInput}
+                  focusedPlaceholderColor={Colors.GOLD}
+                  unfocusedPlaceholderColor={Colors.WHITE_55}
+                />
+              </View>
+              {touched.BANK_IFSC && errors.BANK_IFSC && (
+                <CustomText style={styles.errorText}>{errors.BANK_IFSC}</CustomText>
+              )}
+            </View>
           </View>
-          {touched.BANK_IFSC && errors.BANK_IFSC && (
-            <CustomText style={styles.errorText}>{errors.BANK_IFSC}</CustomText>
-          )}
-        </View>
+        </LinearGradient>
+
+        {/* <LinearGradient
+          colors={RULE_GRADIENT}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.footerRule}
+        /> */}
 
         <CustomButton
           title={isLoading ? 'Please Wait...' : t('update_details')}
@@ -344,15 +443,7 @@ const Account = () => {
           gradientColors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
         />
       </KeyboardAwareScrollView>
-
-      {keyboardHeight > 0 && (
-        <View style={[localStyles.keyboardToolbar, { bottom: keyboardHeight }]}>
-          <TouchableOpacity onPress={Keyboard.dismiss} style={localStyles.doneButton}>
-            <Text style={localStyles.doneText}>Done</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+    </ImageBackground>
   );
 };
 

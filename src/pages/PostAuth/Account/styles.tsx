@@ -5,47 +5,44 @@ import { FontFamilyWithWeight } from '../../../utils/FontFamilyWithWeight';
 
 export const styles = StyleSheet.create({
   // ─── Layout ───────────────────────────────────────────────────────────────
-  bg: {
-    flex: 1,
-    backgroundColor: Colors.DEEP_PURPLE,
-  },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: rw(4),
-    paddingTop: rh(2),
-    paddingBottom: rh(4),
+    paddingHorizontal: rw(5),
+    paddingVertical: rh(2),
   },
 
-  // ─── Section Card ─────────────────────────────────────────────────────────
-  card: {
-    backgroundColor: Colors.CARD_BG,
-    borderRadius: rh(1.5),
-    borderWidth: 1,
-    borderColor: Colors.BORDER_WHITE_08,
-    paddingHorizontal: rw(4),
-    paddingTop: rh(1.5),
-    paddingBottom: rh(2),
+  // ─── Card (gradient border + dark inner) ─────────────────────────────────
+  cardBorder: {
+    borderRadius: rh(2),
+    padding: 1.5,
     marginBottom: rh(2),
+  },
+  cardInner: {
+    backgroundColor: 'rgba(18, 4, 45, 0.96)',
+    borderRadius: rh(2) - 1.5,
+    paddingHorizontal: rw(4.5),
+    paddingTop: rh(2.5),
+    paddingBottom: rh(2.5),
   },
 
   // ─── Section Header ───────────────────────────────────────────────────────
   sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: rw(2.5),
     marginBottom: rh(1.5),
-    gap: rw(2),
   },
   sectionAccent: {
     width: rw(1),
-    height: rh(2.5),
+    height: rh(4),
     borderRadius: 4,
-    backgroundColor: Colors.GOLD,
   },
   sectionTitle: {
-    fontSize: rf(4.2),
+    fontSize: rf(4.8),
     fontFamily: FontFamilyWithWeight[700],
     color: Colors.WHITE,
     flex: 1,
+    lineHeight: rf(6),
   },
   lockedBadge: {
     flexDirection: 'row',
@@ -56,7 +53,6 @@ export const styles = StyleSheet.create({
     borderColor: Colors.GOLD,
     paddingHorizontal: rw(2.5),
     paddingVertical: rh(0.4),
-    gap: rw(1),
   },
   lockedBadgeText: {
     fontSize: rf(2.8),
@@ -64,27 +60,67 @@ export const styles = StyleSheet.create({
     color: Colors.GOLD,
   },
 
-  // ─── Field Label ──────────────────────────────────────────────────────────
+  // ─── Gradient Rules ───────────────────────────────────────────────────────
+  gradientRule: {
+    height: 1,
+    borderRadius: 1,
+    marginBottom: rh(2),
+  },
+  footerRule: {
+    height: 1,
+    borderRadius: 1,
+    marginBottom: rh(2.5),
+  },
+
+  // ─── Name Row (two-column) ────────────────────────────────────────────────
+  nameRow: {
+    flexDirection: 'row',
+    gap: rw(3),
+    marginBottom: rh(1.5),
+  },
+  halfFieldGroup: {
+    flex: 1,
+  },
+
+  // ─── Field Group ──────────────────────────────────────────────────────────
+  fieldGroup: {
+    marginBottom: rh(1.5),
+  },
   fieldLabel: {
-    fontSize: rf(3.2),
+    fontSize: rf(3.5),
     fontFamily: FontFamilyWithWeight[500],
     color: Colors.WHITE_75,
-    marginBottom: rh(0.6),
-    marginTop: rh(1.2),
+    marginBottom: rh(0.8),
   },
 
   // ─── Input Row ────────────────────────────────────────────────────────────
   inputRow: {
     flexDirection: 'row',
-    gap: rw(3),
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: rh(1),
+    borderWidth: 1,
+    borderColor: 'rgba(255,215,0,0.18)',
+    paddingHorizontal: rw(3),
+    height: rh(6.5),
   },
-  halfInput: {
+  inputRowFocused: {
+    borderColor: Colors.GOLD,
+    backgroundColor: 'rgba(255,215,0,0.07)',
+  },
+  inputRowLocked: {
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    opacity: 0.7,
+  },
+  textInput: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    color: Colors.WHITE,
+    paddingHorizontal: 0,
     flex: 1,
-    height: rh(6),
-    color:Colors.WHITE
-  },
-  fullInput: {
-    height: rh(6),
+    fontSize: rf(3.8),
+    fontFamily: FontFamilyWithWeight[400],
   },
 
   // ─── Error ────────────────────────────────────────────────────────────────
@@ -95,19 +131,12 @@ export const styles = StyleSheet.create({
     marginTop: rh(0.4),
   },
 
-  // ─── Divider ──────────────────────────────────────────────────────────────
-  divider: {
-    height: 1,
-    backgroundColor: Colors.GOLD,
-    marginVertical: rh(1.5),
-  },
-
   // ─── Button ───────────────────────────────────────────────────────────────
   buttonContainer: {
     height: rh(7),
-    marginTop: rh(1),
     borderRadius: rh(1),
     overflow: 'hidden',
+    marginBottom:rh(3)
   },
   buttonText: {
     color: Colors.DARK_BROWN,

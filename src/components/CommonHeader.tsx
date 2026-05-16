@@ -45,7 +45,9 @@ const CommonHeader = ({ onMenuPress, balance, onPhonePress, onWhatsappPress }: C
                 >
                     <Image source={Images.WALLET} style={styles.walletIcon} />
                     <View style={styles.walletTextCol}>
-                        <CustomText style={styles.balanceText}>{String(balance)}</CustomText>
+                        <CustomText style={styles.balanceText}>
+                            {new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(balance))}
+                        </CustomText>
                         <CustomText style={styles.walletLabel}>INR In Wallet</CustomText>
                     </View>
                 </TouchableOpacity>
