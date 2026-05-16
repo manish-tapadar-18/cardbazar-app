@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     },
     cardSubtitle: {
         color: Colors.WHITE_55,
-        fontSize: rf(3.3),
+        fontSize: rf(3.8),
         fontFamily: FontFamilyWithWeight[400],
     },
     headerRule: {
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
         marginBottom: rh(2),
     },
     fieldLabel: {
-        fontSize: rf(3.2),
+        fontSize: rf(4),
         fontFamily: FontFamilyWithWeight[500],
         color: Colors.WHITE_75,
         marginBottom: rh(0.8),

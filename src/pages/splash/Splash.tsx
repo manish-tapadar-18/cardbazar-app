@@ -17,7 +17,7 @@ const Splash = () => {
 
     return (
         <View style={{ justifyContent: "flex-end", flex: 1 }}>
-            <TouchableOpacity onPress={() => { navigation.navigate("Authentication"); }} style={{ flex: 1 }}>
+            <TouchableOpacity activeOpacity={1} onPress={() => { navigation.navigate("Authentication"); }} style={{ flex: 1 }}>
                 <Image source={Images.MAIN_LAND_SCREEN} style={styles.backgroundImage} />
             </TouchableOpacity>
         </View>

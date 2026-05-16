@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -27,6 +27,13 @@ import { IPlayHistoryItem } from '../../../response/module/IPlayHistoryResponse'
 import { IPlayHistoryRequest } from '../../../request/module/IPlayHistoryRequest';
 import { styles } from './styles';
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface DateGroup {
+  date: string;       // display label  e.g. "23-12-2022"
+  dateKey: string;    // normalised key e.g. "2022-12-23"
+  items: IPlayHistoryItem[];
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PER_PAGE = 14;
@@ -68,7 +75,7 @@ const PlayHistory = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { setAdminDetails } = useAdminDetailsStore();
-  const flatListRef = useRef<FlatList<IPlayHistoryItem>>(null);
+  const flatListRef = useRef<FlatList<DateGroup>>(null);
   const isFetchingMore = useRef(false);
   const activeCatRef = useRef('');
   const activeDateRef = useRef('');
@@ -202,9 +209,23 @@ const PlayHistory = () => {
     fetchHistory(activeCatRef.current, activeDateRef.current, next, true);
   };
 
+  // ── Group flat history by date (handles pagination merge automatically) ────
+  const groupedHistory = useMemo<DateGroup[]>(() => {
+    const map = new Map<string, DateGroup>();
+    for (const item of history) {
+      const dateKey = moment(item.DATE).utc().format('YYYY-MM-DD');
+      const display  = moment(item.DATE).utc().format('DD-MM-YYYY');
+      if (!map.has(dateKey)) {
+        map.set(dateKey, { date: display, dateKey, items: [] });
+      }
+      map.get(dateKey)!.items.push(item);
+    }
+    return Array.from(map.values());
+  }, [history]);
+
   // ── Render helpers ────────────────────────────────────────────────────────
-  const renderItem = ({ item }: { item: IPlayHistoryItem }) => (
-    <PlayHistoryCard item={item} />
+  const renderItem = ({ item }: { item: DateGroup }) => (
+    <PlayHistoryCard date={item.date} items={item.items} />
   );
 
   const ListFooter = () => {
@@ -237,7 +258,6 @@ const PlayHistory = () => {
           tabs={categories}
           activeKey={activeCategory}
           onPress={onTabPress}
-          activeGradientColors={Colors.GRADIENT.GOLD}
         />
       )}
 
@@ -272,8 +292,8 @@ const PlayHistory = () => {
       ) : (
         <FlatList
           ref={flatListRef}
-          data={history}
-          keyExtractor={item => item.ID}
+          data={groupedHistory}
+          keyExtractor={item => item.dateKey}
           renderItem={renderItem}
           ListEmptyComponent={ListEmpty}
           ListFooterComponent={ListFooter}

@@ -37,8 +37,8 @@ export const styles = StyleSheet.create({
     },
     buttonText: {
         color: Colors.DARK_BROWN,
-        fontSize: Fonts.regular,
-        fontFamily: FontFamilyWithWeight[600]
+        fontSize: rf(6),
+        fontWeight: "bold"
     },
     scrollContent: {
         flexGrow: 1,

@@ -348,8 +348,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabText: {
-    fontSize: rf(3.8),
-    fontFamily: FontFamilyWithWeight[600],
+    fontSize: rf(4),
+    fontWeight:"bold",
     color: Colors.WHITE_55,
   },
   tabTextActive: {

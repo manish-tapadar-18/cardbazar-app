@@ -56,14 +56,14 @@ export const styles = StyleSheet.create({
     clearText: {
         fontFamily: FontFamilyWithWeight[900],
         fontSize: rf(4),
-        color: Colors.ERROR_RED,
+        color: Colors.WHITE,
     },
 
     // ─── FlatList ────────────────────────────────────────────────────────────────
     listContent: {
         flexGrow: 1,
         paddingHorizontal: rw(3),
-        paddingTop: rh(1),
+        paddingTop: rh(4),
         paddingBottom: rh(10),
         gap: rh(1.2),
     },

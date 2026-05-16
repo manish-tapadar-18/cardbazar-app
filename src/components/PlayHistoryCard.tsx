@@ -1,7 +1,6 @@
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import moment from 'moment';
 import CustomText from './CustomText';
 import { Images } from '../utils/Images';
 import { Colors } from '../utils/Colors';
@@ -9,133 +8,142 @@ import { ENV } from '../utils/env';
 import { rf, rh, rw } from '../utils/responsive';
 import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight';
 import { IPlayHistoryItem } from '../response/module/IPlayHistoryResponse';
+import GradientText from './GradientText';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const getStatus = (item: IPlayHistoryItem): 'WIN' | 'LOSS' | 'PENDING' => {
-    if (item.RESULT_PUBLISH !== 1) return 'PENDING';
-    return item.WIN === 0 ? 'LOSS' : 'WIN';
-};
+interface Props {
+    date: string;
+    items: IPlayHistoryItem[];
+}
 
-const STATUS_CONFIG = {
-    WIN:     { label: 'WIN',     bg: '#02C557' },
-    LOSS:    { label: 'LOSS',    bg: '#DB141E' },
-    PENDING: { label: 'PENDING', bg: '#FFBB00' },
-};
-
-// ─── Component ────────────────────────────────────────────────────────────────
-const PlayHistoryCard: React.FC<{ item: IPlayHistoryItem }> = ({ item }) => {
-    const status = getStatus(item);
-    const cfg = STATUS_CONFIG[status];
-    const imageUri = `${ENV.BASE_URL}/${item.CARD_IMAGE_URL}`;
-
-    return (
+const PlayHistoryCard: React.FC<Props> = ({ date, items }) => (
+    <View style={styles.wrapper}>
+        {/* ── Date badge ──────────────────────────────────────────────── */}
         <LinearGradient
-            colors={['#451563', '#42125C', '#4C186B']}
+            colors={['#FFD700', '#D4940A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.dateBadge}
+        >
+            <CustomText style={styles.dateBadgeText}>{date}</CustomText>
+        </LinearGradient>
+
+        {/* ── Card body ───────────────────────────────────────────────── */}
+        <LinearGradient
+            colors={['#2A0D6E', '#3B1280', '#2A0D6E']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.card}
         >
-            {/* Card image */}
-            <Image
-                source={{ uri: imageUri }}
-                defaultSource={Images.SMALL_CARD}
-                style={styles.cardImage}
-            />
+            {items.map((item, index) => (
+                <React.Fragment key={item.ID}>
+                    <View style={styles.row}>
+                        {/* Left — schedule name */}
 
-            {/* Middle — schedule name, category, date & time */}
-            <View style={styles.cardMiddle}>
-                <CustomText style={styles.scheduleName} numberOfLines={1}>
-                    {item.GAME_MASTER_SCHEDULE_NAME}
-                </CustomText>
-                <CustomText style={styles.categoryName} numberOfLines={1}>
-                    {item.GAME_CATEGORY_NAME}
-                </CustomText>
-                <View style={styles.timeRow}>
-                    <CustomText style={styles.timeText}>
-                        {moment(item.DATE).utc().format('DD MMM YYYY')}
-                    </CustomText>
-                    <CustomText style={styles.timeText}>·</CustomText>
-                    <CustomText style={styles.timeText}>
-                        {item.START_TIME} – {item.END_TIME}
-                    </CustomText>
-                </View>
-            </View>
+                        <GradientText
+                            colors={Colors.GRADIENT.GOLD}
+                            locations={Colors.GRADIENT.GOLD_LOCATIONS}
+                            style={{
+                                fontSize: rf(6.5),
+                                fontFamily: FontFamilyWithWeight[700],
+                                letterSpacing: 0.5,
+                            }}
+                            angle={180}
+                        >
+                            {item.GAME_MASTER_SCHEDULE_NAME}
+                        </GradientText>
 
-            {/* Right — amount + status badge */}
-            <View style={styles.cardRight}>
-                <CustomText style={styles.amountText}>₹{item.AMOUNT}</CustomText>
-                <View style={[styles.statusBadge, { backgroundColor: cfg.bg }]}>
-                    <CustomText style={styles.statusText}>{cfg.label}</CustomText>
-                </View>
-            </View>
+                        {/* Right — card image + card name */}
+                        <View style={styles.rowRight}>
+                            <Image
+                                source={{ uri: `${ENV.BASE_URL}/${item.CARD_IMAGE_URL}` }}
+                                defaultSource={Images.SMALL_CARD}
+                                style={styles.cardImage}
+                                resizeMode="contain"
+                            />
+                            <CustomText style={styles.cardName} numberOfLines={1}>
+                                {item.CARD_NAME}
+                            </CustomText>
+                        </View>
+                    </View>
+
+                    {index < items.length - 1 && (
+                        <View style={styles.divider} />
+                    )}
+                </React.Fragment>
+            ))}
         </LinearGradient>
-    );
-};
+    </View>
+);
 
 const styles = StyleSheet.create({
+    wrapper: {
+        marginBottom: rh(3)
+    },
+
+    // ── Date badge ────────────────────────────────────────────────────────────
+    dateBadge: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: rw(2),
+        paddingVertical: rh(0.7),
+        borderRadius: rw(2),
+        marginBottom: rh(0.6),
+        position:"absolute",
+        zIndex:99999,
+        top:-rh(2)
+    },
+    dateBadgeText: {
+        fontWeight:"bold",
+        fontSize: rf(5),
+        color: "#330000"
+    },
+
+    // ── Card ──────────────────────────────────────────────────────────────────
     card: {
+        borderRadius: rw(2.5),
+        borderWidth: 1,
+        borderColor: 'rgba(255,215,0,0.15)',
+        overflow: 'hidden',
+        paddingTop:rh(2)
+    },
+
+    // ── Row ───────────────────────────────────────────────────────────────────
+    row: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderRadius: rw(3),
-        paddingHorizontal: rw(3),
+        // justifyContent: 'space-between',
+        paddingHorizontal: rw(12),
         paddingVertical: rh(1.4),
-        gap: rw(3),
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
+        gap:rw(7)
     },
-    cardImage: {
-        width: rw(13),
-        height: rw(13),
-        resizeMode: 'contain',
-        transform: [{ rotate: '-10deg' }],
-    },
-    cardMiddle: {
+    gameLabel: {
         flex: 1,
-        gap: rh(0.4),
-    },
-    scheduleName: {
-        fontFamily: FontFamilyWithWeight[700],
-        fontSize: rf(4),
-        color: Colors.GOLD,
+        fontFamily: FontFamilyWithWeight[600],
+        fontSize: rf(3.8),
+        color: Colors.WHITE,
         letterSpacing: 0.3,
     },
-    categoryName: {
-        fontFamily: FontFamilyWithWeight[500],
-        fontSize: rf(4),
-        color: Colors.WHITE_55,
-    },
-    timeRow: {
+    rowRight: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: rw(2),
-        marginTop: rh(0.3),
+        flexShrink: 0,
     },
-    timeText: {
-        fontFamily: FontFamilyWithWeight[400],
-        fontSize: rf(4),
-        color: Colors.WHITE_55,
+    cardImage: {
+        width: rw(6),
+        height: rw(6),
     },
-    cardRight: {
-        alignItems: 'flex-end',
-        gap: rh(0.6),
-    },
-    amountText: {
-        fontFamily: FontFamilyWithWeight[700],
-        fontSize: rf(4),
+    cardName: {
+        fontSize: rf(5),
         color: Colors.WHITE,
+        letterSpacing: 0.3,
+        textTransform:"uppercase"
     },
-    statusBadge: {
-        paddingHorizontal: rw(3),
-        paddingVertical: rh(0.4),
-        borderRadius: rw(4),
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    statusText: {
-        fontFamily: FontFamilyWithWeight[800],
-        fontSize: rf(3),
-        color: Colors.WHITE,
-        letterSpacing: 0.5,
+
+    // ── Divider ───────────────────────────────────────────────────────────────
+    divider: {
+        height: 1,
+        marginHorizontal: rw(4),
+        backgroundColor: '#FFFFFF',
     },
 });
 
