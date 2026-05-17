@@ -21,6 +21,14 @@ export const styles = StyleSheet.create({
     scrollContent: {
         paddingBottom: rh(2),
     },
+    scrollContainer: {
+        flexGrow: 1,
+    },
+    amountZone: {
+        paddingHorizontal: rw(4),
+        paddingVertical: rh(4),
+        justifyContent: 'center' as const,
+    },
 
     // ─── Header ───────────────────────────────────────────────────────────────
     header: {
@@ -228,8 +236,51 @@ export const styles = StyleSheet.create({
 
     // ─── Line Items ───────────────────────────────────────────────────────────
     lineItemsSection: {
-        marginHorizontal: rw(4),
-        marginTop: rh(1),
+        flex: 1,
+        backgroundColor: Colors.WHITE,
+        paddingHorizontal: rw(4),
+        paddingTop: rh(0.5),
+    },
+    lineItemsScroll: {
+        flex: 1,
+    },
+    emptyLineItems: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: rw(8),
+        paddingVertical: rh(4),
+    },
+    emptyIconCircle: {
+        width: rw(22),
+        height: rw(22),
+        borderRadius: rw(11),
+        backgroundColor: Colors.DEEP_PURPLE,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: rh(2.5),
+        elevation: 4,
+        shadowColor: Colors.DEEP_PURPLE,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+    },
+    emptyIcon: {
+        fontSize: rf(10),
+    },
+    emptyTitle: {
+        color: '#333333',
+        fontSize: rf(5),
+        fontFamily: FontFamilyWithWeight[700],
+        textAlign: 'center',
+        marginBottom: rh(1.2),
+    },
+    emptySubtitle: {
+        color: Colors.GRAY_ALT,
+        fontSize: rf(3.8),
+        fontFamily: FontFamilyWithWeight[400],
+        textAlign: 'center',
+        lineHeight: rh(2.8),
     },
     dividerRow: {
         flexDirection: 'row',
@@ -240,13 +291,12 @@ export const styles = StyleSheet.create({
     dividerLine: {
         flex: 1,
         height: 1,
-        backgroundColor: Colors.GOLD,
-        opacity: 0.45,
+        backgroundColor: Colors.GOLD
     },
     dividerLabel: {
-        color: Colors.GRAY_ALT,
-        fontSize: rf(3),
-        fontFamily: FontFamilyWithWeight[600],
+        color: Colors.DARK_BROWN,
+        fontSize: rf(4),
+        fontWeight:"bold",
         letterSpacing: 0.6,
     },
     lineItem: {
@@ -254,17 +304,17 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: rh(1.6),
         borderBottomWidth: 1,
-        borderBottomColor: Colors.GOLD,
+        borderBottomColor: '#E0E0E0',
         gap: rw(3),
     },
     lineItemName: {
         flex: 1,
-        color: Colors.WHITE,
+        color: '#333333',
         fontSize: rf(3.8),
         fontFamily: FontFamilyWithWeight[600],
     },
     lineItemAmount: {
-        color: Colors.GOLD,
+        color: '#333333',
         fontSize: rf(3.8),
         fontFamily: FontFamilyWithWeight[700],
         minWidth: rw(20),
@@ -288,10 +338,10 @@ export const styles = StyleSheet.create({
         paddingVertical: rh(0.6),
         borderRadius: rw(1.5),
         borderWidth: 1,
-        borderColor: Colors.BORDER_WHITE_12,
+        borderColor: '#CCCCCC',
     },
     cancelDeleteText: {
-        color: Colors.WHITE_75,
+        color: '#555555',
         fontSize: rf(3),
         fontFamily: FontFamilyWithWeight[500],
     },

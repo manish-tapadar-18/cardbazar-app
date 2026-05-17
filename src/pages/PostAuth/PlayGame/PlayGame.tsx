@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -354,79 +354,90 @@ const PlayGame: React.FC = () => {
           />
         )}
 
-        {/* ── Amount input + line items (scrollable) ──────────────────────── */}
-        <ScrollView
-          style={styles.flex1}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Amount row */}
-          <View style={styles.amountRow}>
-            <TextInput
-              style={styles.amountInput}
-              placeholder="Enter Amount Rs."
-              placeholderTextColor={Colors.GRAY_ALT}
-              keyboardType="numeric"
-              value={amount}
-              onChangeText={setAmount}
-              returnKeyType="done"
-              onSubmitEditing={onAddLineItem}
-            />
-            <Pressable onPress={onAddLineItem} style={styles.addBtn}>
-              <CustomText style={styles.addBtnText}>+</CustomText>
-            </Pressable>
-          </View>
-
-          {/* Line items */}
-          {lineItems.length > 0 && (
-            <View style={styles.lineItemsSection}>
-              <SectionDivider label="ADDED LINE ITEMS" />
-              {lineItems.map(item => {
-                const isPendingDelete = confirmDeleteId === item.card.ID;
-                return (
-                  <View key={item.card.ID} style={styles.lineItem}>
-                    <CustomText style={styles.lineItemName} numberOfLines={1}>
-                      {formatCardName(item.card.NAME)}
-                    </CustomText>
-                    {isPendingDelete ? (
-                      <View style={styles.deleteConfirmRow}>
-                        <Pressable
-                          onPress={() => setConfirmDeleteId(null)}
-                          style={styles.cancelDeleteBtn}
-                          hitSlop={8}
-                        >
-                          <CustomText style={styles.cancelDeleteText}>Cancel</CustomText>
-                        </Pressable>
-                        <Pressable
-                          onPress={() => {
-                            removeLineItem(item.card.ID);
-                            setConfirmDeleteId(null);
-                          }}
-                          style={styles.confirmDeleteBtn}
-                          hitSlop={8}
-                        >
-                          <CustomText style={styles.confirmDeleteText}>Delete</CustomText>
-                        </Pressable>
-                      </View>
-                    ) : (
-                      <>
-                        <CustomText style={styles.lineItemAmount}>INR {item.amount}</CustomText>
-                        <Pressable
-                          onPress={() => setConfirmDeleteId(item.card.ID)}
-                          style={styles.trashBtn}
-                          hitSlop={12}
-                        >
-                          <Image source={Images.TRASH} style={styles.trashIcon} tintColor="#cc2200" />
-                        </Pressable>
-                      </>
-                    )}
-                  </View>
-                );
-              })}
+        {/* ── Amount input ─────────────────────────────────────────────────── */}
+        <View style={styles.amountRow}>
+          <TextInput
+            style={styles.amountInput}
+            placeholder="Enter Amount Rs."
+            placeholderTextColor={Colors.GRAY_ALT}
+            keyboardType="numeric"
+            value={amount}
+            onChangeText={setAmount}
+            returnKeyType="done"
+            onSubmitEditing={onAddLineItem}
+          />
+          <Pressable onPress={onAddLineItem} style={styles.addBtn}>
+            <CustomText style={styles.addBtnText}>+</CustomText>
+          </Pressable>
+        </View>
+        
+        {/* ── Line items — white section filling remaining height ──────────── */}
+        <View style={styles.lineItemsSection}>
+          {lineItems.length === 0 && (
+            <View style={styles.emptyLineItems}>
+              <View style={styles.emptyIconCircle}>
+                <CustomText style={styles.emptyIcon}>🃏</CustomText>
+              </View>
+              <CustomText style={styles.emptyTitle}>No Bets Added Yet</CustomText>
+              <CustomText style={styles.emptySubtitle}>
+                Select a card above, enter an amount{'\n'}and tap + to place your bet
+              </CustomText>
             </View>
           )}
-        </ScrollView>
+          {lineItems.length > 0 && (
+            <>
+              <SectionDivider label="ADDED LINE ITEMS" />
+              <ScrollView
+                style={styles.lineItemsScroll}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {lineItems.map(item => {
+                  const isPendingDelete = confirmDeleteId === item.card.ID;
+                  return (
+                    <View key={item.card.ID} style={styles.lineItem}>
+                      <CustomText style={styles.lineItemName} numberOfLines={1}>
+                        {formatCardName(item.card.NAME)}
+                      </CustomText>
+                      {isPendingDelete ? (
+                        <View style={styles.deleteConfirmRow}>
+                          <Pressable
+                            onPress={() => setConfirmDeleteId(null)}
+                            style={styles.cancelDeleteBtn}
+                            hitSlop={8}
+                          >
+                            <CustomText style={styles.cancelDeleteText}>Cancel</CustomText>
+                          </Pressable>
+                          <Pressable
+                            onPress={() => {
+                              removeLineItem(item.card.ID);
+                              setConfirmDeleteId(null);
+                            }}
+                            style={styles.confirmDeleteBtn}
+                            hitSlop={8}
+                          >
+                            <CustomText style={styles.confirmDeleteText}>Delete</CustomText>
+                          </Pressable>
+                        </View>
+                      ) : (
+                        <>
+                          <CustomText style={styles.lineItemAmount}>INR {item.amount}</CustomText>
+                          <Pressable
+                            onPress={() => setConfirmDeleteId(item.card.ID)}
+                            style={styles.trashBtn}
+                            hitSlop={12}
+                          >
+                            <Image source={Images.TRASH} style={styles.trashIcon} tintColor="#340000" />
+                          </Pressable>
+                        </>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </>
+          )}
+        </View>
 
         {/* ── Play Game button ────────────────────────────────────────────── */}
         <Pressable

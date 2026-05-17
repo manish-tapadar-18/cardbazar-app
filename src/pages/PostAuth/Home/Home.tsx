@@ -235,7 +235,7 @@ const Home = () => {
         <FlatList
           data={gameCategories}
           keyExtractor={(item) => item.ID}
-          renderItem={({ item }) => <CategoryCard item={item} onPress={(id) => navigateToGameDetails(id)} contestCount={20} />}
+          renderItem={({ item }) => <CategoryCard item={item} onPress={(id) => navigateToGameDetails(id)} contestCount={JSON.parse(item.PLAY_OPTIONS).length} />}
           ListHeaderComponent={<ListHeader />}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}

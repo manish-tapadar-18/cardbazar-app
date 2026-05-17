@@ -469,10 +469,9 @@ const styles = StyleSheet.create({
     tintColor:Colors.PRIMARY_BG
   },
   menuLabel: {
-    fontSize: rh(2),
+    fontSize: rh(2.2),
     fontWeight:"semibold",
-    color: Colors.PRIMARY_BG,
-    letterSpacing: 0.2,
+    color: Colors.PRIMARY_BG
   },
   menuLabelActive: {
     fontSize: rh(1.9),
