@@ -5,6 +5,19 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import MaskedView from '@react-native-masked-view/masked-view';
+import Animated, {
+    cancelAnimation,
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withDelay,
+    withRepeat,
+    withSequence,
+    withTiming,
+} from 'react-native-reanimated';
+import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ConfirmModal from '../../components/ConfirmModal';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,11 +37,22 @@ import { Repository } from '../../repository/Repository';
 import { Toast } from '../../utils/toast';
 import { ForgotMobileSchema, ForgotOtpPasswordSchema } from '../../validations/schemas/ForgetPasswordValidationSchema';
 import { IForgetPasswordMobileValues, IForgetPasswordOtpValues } from '../../validations/interfaces/IForgetPasswordValues';
+import { useTranslation } from '../../hooks/useTranslation';
+
+const SUITS = ['♠', '♥', '♦', '♣'] as const;
+const SUIT_COLORS = [Colors.WHITE, '#E84545', Colors.WHITE, '#E84545'] as const;
+const STAGGER = 320;
+const FLOAT_RANGE = 7;
+const FLOAT_DURATION = 1300;
+const SCALE_MAX = 1.14;
+const SCALE_MIN = 0.9;
 
 const RESEND_COOLDOWN = 30;
 
 const ForgetPassword = () => {
     const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+    const { top } = useSafeAreaInsets();
+    const { t } = useTranslation();
 
     const [phase, setPhase] = useState<'mobile' | 'otp'>('mobile');
     const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +63,84 @@ const ForgetPassword = () => {
     const [editModalVisible, setEditModalVisible] = useState(false);
 
     const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // ── Suit float shared values ───────────────────────────────────────────────
+    const float0 = useSharedValue(0);
+    const float1 = useSharedValue(0);
+    const float2 = useSharedValue(0);
+    const float3 = useSharedValue(0);
+
+    const scale0 = useSharedValue(1);
+    const scale1 = useSharedValue(1);
+    const scale2 = useSharedValue(1);
+    const scale3 = useSharedValue(1);
+
+    const shimmerX = useSharedValue(-rw(22));
+
+    const suitStyle0 = useAnimatedStyle(() => ({
+        transform: [{ translateY: float0.value }, { scale: scale0.value }],
+    }));
+    const suitStyle1 = useAnimatedStyle(() => ({
+        transform: [{ translateY: float1.value }, { scale: scale1.value }],
+    }));
+    const suitStyle2 = useAnimatedStyle(() => ({
+        transform: [{ translateY: float2.value }, { scale: scale2.value }],
+    }));
+    const suitStyle3 = useAnimatedStyle(() => ({
+        transform: [{ translateY: float3.value }, { scale: scale3.value }],
+    }));
+
+    const suitAnimStyles = [suitStyle0, suitStyle1, suitStyle2, suitStyle3];
+
+    const animatedShineStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: shimmerX.value }, { skewX: '-18deg' }],
+    }));
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const floats = [float0, float1, float2, float3];
+            const scales = [scale0, scale1, scale2, scale3];
+
+            floats.forEach((sv, i) => {
+                sv.value = withDelay(
+                    i * STAGGER,
+                    withRepeat(
+                        withSequence(
+                            withTiming(-FLOAT_RANGE, { duration: FLOAT_DURATION, easing: Easing.inOut(Easing.sin) }),
+                            withTiming(FLOAT_RANGE, { duration: FLOAT_DURATION, easing: Easing.inOut(Easing.sin) }),
+                        ),
+                        -1,
+                        true,
+                    ),
+                );
+            });
+
+            scales.forEach((sv, i) => {
+                sv.value = withDelay(
+                    i * STAGGER,
+                    withRepeat(
+                        withSequence(
+                            withTiming(SCALE_MAX, { duration: FLOAT_DURATION, easing: Easing.inOut(Easing.sin) }),
+                            withTiming(SCALE_MIN, { duration: FLOAT_DURATION, easing: Easing.inOut(Easing.sin) }),
+                        ),
+                        -1,
+                        true,
+                    ),
+                );
+            });
+
+            shimmerX.value = withRepeat(
+                withTiming(rw(90), { duration: 2200, easing: Easing.linear }),
+                -1,
+                false,
+            );
+
+            return () => {
+                [...floats, ...scales, shimmerX].forEach(cancelAnimation);
+                shimmerX.value = -rw(22);
+            };
+        }, []),
+    );
 
     const mobileForm = useFormik<IForgetPasswordMobileValues>({
         initialValues: { MOBILE: '' },
@@ -148,10 +250,22 @@ const ForgetPassword = () => {
                 style={StyleSheet.absoluteFill}
             />
 
+            {/* ── Corner watermark cards ── */}
+            <Image
+                source={Images.SPADE_CARD}
+                style={styles.watermarkTopLeft}
+                resizeMode="contain"
+            />
+            <Image
+                source={Images.HEART_CARD}
+                style={styles.watermarkBottomRight}
+                resizeMode="contain"
+            />
+
             {/* Back button */}
             <TouchableOpacity
                 onPress={() => navigation.goBack()}
-                style={styles.backBtn}
+                style={[styles.backBtn, { top: top + rh(1.5) }]}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
                 <Image source={Images.LEFT_ARROW} style={styles.backIcon} resizeMode="contain" />
@@ -164,6 +278,44 @@ const ForgetPassword = () => {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
+                {/* ── Branding ── */}
+                <View style={[styles.brandSection, { paddingTop: top + rh(5.5) }]}>
+                    <View style={styles.suitsRow}>
+                        {SUITS.map((suit, i) => (
+                            <Animated.View key={suit} style={suitAnimStyles[i]}>
+                                <CustomText style={[styles.suitChar, { color: SUIT_COLORS[i] }]}>
+                                    {suit}
+                                </CustomText>
+                            </Animated.View>
+                        ))}
+                    </View>
+
+                    <MaskedView
+                        style={styles.appNameWrapper}
+                        maskElement={
+                            <View style={[styles.appNameWrapper, { backgroundColor: 'transparent' }]}>
+                                <CustomText style={styles.appNameMask}>{t("card_bazar_app_name")}</CustomText>
+                            </View>
+                        }
+                    >
+                        <LinearGradient
+                            colors={['#FFD700', '#FF5E94', '#BF5FFF', '#4FACFE', '#43E97B', '#FFD700']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.appNameWrapper}
+                        />
+                        <Animated.View style={[styles.appNameShine, animatedShineStyle]}>
+                            <LinearGradient
+                                colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.75)', 'rgba(255,255,255,0)']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={StyleSheet.absoluteFill}
+                            />
+                        </Animated.View>
+                    </MaskedView>
+                </View>
+
+                {/* ── Form card ── */}
                 <LinearGradient
                     colors={['rgba(255,215,0,0.45)', 'rgba(255,255,255,0.05)', 'rgba(255,215,0,0.45)']}
                     start={{ x: 0, y: 0 }}
@@ -397,9 +549,32 @@ const styles = StyleSheet.create({
     root: {
         flex: 1,
     },
+
+    // ─── Watermarks ──────────────────────────────────────────────────────────────
+    watermarkTopLeft: {
+        position: 'absolute',
+        top: rh(-1),
+        left: rw(-10),
+        width: rw(60),
+        height: rw(60),
+        opacity: 0.045,
+        tintColor: Colors.GOLD,
+        transform: [{ rotate: '-20deg' }],
+    },
+    watermarkBottomRight: {
+        position: 'absolute',
+        bottom: rh(-1),
+        right: rw(-10),
+        width: rw(60),
+        height: rw(60),
+        opacity: 0.045,
+        tintColor: '#E84545',
+        transform: [{ rotate: '20deg' }],
+    },
+
+    // ─── Back button ─────────────────────────────────────────────────────────────
     backBtn: {
         position: 'absolute',
-        top: rh(6),
         left: rw(4),
         zIndex: 10,
     },
@@ -408,12 +583,47 @@ const styles = StyleSheet.create({
         height: rw(6),
         tintColor: Colors.GOLD,
     },
+
+    // ─── Scroll ──────────────────────────────────────────────────────────────────
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: rw(5),
-        paddingTop: rh(12),
         paddingBottom: rh(4),
+    },
+
+    // ─── Branding ─────────────────────────────────────────────────────────────────
+    brandSection: {
+        alignItems: 'center',
+        paddingBottom: rh(3),
+    },
+    suitsRow: {
+        flexDirection: 'row',
+        gap: rw(4),
+        marginBottom: rh(0.6),
+        alignItems: 'center',
+    },
+    suitChar: {
+        fontSize: rf(6.5),
+        fontFamily: FontFamilyWithWeight[900],
+    },
+    appNameWrapper: {
+        height: rf(10),
+        width: rw(85),
         justifyContent: 'center',
+        alignItems: 'center',
+    },
+    appNameMask: {
+        fontSize: rf(7.5),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 5,
+        color: Colors.WHITE,
+        backgroundColor: 'transparent',
+    },
+    appNameShine: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        width: rw(22),
     },
 
     // ─── Card ────────────────────────────────────────────────────────────────────
