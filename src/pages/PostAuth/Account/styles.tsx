@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     marginBottom: rh(2),
   },
   cardInner: {
-    backgroundColor: 'rgba(18, 4, 45, 0.96)',
+    // backgroundColor: 'rgba(18, 4, 45, 0.96)',
     borderRadius: rh(2) - 1.5,
     paddingHorizontal: rw(4.5),
     paddingTop: rh(2.5),
