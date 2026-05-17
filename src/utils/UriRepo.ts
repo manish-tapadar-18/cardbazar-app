@@ -32,4 +32,7 @@ export const UriRepo = {
     UPDATEDEVICE: `${version}updateDevice?_format=json`,
     GETALLVIDEO: `${version}getVariable?_format=json&name=UTR_VIDEO`,
     CHECKPAYMENTSTATUS: (utrNo: string, userId: number) => `${version}updateMoneywithUtr?_format=json&UTR=${utrNo}&USER_ID=${userId}`,
+    ADDSECURITYERRORREPORT: `${version}addErrorReport?_format=json`,
+    SECURITYDEBUG: `${version}getVariable?_format=json&name=SECURITY_DEBUG`,
+    SECURITYLOCATION: `${version}getVariable?_format=json&name=SECURITY_LOCATION`
 }

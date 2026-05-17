@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
     Modal,
     View,
     StyleSheet,
     BackHandler,
     Platform,
-    Image,
+    Animated,
+    ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomText from './CustomText';
@@ -16,10 +17,24 @@ import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight';
 
 interface Props {
     visible: boolean;
-    reason: string;
+    reasons: string[];
 }
 
-const SecurityBlockModal: React.FC<Props> = ({ visible, reason }) => {
+const SecurityBlockModal: React.FC<Props> = ({ visible, reasons }) => {
+    const blinkAnim = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        if (!visible) return;
+        const blink = Animated.loop(
+            Animated.sequence([
+                Animated.timing(blinkAnim, { toValue: 0.15, duration: 500, useNativeDriver: true }),
+                Animated.timing(blinkAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+            ])
+        );
+        blink.start();
+        return () => blink.stop();
+    }, [visible, blinkAnim]);
+
     const exitApp = () => {
         if (Platform.OS === 'android') {
             BackHandler.exitApp();
@@ -40,13 +55,11 @@ const SecurityBlockModal: React.FC<Props> = ({ visible, reason }) => {
                     style={StyleSheet.absoluteFill}
                 />
 
-                {/* Decorative watermark ring */}
                 <View style={styles.ringOuter}>
                     <View style={styles.ringInner} />
                 </View>
 
                 <View style={styles.card}>
-                    {/* Gold gradient top bar */}
                     <LinearGradient
                         colors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
                         start={{ x: 0, y: 0 }}
@@ -54,19 +67,18 @@ const SecurityBlockModal: React.FC<Props> = ({ visible, reason }) => {
                         style={styles.cardTopBar}
                     />
 
-                    {/* Shield / warning icon */}
-                    <View style={styles.iconCircle}>
+                    {/* Blinking shield icon */}
+                    <Animated.View style={[styles.iconCircle, { opacity: blinkAnim }]}>
                         <LinearGradient
                             colors={['#7a0000', '#cc1100']}
                             style={styles.iconGradient}
                         >
                             <CustomText style={styles.shieldIcon}>🛡️</CustomText>
                         </LinearGradient>
-                    </View>
+                    </Animated.View>
 
                     <CustomText style={styles.title}>Security Alert</CustomText>
 
-                    {/* Divider */}
                     <LinearGradient
                         colors={['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent']}
                         start={{ x: 0, y: 0 }}
@@ -78,10 +90,25 @@ const SecurityBlockModal: React.FC<Props> = ({ visible, reason }) => {
                         This device does not meet security requirements
                     </CustomText>
 
-                    {/* Reason box */}
+                    {/* Numbered reasons list */}
                     <View style={styles.reasonBox}>
-                        <CustomText style={styles.reasonLabel}>Reason Detected</CustomText>
-                        <CustomText style={styles.reasonText}>{reason}</CustomText>
+                        <CustomText style={styles.reasonLabel}>
+                            {reasons.length === 1 ? 'Issue Detected' : `Issues Detected (${reasons.length})`}
+                        </CustomText>
+                        <ScrollView
+                            style={styles.reasonScroll}
+                            showsVerticalScrollIndicator={false}
+                            nestedScrollEnabled
+                        >
+                            {reasons.map((r, i) => (
+                                <View key={i} style={styles.reasonRow}>
+                                    <View style={styles.reasonBadge}>
+                                        <CustomText style={styles.reasonBadgeText}>{i + 1}</CustomText>
+                                    </View>
+                                    <CustomText style={styles.reasonText}>{r}</CustomText>
+                                </View>
+                            ))}
+                        </ScrollView>
                     </View>
 
                     <CustomText style={styles.footerNote}>
@@ -183,7 +210,7 @@ const styles = StyleSheet.create({
         fontSize: rf(3.8),
         fontFamily: FontFamilyWithWeight[400],
         textAlign: 'center',
-        marginBottom: rh(2.5),
+        marginBottom: rh(2),
         paddingHorizontal: rw(4),
     },
     reasonBox: {
@@ -194,7 +221,8 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(200,0,0,0.3)',
         padding: rw(4),
         marginBottom: rh(2.5),
-        gap: rh(0.8),
+        gap: rh(1),
+        maxHeight: rh(28),
     },
     reasonLabel: {
         color: Colors.ORANGE,
@@ -202,10 +230,38 @@ const styles = StyleSheet.create({
         fontFamily: FontFamilyWithWeight[600],
         textTransform: 'uppercase',
         letterSpacing: 0.8,
+        marginBottom: rh(0.5),
+    },
+    reasonScroll: {
+        flexGrow: 0,
+    },
+    reasonRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: rw(2.5),
+        marginBottom: rh(1),
+    },
+    reasonBadge: {
+        width: rw(6),
+        height: rw(6),
+        borderRadius: rw(3),
+        backgroundColor: 'rgba(200,0,0,0.55)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,80,80,0.5)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: rh(0.3),
+        flexShrink: 0,
+    },
+    reasonBadgeText: {
+        color: Colors.WHITE,
+        fontSize: rf(2.8),
+        fontFamily: FontFamilyWithWeight[700],
     },
     reasonText: {
+        flex: 1,
         color: Colors.WHITE,
-        fontSize: rf(3.8),
+        fontSize: rf(3.6),
         fontFamily: FontFamilyWithWeight[400],
         lineHeight: rh(2.8),
     },
