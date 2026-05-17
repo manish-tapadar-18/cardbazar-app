@@ -361,6 +361,15 @@ const AddMoney = () => {
                 </LinearGradient>
               </TouchableOpacity>
             )}
+
+            {/* ── UTR / Payment Problem Link ────────────────────────── */}
+            <TouchableOpacity
+              style={styles.utrLinkRow}
+              onPress={() => navigation.navigate('UTR' as never)}
+              activeOpacity={0.7}
+            >
+              <CustomText style={styles.utrLinkText}>Having Problem With Payment?</CustomText>
+            </TouchableOpacity>
           </KeyboardAwareScrollView>
         )}
 

@@ -30,4 +30,6 @@ export const UriRepo = {
     GETKILLERPAYMENTGATEWAYDETAILS: (amount: number, id: string) => `${version}getKillerPaymentGatewayDetails?_format=json&amount=${amount}&id=${id}`,
     UPDATEWITHDRAWALREQUESTUSER: (userId: string) => `${version}updateWithdrawalRequestUser/${userId}?_format=json`,
     UPDATEDEVICE: `${version}updateDevice?_format=json`,
+    GETALLVIDEO: `${version}getVariable?_format=json&name=UTR_VIDEO`,
+    CHECKPAYMENTSTATUS: (utrNo: string, userId: number) => `${version}updateMoneywithUtr?_format=json&UTR=${utrNo}&USER_ID=${userId}`,
 }

@@ -1,6 +1,8 @@
 import { IApiResponse } from "../response/generic/IApiResponse";
 import { ICustomResponse } from "../response/generic/ICustomResponse";
 import { IAddMoneyResponse } from "../response/module/IAddMoneyResponse";
+import { ICheckPaymentStatusResponse } from "../response/module/ICheckPaymentStatusResponse";
+import { IGetAllVideoResponse } from "../response/module/IGetAllVideoResponse";
 import { IGetKillerPaymentGatewayResponse } from "../response/module/IGetKillerPaymentGatewayResponse";
 import { IGetPaymentGatewayResponse } from "../response/module/IGetPaymentGatewayResponse";
 import { genericErrorParser } from "../response/parser/genericErrorParser";
@@ -54,6 +56,30 @@ class PaymentService implements IPaymentService {
             return parsed;
         } catch (error: any) {
             return genericErrorParser<IGetKillerPaymentGatewayResponse>(error);
+        }
+    }
+
+    async checkPaymentStatus(utrNo: string, userId: number): Promise<ICustomResponse<ICheckPaymentStatusResponse>> {
+        try {
+            const response = await http.get<IApiResponse<ICheckPaymentStatusResponse>>(
+                UriRepo.CHECKPAYMENTSTATUS(utrNo, userId),
+                option
+            );
+            return genericResponseParser<ICheckPaymentStatusResponse>(response.data);
+        } catch (error: any) {
+            return genericErrorParser<ICheckPaymentStatusResponse>(error);
+        }
+    }
+
+    async getAllVideo(): Promise<ICustomResponse<IGetAllVideoResponse>> {
+        try {
+            const response = await http.get<IApiResponse<IGetAllVideoResponse>>(
+                UriRepo.GETALLVIDEO,
+                option
+            );
+            return genericResponseParser<IGetAllVideoResponse>(response.data);
+        } catch (error: any) {
+            return genericErrorParser<IGetAllVideoResponse>(error);
         }
     }
 }

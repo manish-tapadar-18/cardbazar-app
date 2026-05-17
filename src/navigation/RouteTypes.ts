@@ -18,6 +18,7 @@ export type HomeStackParamList = {
 
 export type AddMoneyStackParamList = {
     AddMoney: undefined;
+    UTR: undefined;
     PaymentSelection: { ID: string; amount: number };
 };
 

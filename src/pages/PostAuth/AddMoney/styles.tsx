@@ -326,6 +326,20 @@ export const styles = StyleSheet.create({
     letterSpacing: 2,
   },
 
+  // ─── UTR Link ───────────────────────────────────────────────────────────────
+  utrLinkRow: {
+    alignItems: 'center',
+    marginTop: rh(2.5),
+    paddingVertical: rh(1),
+  },
+  utrLinkText: {
+    color: Colors.GOLD,
+    fontSize: rf(3.5),
+    fontFamily: FontFamilyWithWeight[500],
+    textDecorationLine: 'underline',
+    letterSpacing: 0.3,
+  },
+
   // ─── Blocked Overlay ────────────────────────────────────────────────────────
   overlayContainer: {
     ...StyleSheet.absoluteFill,
