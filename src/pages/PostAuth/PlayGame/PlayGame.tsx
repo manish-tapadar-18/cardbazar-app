@@ -5,13 +5,12 @@ import {
   Image,
   ImageBackground,
   Keyboard,
-  KeyboardAvoidingView, Modal,
-  Platform,
+  Modal,
   Pressable,
-  ScrollView,
   TextInput,
   View
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import LinearGradient from 'react-native-linear-gradient';
 import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/native';
 import { Images } from '../../../utils/Images';
@@ -324,74 +323,77 @@ const PlayGame: React.FC = () => {
   return (
     <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.bg} resizeMode="cover">
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex1}
-        keyboardVerticalOffset={0}
-      >
-        {/* ── Dropdown ───────────────────────────────────────────────────── */}
-        <Pressable onPress={() => setIsDropdownOpen(true)} style={styles.dropdown}>
-          <CustomText style={styles.dropdownText}>
-            {currentGroup?.suitLabel ?? '—'}
-          </CustomText>
-          <Image source={Images.ANGLE_DOWN} style={styles.angleDown} tintColor={Colors.GOLD} />
-        </Pressable>
-
-        {/* ── Horizontally paged card sets ────────────────────────────────── */}
-        {cardGroups.length > 0 && (
-          <FlatList
-            ref={flatListRef}
-            data={cardGroups}
-            renderItem={renderGroupPage}
-            keyExtractor={item => item.suitKey}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig}
-            getItemLayout={getItemLayout}
-            style={styles.cardFlatList}
-          />
-        )}
-
-        {/* ── Amount input ─────────────────────────────────────────────────── */}
-        <View style={styles.amountRow}>
-          <TextInput
-            style={styles.amountInput}
-            placeholder="Enter Amount Rs."
-            placeholderTextColor={Colors.GRAY_ALT}
-            keyboardType="numeric"
-            value={amount}
-            onChangeText={setAmount}
-            returnKeyType="done"
-            onSubmitEditing={onAddLineItem}
-          />
-          <Pressable onPress={onAddLineItem} style={styles.addBtn}>
-            <CustomText style={styles.addBtnText}>+</CustomText>
+      <View style={styles.flex1}>
+        <KeyboardAwareScrollView
+          style={styles.flex1}
+          contentContainerStyle={styles.scrollContainer}
+          enableOnAndroid
+          extraScrollHeight={20}
+          keyboardShouldPersistTaps="always"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          {/* ── Dropdown ─────────────────────────────────────────────────── */}
+          <Pressable onPress={() => setIsDropdownOpen(true)} style={styles.dropdown}>
+            <CustomText style={styles.dropdownText}>
+              {currentGroup?.suitLabel ?? '—'}
+            </CustomText>
+            <Image source={Images.ANGLE_DOWN} style={styles.angleDown} tintColor={Colors.GOLD} />
           </Pressable>
-        </View>
-        
-        {/* ── Line items — white section filling remaining height ──────────── */}
-        <View style={styles.lineItemsSection}>
-          {lineItems.length === 0 && (
-            <View style={styles.emptyLineItems}>
-              <View style={styles.emptyIconCircle}>
-                <CustomText style={styles.emptyIcon}>🃏</CustomText>
-              </View>
-              <CustomText style={styles.emptyTitle}>No Bets Added Yet</CustomText>
-              <CustomText style={styles.emptySubtitle}>
-                Select a card above, enter an amount{'\n'}and tap + to place your bet
-              </CustomText>
-            </View>
+
+          {/* ── Horizontally paged card sets ──────────────────────────────── */}
+          {cardGroups.length > 0 && (
+            <FlatList
+              ref={flatListRef}
+              data={cardGroups}
+              renderItem={renderGroupPage}
+              keyExtractor={item => item.suitKey}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
+              getItemLayout={getItemLayout}
+              style={styles.cardFlatList}
+              keyboardShouldPersistTaps="always"
+            />
           )}
-          {lineItems.length > 0 && (
-            <>
-              <SectionDivider label="ADDED LINE ITEMS" />
-              <ScrollView
-                style={styles.lineItemsScroll}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-              >
+
+          {/* ── Amount input — centered in the purple zone ────────────────── */}
+          <View style={styles.amountZone}>
+            <View style={styles.amountRow}>
+              <TextInput
+                style={styles.amountInput}
+                placeholder="Enter Amount Rs."
+                placeholderTextColor={Colors.GRAY_ALT}
+                keyboardType="numeric"
+                value={amount}
+                onChangeText={setAmount}
+                returnKeyType="done"
+                onSubmitEditing={onAddLineItem}
+              />
+              <Pressable onPress={onAddLineItem} style={styles.addBtn}>
+                <CustomText style={styles.addBtnText}>+</CustomText>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* ── Line items — white section filling remaining height ────────── */}
+          <View style={styles.lineItemsSection}>
+            {lineItems.length === 0 && (
+              <View style={styles.emptyLineItems}>
+                <View style={styles.emptyIconCircle}>
+                  <CustomText style={styles.emptyIcon}>🃏</CustomText>
+                </View>
+                <CustomText style={styles.emptyTitle}>No Bets Added Yet</CustomText>
+                <CustomText style={styles.emptySubtitle}>
+                  Select a card above, enter an amount{'\n'}and tap + to place your bet
+                </CustomText>
+              </View>
+            )}
+            {lineItems.length > 0 && (
+              <>
+                <SectionDivider label="ADDED LINE ITEMS" />
                 {lineItems.map(item => {
                   const isPendingDelete = confirmDeleteId === item.card.ID;
                   return (
@@ -434,16 +436,16 @@ const PlayGame: React.FC = () => {
                     </View>
                   );
                 })}
-              </ScrollView>
-            </>
-          )}
-        </View>
+              </>
+            )}
+          </View>
+        </KeyboardAwareScrollView>
 
-        {/* ── Play Game button ────────────────────────────────────────────── */}
+        {/* ── Play Game button — pinned outside scroll ───────────────────── */}
         <Pressable
           onPress={onPlayGame}
           disabled={isPlaying}
-          style={[styles.playBtnWrapper]}
+          style={styles.playBtnWrapper}
         >
           <LinearGradient
             colors={isPlaying ? [Colors.DISABLED_BG, Colors.DISABLED_BG] : Colors.GRADIENT.GOLD}
@@ -456,7 +458,7 @@ const PlayGame: React.FC = () => {
             </CustomText>
           </LinearGradient>
         </Pressable>
-      </KeyboardAvoidingView>
+      </View>
 
       {/* ── Suit group dropdown modal ───────────────────────────────────────── */}
       <Modal
