@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { secureStorage } from "./storage/secureStorage";
 
 export type LanguageEntry = {
     hindi: string;
@@ -17,11 +19,24 @@ type LanguageState = {
     setSelectedLanguage: (lang: keyof LanguageEntry) => void;
 };
 
-export const useLanguageStore = create<LanguageState>()((set) => ({
-    languages: null,
-    selectedLanguage: "english",
+export const useLanguageStore = create<LanguageState>()(
+    persist(
+        (set) => ({
+            languages: null,
+            selectedLanguage: "english",
 
-    setLanguages: (data) => set({ languages: data }),
-    clearLanguages: () => set({ languages: null }),
-    setSelectedLanguage: (lang) => set({ selectedLanguage: lang }),
-}));
+            setLanguages: (data) => set({ languages: data }),
+            clearLanguages: () => set({ languages: null }),
+            setSelectedLanguage: (lang) => set({ selectedLanguage: lang }),
+        }),
+        {
+            name: "language-store",
+
+            storage: createJSONStorage(() => secureStorage),
+
+            partialize: (state) => ({
+                selectedLanguage: state.selectedLanguage,
+            }),
+        }
+    )
+);

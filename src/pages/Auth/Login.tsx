@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     TouchableOpacity,
@@ -16,7 +16,7 @@ import CustomButton from '../../components/CustomButton';
 import { rf, rh, rw } from '../../utils/responsive';
 import { styles as authStyles } from './styles';
 import { ILoginFormValues } from '../../validations/interfaces';
-import { LoginValidationSchema } from '../../validations/schemas/LoginValidationSchema';
+import { createLoginValidationSchema } from '../../validations/schemas/LoginValidationSchema';
 import { useFormik } from 'formik';
 import CustomText from '../../components/CustomText';
 import { useNavigation } from '@react-navigation/native';
@@ -29,6 +29,7 @@ import { Repository } from '../../repository/Repository';
 import { FontFamilyWithWeight } from '../../utils/FontFamilyWithWeight';
 import { Images } from '../../utils/Images';
 import { useDemoStore } from '../../stores/demoStore';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const DEMO_MOBILE = '9087561198';
 const DEMO_PASSWORD = '123456';
@@ -39,6 +40,8 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [focusedField, setFocusedField] = useState<'EMAIL' | 'PASSWORD' | null>(null);
+    const { t, selectedLanguage } = useTranslation();
+    const validationSchema = useMemo(() => createLoginValidationSchema(t), [selectedLanguage]);
 
     useEffect(() => {
         const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -56,12 +59,17 @@ const Login = () => {
         handleBlur,
         handleSubmit,
         setFieldValue,
+        validateForm,
     } = useFormik<ILoginFormValues>({
         initialValues: { EMAIL: '', PASSWORD: '' },
-        validationSchema: LoginValidationSchema,
+        validationSchema,
         validateOnMount: false,
         onSubmit: (vals) => login(vals),
     });
+
+    useEffect(() => {
+        if (Object.keys(touched).some(Boolean)) validateForm();
+    }, [selectedLanguage]);
 
     const { setUserSession, setAuthenticationStatus, setToken } = useUserStore();
     const { setAdminDetails } = useAdminDetailsStore();
@@ -138,8 +146,8 @@ const Login = () => {
                                 style={styles.cardAccent}
                             />
                             <View>
-                                <CustomText style={styles.cardTitle}>Welcome Back</CustomText>
-                                <CustomText style={styles.cardSubtitle}>Sign in to your account</CustomText>
+                                <CustomText style={styles.cardTitle}>{t("welcome_back_label")}</CustomText>
+                                <CustomText style={styles.cardSubtitle}>{t("sign_in_to_your_account_label")}</CustomText>
                             </View>
                         </View>
 
@@ -153,7 +161,7 @@ const Login = () => {
 
                         {/* ── Mobile field ── */}
                         <View style={styles.fieldGroup}>
-                            <CustomText style={styles.fieldLabel}>Mobile Number</CustomText>
+                            <CustomText style={styles.fieldLabel}>{t("mobile_number_form_label")}</CustomText>
                             <View style={mobileInputFocused
                                 ? [styles.inputRow, styles.inputRowFocused]
                                 : styles.inputRow
@@ -167,7 +175,7 @@ const Login = () => {
                                         onBlur={(e) => { handleBlur('EMAIL')(e); setFocusedField(null); }}
                                         onFocus={() => setFocusedField('EMAIL')}
                                         value={values.EMAIL}
-                                        placeholder="Enter mobile number"
+                                        placeholder={`${t("enter_mobile_number_placeholder")}`}
                                         keyboardType="number-pad"
                                         returnKeyType="next"
                                         style={styles.textInput}
@@ -183,7 +191,7 @@ const Login = () => {
 
                         {/* ── Password field ── */}
                         <View style={styles.fieldGroup}>
-                            <CustomText style={styles.fieldLabel}>Password</CustomText>
+                            <CustomText style={styles.fieldLabel}>{t("password_label")}</CustomText>
                             <View style={passwordInputFocused
                                 ? [styles.inputRow, styles.inputRowFocused]
                                 : styles.inputRow
@@ -196,7 +204,7 @@ const Login = () => {
                                         onBlur={(e) => { handleBlur('PASSWORD')(e); setFocusedField(null); }}
                                         onFocus={() => setFocusedField('PASSWORD')}
                                         value={values.PASSWORD}
-                                        placeholder="Enter password"
+                                        placeholder={`${t("enter_password_placeholder")}`}
                                         style={styles.textInput}
                                         focusedPlaceholderColor={Colors.GOLD}
                                         unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -229,7 +237,7 @@ const Login = () => {
                         <CustomButton
                             disabled={isLoading}
                             loading={isLoading}
-                            title={isLoading ? 'Please Wait...' : 'Login'}
+                            title={isLoading ? `${t("please_wait_loader")}` : `${t("login_button")}`}
                             containerStyle={styles.actionButton}
                             textStyle={authStyles.buttonText}
                             onPress={handleSubmit}
@@ -241,20 +249,11 @@ const Login = () => {
                             style={styles.forgotPasswordLink}
                             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                         >
-                            <CustomText style={styles.forgotPasswordText}>Forgot Password?</CustomText>
+                            <CustomText style={styles.forgotPasswordText}>{t("forgot_password")}</CustomText>
                         </TouchableOpacity>
                     </View>
                 </LinearGradient>
             </KeyboardAwareScrollView>
-
-            {/* ── iOS / Android "Done" keyboard toolbar ── */}
-            {keyboardHeight > 0 && (
-                <View style={[styles.keyboardToolbar, { bottom: keyboardHeight }]}>
-                    <TouchableOpacity onPress={Keyboard.dismiss} style={styles.doneButton}>
-                        <Text style={styles.doneText}>Done</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
         </View>
     );
 };

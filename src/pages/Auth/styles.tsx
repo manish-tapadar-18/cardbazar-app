@@ -51,7 +51,7 @@ export const styles = StyleSheet.create({
     },
     errorText: {
         color: Colors.ERROR_RED,
-        fontSize: rf(3.2),
+        fontSize: rf(4),
         fontFamily: FontFamilyWithWeight[400],
         marginTop: rh(0.3),
     },

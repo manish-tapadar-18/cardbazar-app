@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
+import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, {
   useSharedValue,
@@ -28,6 +29,7 @@ import { rf, rh, rw } from '../../utils/responsive';
 import { useLanguageModalStore } from '../../stores/languageModalStore';
 import Login from './Login';
 import Register from './Register';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Suit config: symbol + color
 const SUITS = ['♠', '♥', '♦', '♣'] as const;
@@ -46,7 +48,7 @@ const Authentication: React.FC = () => {
   const [authType, setAuthType] = useState<'Login' | 'Register'>('Login');
   const { top } = useSafeAreaInsets();
   const { openModal } = useLanguageModalStore();
-
+  const { t } = useTranslation();
   // ── Tab animation ──────────────────────────────────────────────────────────
   const translateX = useSharedValue(0);
   const containerWidth = useSharedValue(0);
@@ -79,6 +81,8 @@ const Authentication: React.FC = () => {
   const scale2 = useSharedValue(1);
   const scale3 = useSharedValue(1);
 
+  const shimmerX = useSharedValue(-rw(22));
+
   // ── Animated styles ────────────────────────────────────────────────────────
   const suitStyle0 = useAnimatedStyle(() => ({
     transform: [{ translateY: float0.value }, { scale: scale0.value }],
@@ -94,6 +98,13 @@ const Authentication: React.FC = () => {
   }));
 
   const suitAnimStyles = [suitStyle0, suitStyle1, suitStyle2, suitStyle3];
+
+  const animatedShineStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: shimmerX.value },
+      { skewX: '-18deg' },
+    ],
+  }));
 
   // ── Start / stop on screen focus / blur ───────────────────────────────────
   useFocusEffect(
@@ -144,9 +155,17 @@ const Authentication: React.FC = () => {
         );
       });
 
+      // Shimmer: sweep left-to-right across the app name, repeat indefinitely
+      shimmerX.value = withRepeat(
+        withTiming(rw(90), { duration: 2200, easing: Easing.linear }),
+        -1,
+        false,
+      );
+
       // Stop all animations when the screen loses focus
       return () => {
-        [...floats, ...scales].forEach(cancelAnimation);
+        [...floats, ...scales, shimmerX].forEach(cancelAnimation);
+        shimmerX.value = -rw(22);
       };
     }, []),
   );
@@ -194,7 +213,29 @@ const Authentication: React.FC = () => {
           ))}
         </View>
 
-        <CustomText style={styles.appName}>CARD BAZAR</CustomText>
+        <MaskedView
+          style={styles.appNameWrapper}
+          maskElement={
+            <View style={[styles.appNameWrapper, { backgroundColor: 'transparent' }]}>
+              <CustomText style={styles.appNameMask}>{t("card_bazar_app_name")}</CustomText>
+            </View>
+          }
+        >
+          <LinearGradient
+            colors={['#FFD700', '#FF5E94', '#BF5FFF', '#4FACFE', '#43E97B', '#FFD700']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.appNameWrapper}
+          />
+          <Animated.View style={[styles.appNameShine, animatedShineStyle]}>
+            <LinearGradient
+              colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.75)', 'rgba(255,255,255,0)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
+        </MaskedView>
       </View>
 
       {/* ── Animated pill tab selector ── */}
@@ -218,7 +259,7 @@ const Authentication: React.FC = () => {
             <CustomText
               style={authType === 'Login' ? [styles.tabText, styles.tabTextActive] : styles.tabText}
             >
-              Login
+              {t("login_label")}
             </CustomText>
           </TouchableOpacity>
 
@@ -230,7 +271,7 @@ const Authentication: React.FC = () => {
             <CustomText
               style={authType === 'Register' ? [styles.tabText, styles.tabTextActive] : styles.tabText}
             >
-              Register
+              {t("register_label")}
             </CustomText>
           </TouchableOpacity>
         </View>
@@ -297,14 +338,24 @@ const styles = StyleSheet.create({
     fontSize: rf(6.5),
     fontFamily: FontFamilyWithWeight[900],
   },
-  appName: {
-    color: Colors.GOLD,
+  appNameWrapper: {
+    height: rf(10),
+    width: rw(85),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  appNameMask: {
     fontSize: rf(7.5),
     fontFamily: FontFamilyWithWeight[700],
     letterSpacing: 5,
-    textShadowColor: 'rgba(255,215,0,0.35)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 14,
+    color: Colors.WHITE,
+    backgroundColor: 'transparent',
+  },
+  appNameShine: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: rw(22),
   },
   brandRule: {
     width: rw(42),

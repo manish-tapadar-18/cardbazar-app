@@ -90,7 +90,7 @@ const LanguageSelectionModal: React.FC = () => {
                   <TouchableOpacity
                     key={lang.key}
                     activeOpacity={0.8}
-                    onPress={() => setSelectedLanguage(lang.key)}
+                    onPress={() => {setSelectedLanguage(lang.key);handleContinue()}}
                     style={[styles.card, isSelected ? styles.cardSelected : undefined]}
                   >
                     <Image source={lang.image} style={styles.langImage} resizeMode="contain" />
@@ -110,14 +110,6 @@ const LanguageSelectionModal: React.FC = () => {
                 );
               })}
             </View>
-
-            {/* Continue button */}
-            <CustomButton
-              title={`${t('continue_with') || 'Continue with'} ${DISPLAY_NAMES[selectedLanguage]}`}
-              onPress={handleContinue}
-              containerStyle={styles.continueBtn}
-              textStyle={styles.continueBtnText}
-            />
           </Pressable>
         </Animated.View>
       </Pressable>
