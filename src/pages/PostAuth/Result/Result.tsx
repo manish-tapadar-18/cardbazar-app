@@ -9,8 +9,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import moment from 'moment';
 import GradientIconBar from '../../../components/GradientIconBar';
-import GradientText from '../../../components/GradientText';
 import CustomText from '../../../components/CustomText';
+import GradientText from '../../../components/GradientText';
 import HorizontalTabBar from '../../../components/HorizontalTabBar';
 import EmptyState from '../../../components/EmptyState';
 import { Images } from '../../../utils/Images';
@@ -29,10 +29,14 @@ import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PER_PAGE = 10;
 
-// Each flat list item is a published schedule detail with its parent game context
 type FlatResultItem = IResultScheduleDetail & {
   GAME_DATE: string;
   GAME_NAME: string;
+};
+
+type DateGroup = {
+  GAME_DATE: string;
+  items: FlatResultItem[];
 };
 
 const SORT_FILTER = {
@@ -62,23 +66,40 @@ const formatCardName = (name: string | null): string => {
   return name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 };
 
+// Merges new flat items into existing date groups.
+// Items for an already-present date are appended; new dates create new groups.
+const mergeIntoGroups = (prev: DateGroup[], newItems: FlatResultItem[]): DateGroup[] => {
+  const map = new Map<string, FlatResultItem[]>(
+    prev.map(g => [g.GAME_DATE, [...g.items]])
+  );
+  newItems.forEach(item => {
+    const existing = map.get(item.GAME_DATE);
+    if (existing) {
+      existing.push(item);
+    } else {
+      map.set(item.GAME_DATE, [item]);
+    }
+  });
+  return Array.from(map.entries()).map(([GAME_DATE, items]) => ({ GAME_DATE, items }));
+};
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 const Result = () => {
   const { userDetails } = useUserStore();
 
   const [categories, setCategories] = useState<IGameCategoryResponse[]>([]);
   const [activeCategory, setActiveCategory] = useState('');
-  const [resultList, setResultList] = useState<FlatResultItem[]>([]);
+  const [resultGroups, setResultGroups] = useState<DateGroup[]>([]);
   const [pageNum, setPageNum] = useState(0);
   const [isCatLoading, setIsCatLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { setAdminDetails } = useAdminDetailsStore();
-  const flatListRef = useRef<FlatList<FlatResultItem>>(null);
+  const flatListRef = useRef<FlatList<DateGroup>>(null);
   const isFetchingMore = useRef(false);
   const activeCatRef = useRef('');
-  const hasInteracted = useRef(false); // true only after user has actually scrolled
-  const hasMore = useRef(true);        // false when all pages are loaded
+  const hasInteracted = useRef(false);
+  const hasMore = useRef(true);
 
   // ── Auth guard — logout if INACTIVE ───────────────────────────────────────
   const fetchUserDetails = useCallback(async () => {
@@ -108,10 +129,8 @@ const Result = () => {
         PER_PAGE
       );
       if (isSuccess && data) {
-        // No more pages when this page's end exceeds the total game count
         hasMore.current = (page + 1) * PER_PAGE < data.TOTAL;
 
-        // Flatten: each published schedule detail becomes one list row
         const flat: FlatResultItem[] = [];
         data.DATA.forEach(game => {
           game.SCHEDULE_DETAILS
@@ -121,7 +140,9 @@ const Result = () => {
             });
         });
 
-        setResultList(prev => append ? [...prev, ...flat] : flat);
+        setResultGroups(prev =>
+          append ? mergeIntoGroups(prev, flat) : mergeIntoGroups([], flat)
+        );
       } else {
         Toast.error(message ?? 'Failed to load results.');
       }
@@ -145,7 +166,7 @@ const Result = () => {
         setActiveCategory(firstId);
         activeCatRef.current = firstId;
         setPageNum(0);
-        setResultList([]);
+        setResultGroups([]);
         hasInteracted.current = false;
         hasMore.current = true;
         fetchResults(firstId, 0, false);
@@ -167,7 +188,7 @@ const Result = () => {
       };
       fetchUserDetails();
       fetchCategories();
-      fetchAdminDetails()
+      fetchAdminDetails();
     }, [])
   );
 
@@ -177,7 +198,7 @@ const Result = () => {
     setActiveCategory(tab.ID);
     activeCatRef.current = tab.ID;
     setPageNum(0);
-    setResultList([]);
+    setResultGroups([]);
     hasInteracted.current = false;
     hasMore.current = true;
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -194,13 +215,10 @@ const Result = () => {
   };
 
   // ── Pagination ────────────────────────────────────────────────────────────
-  // hasInteracted guard ensures this never fires on first render.
-  // onScrollBeginDrag (below) sets hasInteracted = true only after real scroll.
-  // onEndReachedThreshold={0.3} means it fires when 30% from the bottom = 70% scrolled.
   const onEndReached = ({ distanceFromEnd }: { distanceFromEnd: number }) => {
     if (!hasInteracted.current) return;
     if (distanceFromEnd < 0) return;
-    if (resultList.length === 0) return;
+    if (resultGroups.length === 0) return;
     if (isLoading || isFetchingMore.current) return;
     if (!hasMore.current) return;
 
@@ -211,63 +229,67 @@ const Result = () => {
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const renderItem = ({ item }: { item: FlatResultItem }) => {
-    const imageUri = item.CARD_IMAGE_URL
-      ? `${ENV.BASE_URL}/${item.CARD_IMAGE_URL}`
-      : null;
-
-    return (
+  const renderItem = ({ item }: { item: DateGroup }) => (
+    <View style={styles.groupWrapper}>
+      {/* Date badge — floats above the card */}
       <LinearGradient
-        colors={['#2D0A6E', '#3C1866', '#4C186B']}
+        colors={['#FFD700', '#D4940A']}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.card}
+        end={{ x: 1, y: 0 }}
+        style={styles.groupDateBadge}
       >
-        {/* Date header */}
-        <View style={styles.cardHeader}>
-          <LinearGradient
-            colors={[Colors.GRADIENT.RED, Colors.GRADIENT.YELLOW]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.dateBadge}
-          >
-            <CustomText style={styles.dateText}>
-              {moment(item.GAME_DATE).utc().format('DD MMM YYYY')}
-            </CustomText>
-          </LinearGradient>
-        </View>
-
-        {/* Divider */}
-        <View style={styles.divider} />
-
-        {/* Card body */}
-        <View style={styles.cardBody}>
-          <View style={styles.imageWrapper}>
-            <Image
-              source={imageUri ? { uri: imageUri } : Images.SMALL_CARD}
-              defaultSource={Images.SMALL_CARD}
-              style={styles.cardImage}
-              resizeMode="contain"
-            />
-          </View>
-          <View style={styles.cardInfo}>
-            <GradientText colors={Colors.GRADIENT.GOLD} style={styles.scheduleName}>
-              {item.NAME}
-            </GradientText>
-            <CustomText style={styles.cardName}>
-              {formatCardName(item.CARD_NAME)}
-            </CustomText>
-            <CustomText style={styles.gameName} numberOfLines={1}>
-              {item.GAME_NAME}
-            </CustomText>
-          </View>
-        </View>
+        <CustomText style={styles.groupDateText}>
+          {moment(item.GAME_DATE).utc().format('DD-MM-YYYY')}
+        </CustomText>
       </LinearGradient>
-    );
-  };
+
+      {/* Card body */}
+      <LinearGradient
+        colors={['#260030', '#44004F' ]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.groupCard}
+      >
+        {item.items.map((schedule, index) => {
+          const imageUri = schedule.CARD_IMAGE_URL
+            ? `${ENV.BASE_URL}/${schedule.CARD_IMAGE_URL}`
+            : null;
+          return (
+            <React.Fragment key={schedule.ID}>
+              <View style={styles.groupRow}>
+                <GradientText
+                  colors={Colors.GRADIENT.GOLD}
+                  style={styles.groupScheduleName}
+                  angle={180}
+                >
+                  {schedule.NAME}
+                </GradientText>
+
+                <View style={styles.groupRowRight}>
+                  <Image
+                    source={imageUri ? { uri: imageUri } : Images.SMALL_CARD}
+                    defaultSource={Images.SMALL_CARD}
+                    style={styles.groupCardImage}
+                    resizeMode="contain"
+                  />
+                  <CustomText style={styles.groupCardName} numberOfLines={1}>
+                    {formatCardName(schedule.CARD_NAME)}
+                  </CustomText>
+                </View>
+              </View>
+
+              {index < item.items.length - 1 && (
+                <View style={styles.groupDivider} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </LinearGradient>
+    </View>
+  );
 
   const ListFooter = () => {
-    if (!hasMore.current || resultList.length === 0) return null;
+    if (!hasMore.current || resultGroups.length === 0) return null;
     return (
       <View style={styles.footerLoader}>
         <CustomText style={styles.footerText}>Loading more...</CustomText>
@@ -304,14 +326,13 @@ const Result = () => {
 
       <FlatList
         ref={flatListRef}
-        data={resultList}
-        keyExtractor={(item) => item.ID}
+        data={resultGroups}
+        keyExtractor={(item) => item.GAME_DATE}
         renderItem={renderItem}
         ListEmptyComponent={ListEmpty}
         ListFooterComponent={ListFooter}
         contentContainerStyle={styles.listContent}
         style={styles.flex1}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
         onScrollBeginDrag={() => { hasInteracted.current = true; }}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.3}

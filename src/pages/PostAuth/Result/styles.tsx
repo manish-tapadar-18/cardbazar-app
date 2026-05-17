@@ -14,85 +14,76 @@ export const styles = StyleSheet.create({
   listContent: {
     flexGrow: 1,
     paddingHorizontal: rw(4),
-    paddingTop: rh(2),
+    paddingTop: rh(4),
     paddingBottom: rh(12),
   },
-  separator: {
-    height: rh(1.5),
+
+  // ── Date-grouped card wrapper ──────────────────────────────────────────────
+  groupWrapper: {
+    marginBottom: rh(3),
   },
 
-  // ── Result card ────────────────────────────────────────────────────────────
-  card: {
-    borderRadius: rw(3.5),
-    borderWidth: 1,
-    borderColor: 'rgba(255,215,0,0.15)',
-    overflow: 'hidden',
-  },
-
-  // Date header
-  cardHeader: {
-    paddingHorizontal: rw(4),
-    paddingTop: rh(1.5),
-    paddingBottom: rh(1.2),
-  },
-  dateBadge: {
+  // Date badge — absolute, floats above the card
+  groupDateBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: rw(3.5),
-    paddingVertical: rh(0.5),
-    borderRadius: rw(5),
+    paddingHorizontal: rw(2),
+    paddingVertical: rh(0.7),
+    borderRadius: rw(2),
+    position: 'absolute',
+    zIndex: 9999,
+    top: -rh(2),
   },
-  dateText: {
-    color: Colors.DARK_BROWN,
-    fontSize: rf(3.5),
-    fontFamily: FontFamilyWithWeight[800],
-    letterSpacing: 0.4,
-  },
-
-  // Divider
-  divider: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    marginHorizontal: rw(4),
+  groupDateText: {
+    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(5),
+    color: '#330000',
   },
 
   // Card body
-  cardBody: {
+  groupCard: {
+    borderRadius: rw(2.5),
+    borderWidth: 1,
+    borderColor: 'rgba(255,215,0,0.15)',
+    overflow: 'hidden',
+    paddingTop: rh(2),
+  },
+
+  // Row — schedule name on left, image+card name on right
+  groupRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: rw(4),
-    paddingVertical: rh(1.8),
-    gap: rw(4),
+    paddingVertical: rh(1.4),
+    gap: rw(7),
   },
-  imageWrapper: {
-    width: rw(18),
-    height: rw(18),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardImage: {
-    width: rw(16),
-    height: rw(16),
-    transform: [{ rotate: '-10deg' }],
-  },
-  cardInfo: {
+  groupScheduleName: {
     flex: 1,
-    gap: rh(0.5),
-  },
-  scheduleName: {
     fontSize: rf(5),
     fontFamily: FontFamilyWithWeight[700],
     letterSpacing: 0.5,
   },
-  cardName: {
-    color: Colors.WHITE,
-    fontSize: rf(4),
-    fontFamily: FontFamilyWithWeight[600],
-    textTransform: 'capitalize',
+  groupRowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rw(2),
+    flexShrink: 0,
   },
-  gameName: {
-    color: Colors.WHITE_55,
-    fontSize: rf(3.5),
-    fontFamily: FontFamilyWithWeight[400],
+  groupCardImage: {
+    width: rw(6),
+    height: rw(6),
+  },
+  groupCardName: {
+    fontSize: rf(5),
+    color: Colors.WHITE,
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+
+  // Divider between rows inside a card
+  groupDivider: {
+    height: 1,
+    marginHorizontal: rw(4),
+    backgroundColor: '#FFFFFF',
   },
 
   // ── Footer loader ──────────────────────────────────────────────────────────
