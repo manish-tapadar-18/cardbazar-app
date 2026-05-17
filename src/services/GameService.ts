@@ -22,7 +22,7 @@ class GameService implements IGameService {
     async getAllGameCategories(): Promise<ICustomResponse<IGameCategoryResponse[]>> {
         try {
             const response = await http.get<IApiResponse<IGameCategoryResponse[]>>(
-                UriRepo.GETALLGAMECATEGORY,
+                UriRepo.GETALLGAMECATEGORYWITHCOUNT,
                 option
             );
             const result = response.data;
