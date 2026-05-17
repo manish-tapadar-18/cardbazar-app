@@ -448,7 +448,7 @@ const PlayGame: React.FC = () => {
           style={styles.playBtnWrapper}
         >
           <LinearGradient
-            colors={isPlaying ? [Colors.DISABLED_BG, Colors.DISABLED_BG] : Colors.GRADIENT.GOLD}
+            colors={isPlaying ? [Colors.DISABLED_BG, Colors.DISABLED_BG] : Colors.GRADIENT.SPACER_CORE}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.playBtnGradient}
