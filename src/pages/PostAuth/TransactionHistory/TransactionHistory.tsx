@@ -12,6 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import moment from 'moment';
 import GradientIconBar from '../../../components/GradientIconBar';
 import CustomText from '../../../components/CustomText';
+import GradientText from '../../../components/GradientText';
 import DatePickerModal from '../../../components/DatePickerModal';
 import TransactionSkeleton from '../../../components/TransactionSkeleton';
 import EmptyState from '../../../components/EmptyState';
@@ -71,6 +72,16 @@ const getTypeLabel = (type: string): string => {
         case 'PLAY_GAME': return 'GAME PLAY';
         case 'SETTLE_GAME': return 'SETTLEMENT';
         default: return type;
+    }
+};
+
+const getTypeGradient = (type: string): string[] => {
+    switch (type) {
+        case 'ADD': return ['#66FF33', '#3BD414'];
+        case 'WITHDRAWAL': return ['#F6AAAD', '#fc0303'];
+        case 'PLAY_GAME': return ['#FFE600', '#FFD700'];
+        case 'SETTLE_GAME': return ['#FFFFFF', '#CCCCCC'];
+        default: return ['#FFFFFF', '#AAAAAA'];
     }
 };
 
@@ -212,28 +223,83 @@ const TransactionHistory = () => {
     // ─── Render helpers ──────────────────────────────────────────────────────
     const renderItem = ({ item }: { item: ITransactionItem }) => {
         const color = getTypeColor(item.TYPE);
+        const typeGradient = getTypeGradient(item.TYPE);
+        const hasGameInfo = !!(item.GAME_CATEGORY_NAME || item.GAME_MASTER_SCHEDULE_NAME);
+
         return (
-            <View style={styles.row}>
-                <View style={styles.rowCell}>
-                    <CustomText style={[styles.rowText, { color }]}>
-                        {moment(item.DATE).utc().format('DD-MM-YYYY')}
-                    </CustomText>
+            <LinearGradient
+                colors={['#260030', '#44004F' ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.card}
+            >
+                {/* Left accent stripe */}
+                <View style={[styles.cardAccentStripe, { backgroundColor: color }]} />
+
+                <View style={styles.cardContent}>
+                    {/* Type + Date */}
+                    <View style={styles.cardHeaderRow}>
+                        <GradientText colors={typeGradient} style={styles.cardTypeLabel} angle={90}>
+                            {getTypeLabel(item.TYPE)}
+                        </GradientText>
+                        <CustomText style={styles.cardDateText}>
+                            {moment(item.DATE).utc().format('DD MMM YYYY')}
+                        </CustomText>
+                    </View>
+
+                    {/* Game info */}
+                    {hasGameInfo && (
+                        <>
+                            <LinearGradient
+                                colors={['transparent', 'rgba(255,215,0,0.25)', 'transparent']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.cardDivider}
+                            />
+                            <View style={styles.gameInfoSection}>
+                                {item.GAME_CATEGORY_NAME ? (
+                                    <CustomText style={styles.gameCategoryLabel}>
+                                        {item.GAME_CATEGORY_NAME.toUpperCase()}
+                                    </CustomText>
+                                ) : null}
+                                {item.GAME_MASTER_SCHEDULE_NAME ? (
+                                    <GradientText
+                                        colors={['#FFD540', '#FFE600', '#FFA500']}
+                                        locations={[0, 0.5, 1]}
+                                        style={styles.gameNameLabel}
+                                        angle={90}
+                                        numberOfLines={1}
+                                    >
+                                        {item.GAME_MASTER_SCHEDULE_NAME}
+                                    </GradientText>
+                                ) : null}
+                            </View>
+                        </>
+                    )}
+
+                    {/* Amount */}
+                    <LinearGradient
+                        colors={['transparent', 'rgba(255,215,0,0.2)', 'transparent']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.cardDivider}
+                    />
+                    <View style={styles.cardAmountRow}>
+                        <GradientText
+                            colors={['#FFD540', '#FFE600', '#FFF177', '#FFA500']}
+                            locations={[0, 0.35, 0.65, 1]}
+                            style={styles.cardAmountText}
+                            angle={90}
+                        >
+                            {`INR ${Math.abs(item.AMOUNT)}`}
+                        </GradientText>
+                    </View>
                 </View>
-                <View style={styles.rowCell}>
-                    <CustomText style={[styles.rowText, { color }]}>
-                        {getTypeLabel(item.TYPE)}
-                    </CustomText>
-                </View>
-                <View style={styles.rowCell}>
-                    <CustomText style={[styles.rowText, { color }]}>
-                        {`INR ${Math.abs(item.AMOUNT)}`}
-                    </CustomText>
-                </View>
-            </View>
+            </LinearGradient>
         );
     };
 
-    const ItemSeparator = () => <View style={styles.separator} />;
+    const ItemSeparator = () => null;
 
     const ListEmpty = () => {
         if (isLoading) return null;
@@ -348,20 +414,6 @@ const TransactionHistory = () => {
                     </View>
                 )}
             </LinearGradient>
-
-            {/* ── Table Header ──────────────────────────────────────────────────── */}
-            {transactions.length > 0 && <LinearGradient
-                colors={['#E76402', '#EB7602', '#FBC601']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.tableHeaderGradient}
-            >
-                {['DATE', 'STATUS', 'AMOUNT'].map(col => (
-                    <View key={col} style={styles.tableHeaderCell}>
-                        <CustomText style={styles.tableHeaderText}>{col}</CustomText>
-                    </View>
-                ))}
-            </LinearGradient>}
 
             {/* ── Transaction List / Skeleton ────────────────────────────────────── */}
             {isLoading && pageNum === 0 ? (

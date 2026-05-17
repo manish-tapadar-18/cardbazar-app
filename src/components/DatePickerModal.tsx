@@ -162,7 +162,7 @@ const DatePickerModal: React.FC<DatePickerModalProps> = ({ visible, onConfirm, o
               disabled={!selectedDate}
             >
               <LinearGradient
-                colors={selectedDate ? Colors.GRADIENT.BUTTON_GOLD : [Colors.DISABLED_BG, Colors.DISABLED_BG]}
+                colors={selectedDate ? Colors.GRADIENT.SPACER_CORE : [Colors.DISABLED_BG, Colors.DISABLED_BG]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 useAngle

@@ -63,7 +63,7 @@ const TimingCard: React.FC<TimingCardProps> = ({ schedule }) => {
     <View style={styles.wrapper}>
       <View style={styles.badgeRow}>
         <LinearGradient
-          colors={Colors.GRADIENT.GOLD}
+          colors={Colors.GRADIENT.SPACER_CORE}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.badge}
@@ -221,7 +221,6 @@ const GameTimings = () => {
           tabs={categoryTabs}
           activeKey={activeTab}
           onPress={(tab) => setActiveTab(tab.ID)}
-          activeGradientColors={Colors.GRADIENT.GOLD}
         />
       )}
 

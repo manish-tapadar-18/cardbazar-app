@@ -35,7 +35,7 @@ const GradientIconBar: React.FC = () => {
     }
     if (item.key === 'gameRules') navigation.navigate('MainTabs', {
       screen: 'HomeTab',
-      params: { screen: 'GameTimings' },
+      params: { screen: 'GameRules' },
     });
     else if (item.key === 'referEarn') navigation.navigate('MainTabs', {
       screen: 'HomeTab',

@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { rh, rw } from "../../../utils/responsive";
+import { rf, rh, rw } from "../../../utils/responsive";
 import { Fonts } from "../../../utils/Fontsizes";
 import { FontFamilyWithWeight } from "../../../utils/FontFamilyWithWeight";
 import { Colors } from "../../../utils/Colors";
@@ -52,8 +52,8 @@ export const styles = StyleSheet.create({
     backgroundColor: Colors.DARK_VIOLET,
   },
   badgeText: {
-    fontSize: Fonts.smaller,
-    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(4),
+    fontWeight:"bold",
     color: Colors.BADGE_TEXT,
     letterSpacing: 1.2,
     textTransform: 'uppercase',
@@ -100,25 +100,25 @@ export const styles = StyleSheet.create({
     gap: rh(0.4),
   },
   timeValue: {
-    fontSize: Fonts.smallest,
-    fontFamily: FontFamilyWithWeight[700],
+    fontSize: rf(3.5),
+    fontWeight: "bold",
     color: Colors.WHITE,
   },
   startLabel: {
-    fontSize: Fonts.smallest,
-    fontFamily: FontFamilyWithWeight[600],
+    fontSize: rf(3.5),
+    fontWeight: "bold",
     color: Colors.GREEN,
     letterSpacing: 0.4,
   },
   endLabel: {
-    fontSize: Fonts.smallest,
-    fontFamily: FontFamilyWithWeight[600],
+    fontSize: rf(3.5),
+    fontWeight: "bold",
     color: '#FF6B9D',
     letterSpacing: 0.4,
   },
   resultLabel: {
-    fontSize: Fonts.smallest,
-    fontFamily: FontFamilyWithWeight[600],
+    fontSize: rf(3.5),
+    fontWeight: "bold",
     color: Colors.GOLD,
     letterSpacing: 0.4,
   },

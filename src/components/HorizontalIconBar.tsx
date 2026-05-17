@@ -9,7 +9,6 @@ import {
 import CustomText from './CustomText';
 import { rf, rh, rw } from '../utils/responsive';
 import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight';
-import { Fonts } from '../utils/Fontsizes';
 import { Colors } from '../utils/Colors';
 
 export type HorizontalIconBarItem = {

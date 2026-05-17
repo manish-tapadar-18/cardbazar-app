@@ -24,7 +24,7 @@ const SeriesCard: React.FC<Props> = ({ detail }) => {
       {/* Badge floats above card */}
       <View style={styles.badgeRow}>
         <LinearGradient
-          colors={Colors.GRADIENT.GOLD}
+          colors={Colors.GRADIENT.SPACER_CORE}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.badge}
