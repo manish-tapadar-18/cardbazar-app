@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     TouchableOpacity,
@@ -16,7 +16,7 @@ import CustomButton from '../../components/CustomButton';
 import { rf, rh, rw } from '../../utils/responsive';
 import { styles as authStyles } from './styles';
 import { IRegisterFormValues, IVerifyOtpValues } from '../../validations/interfaces';
-import { RegisterValidationSchema } from '../../validations/schemas/RegisterValidationSchema';
+import { registerValidationSchema } from '../../validations/schemas/RegisterValidationSchema';
 import { useFormik } from 'formik';
 import CustomText from '../../components/CustomText';
 import { Toast } from '../../utils/toast';
@@ -27,6 +27,7 @@ import { FontFamilyWithWeight } from '../../utils/FontFamilyWithWeight';
 import { OtpVerificationPayload } from '../../services/interfaces/IAuthenticationService';
 import { useUserStore } from '../../stores/userStore';
 import { useAdminDetailsStore } from '../../stores/adminDetailsStore';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Register = () => {
 
@@ -44,7 +45,8 @@ const Register = () => {
 
     const { setUserSession, setAuthenticationStatus, setToken } = useUserStore();
     const { setAdminDetails } = useAdminDetailsStore();
-
+    const { t, selectedLanguage } = useTranslation();
+    const regvalidationSchema = useMemo(() => registerValidationSchema(t), [selectedLanguage]);
     useEffect(() => {
         const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
         const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
@@ -61,6 +63,7 @@ const Register = () => {
         handleBlur,
         handleSubmit,
         setFieldValue,
+        validateForm
     } = useFormik<IRegisterFormValues>({
         initialValues: {
             FIRST_NAME: '',
@@ -71,7 +74,7 @@ const Register = () => {
             REFERRAL_CODE: '',
             EMAIL: generateEmail(),
         },
-        validationSchema: RegisterValidationSchema,
+        validationSchema: regvalidationSchema,
         validateOnMount: false,
         onSubmit: (vals) => sendOTP(vals.MOBILE),
     });
@@ -84,6 +87,7 @@ const Register = () => {
         handleSubmit: OtpHandleSubmit,
         setFieldValue: OtpSetFieldValue,
         resetForm: OtpResetForm,
+        validateForm: OtpValidateForm
     } = useFormik<IVerifyOtpValues>({
         initialValues: { otp: '' },
         validationSchema: VerifyOtpValidationSchema,
@@ -120,6 +124,14 @@ const Register = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (Object.keys(touched).some(Boolean)) validateForm();
+    }, [selectedLanguage]);
+
+    useEffect(() => {
+        if (Object.keys(OtpTouched).some(Boolean)) OtpValidateForm();
+    }, [selectedLanguage]);
 
     const registerUser = async () => {
         try {
@@ -167,6 +179,7 @@ const Register = () => {
     };
 
     const focus = (field: string) => () => setFocusedField(field);
+
     const blur = (formikBlur: (e: any) => void) => (e: any) => {
         formikBlur(e);
         setFocusedField(null);
@@ -200,8 +213,8 @@ const Register = () => {
                                     style={styles.cardAccent}
                                 />
                                 <View>
-                                    <CustomText style={styles.cardTitle}>Create Account</CustomText>
-                                    <CustomText style={styles.cardSubtitle}>Fill in your details below</CustomText>
+                                    <CustomText style={styles.cardTitle}>{t("create_account_label","Create Account")}</CustomText>
+                                    <CustomText style={styles.cardSubtitle}>{t("fill_reg_details_label","Fill in your details below")}</CustomText>
                                 </View>
                             </View>
 
@@ -213,7 +226,7 @@ const Register = () => {
                             />
 
                             <FieldRow
-                                label="First Name"
+                                label={t("first_name_label","First Name")}
                                 icon={Images.USERS}
                                 focused={focusedField === 'FIRST_NAME'}
                                 error={touched.FIRST_NAME && errors.FIRST_NAME ? errors.FIRST_NAME : undefined}
@@ -225,7 +238,7 @@ const Register = () => {
                                     onBlur={blur(handleBlur('FIRST_NAME'))}
                                     onFocus={focus('FIRST_NAME')}
                                     value={values.FIRST_NAME}
-                                    placeholder="Enter first name"
+                                    placeholder={t("enter_first_name_placeholder","Enter first name")}
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -233,7 +246,7 @@ const Register = () => {
                             </FieldRow>
 
                             <FieldRow
-                                label="Last Name"
+                                label={t("last_name_label","Last Name")}
                                 icon={Images.USERS}
                                 focused={focusedField === 'LAST_NAME'}
                                 error={touched.LAST_NAME && errors.LAST_NAME ? errors.LAST_NAME : undefined}
@@ -245,7 +258,7 @@ const Register = () => {
                                     onBlur={blur(handleBlur('LAST_NAME'))}
                                     onFocus={focus('LAST_NAME')}
                                     value={values.LAST_NAME}
-                                    placeholder="Enter last name"
+                                    placeholder={t("enter_last_name_placeholder","Enter last name")}
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -253,7 +266,7 @@ const Register = () => {
                             </FieldRow>
 
                             <FieldRow
-                                label="Mobile Number"
+                                label={t("mobile_number_form_label","Mobile Number")}
                                 icon={Images.PHONE}
                                 focused={focusedField === 'MOBILE'}
                                 error={touched.MOBILE && errors.MOBILE ? errors.MOBILE : undefined}
@@ -265,7 +278,7 @@ const Register = () => {
                                     onBlur={blur(handleBlur('MOBILE'))}
                                     onFocus={focus('MOBILE')}
                                     value={values.MOBILE}
-                                    placeholder="Enter mobile number"
+                                    placeholder={t("enter_mobile_number_placeholder","Enter mobile number")}
                                     keyboardType="number-pad"
                                     returnKeyType="next"
                                     style={styles.textInput}
@@ -275,7 +288,7 @@ const Register = () => {
                             </FieldRow>
 
                             <FieldRow
-                                label="Password"
+                                label={t("password_label","Password")}
                                 icon={Images.DATA_SECURITY}
                                 focused={focusedField === 'PASSWORD'}
                                 error={touched.PASSWORD && errors.PASSWORD ? errors.PASSWORD : undefined}
@@ -294,7 +307,7 @@ const Register = () => {
                             >
                                 <CustomTextInput
                                     secureTextEntry={!showPassword}
-                                    placeholder="Enter password"
+                                    placeholder={t("enter_password_placeholder","Enter password")}
                                     value={values.PASSWORD}
                                     onChangeText={handleChange('PASSWORD')}
                                     onBlur={blur(handleBlur('PASSWORD'))}
@@ -306,7 +319,7 @@ const Register = () => {
                             </FieldRow>
 
                             <FieldRow
-                                label="Confirm Password"
+                                label={t("confirm_password_label","Confirm Password")}
                                 icon={Images.DATA_SECURITY}
                                 focused={focusedField === 'CONFIRM_PASSWORD'}
                                 error={touched.CONFIRM_PASSWORD && errors.CONFIRM_PASSWORD ? errors.CONFIRM_PASSWORD : undefined}
@@ -325,7 +338,7 @@ const Register = () => {
                             >
                                 <CustomTextInput
                                     secureTextEntry={!showConfirmPassword}
-                                    placeholder="Re-enter password"
+                                    placeholder={t("re_enter_password_placeholder","Re-enter password")}
                                     value={values.CONFIRM_PASSWORD || ''}
                                     onChangeText={handleChange('CONFIRM_PASSWORD')}
                                     onBlur={blur(handleBlur('CONFIRM_PASSWORD'))}
@@ -337,7 +350,7 @@ const Register = () => {
                             </FieldRow>
 
                             <FieldRow
-                                label="Referral Code (Optional)"
+                                label={t("referral_code_label","Referral Code (Optional)")}
                                 icon={Images.TROPHY}
                                 focused={focusedField === 'REFERRAL_CODE'}
                                 error={undefined}
@@ -349,7 +362,7 @@ const Register = () => {
                                     }
                                     onBlur={blur(handleBlur('REFERRAL_CODE'))}
                                     onFocus={focus('REFERRAL_CODE')}
-                                    placeholder="Enter referral code"
+                                    placeholder={t("referral_code_placeholder","Enter referral code")}
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
                                     unfocusedPlaceholderColor={Colors.WHITE_55}
@@ -364,7 +377,7 @@ const Register = () => {
                             />
 
                             <CustomButton
-                                title={isLoading ? 'Please Wait...' : 'Continue'}
+                                title={isLoading ? `${t("please_wait_loader")}` : `${t("continue_button","Continue")}`}
                                 containerStyle={styles.actionButton}
                                 textStyle={authStyles.buttonText}
                                 disabled={isLoading}
