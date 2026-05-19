@@ -30,6 +30,7 @@ const MENU_ITEMS: DrawerMenuItem[] = [
   { label: "Transaction History", icon: Images.TRANSACTION, tab: "HomeTab", screen: "TransactionHistory", languageKey: "transaction_history" },
   { label: "Play History", icon: Images.WITHDRAWAL, tab: "PlayHistoryTab", screen: "PlayHistory", languageKey: "play_history" },
   { label: "Refer & Earn", icon: Images.USERS, tab: "HomeTab", screen: "Refer", languageKey: "refer_earn" },
+  { label: "Feedback", icon: Images.FEEDBACK, tab: "HomeTab", screen: "Feedback", languageKey: "feedback_menu" },
   { label: "Share", icon: Images.SHARE, tab: "HomeTab", screen: "ShareApp", languageKey: "share" },
   { label: "Switch Language", icon: Images.LANGUAGE, tab: "HomeTab", screen: "LanguageOptions", languageKey: "switch_language" },
 ];

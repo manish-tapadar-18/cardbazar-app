@@ -6,6 +6,7 @@ import { ITransactionService } from "../../services/interfaces/ITransactionServi
 import { IPlayHistoryService } from "../../services/interfaces/IPlayHistoryService";
 import { IPaymentService } from "../../services/interfaces/IPaymentService";
 import { IWithdrawalService } from "../../services/interfaces/IWithdrawalService";
+import { IFeedbackService } from "../../services/interfaces/IFeedbackService";
 
 export interface IRepository {
     Auth: IAuthenticationService;
@@ -16,4 +17,5 @@ export interface IRepository {
     PlayHistory: IPlayHistoryService;
     Payment: IPaymentService;
     Withdrawal: IWithdrawalService;
+    Feedback: IFeedbackService;
 }

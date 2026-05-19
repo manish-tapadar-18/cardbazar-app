@@ -6,6 +6,7 @@ import { transactionService } from "../services/TransactionService";
 import { playHistoryService } from "../services/PlayHistoryService";
 import { paymentService } from "../services/PaymentService";
 import { withdrawalService } from "../services/WithdrawalService";
+import { feedbackService } from "../services/FeedbackService";
 import { IRepository } from "./interfaces/IRepository";
 
 const Repository: IRepository = {
@@ -17,6 +18,7 @@ const Repository: IRepository = {
     PlayHistory: playHistoryService,
     Payment: paymentService,
     Withdrawal: withdrawalService,
+    Feedback: feedbackService,
 };
 
 export { Repository };

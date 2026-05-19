@@ -35,5 +35,6 @@ export const UriRepo = {
     CHECKPAYMENTSTATUS: (utrNo: string, userId: number) => `${version}updateMoneywithUtr?_format=json&UTR=${utrNo}&USER_ID=${userId}`,
     ADDSECURITYERRORREPORT: `${version}addErrorReport?_format=json`,
     SECURITYDEBUG: `${version}getVariable?_format=json&name=SECURITY_DEBUG`,
-    SECURITYLOCATION: `${version}getVariable?_format=json&name=SECURITY_LOCATION`
+    SECURITYLOCATION: `${version}getVariable?_format=json&name=SECURITY_LOCATION`,
+    ADDFEEDBACK: `${version}addFeedback?_format=json`
 }

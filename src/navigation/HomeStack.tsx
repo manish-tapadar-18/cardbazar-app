@@ -5,6 +5,7 @@ import ShareApp from "../pages/PostAuth/ShareApp/ShareApp.tsx";
 import GameDetails from "../pages/PostAuth/GameDetails/GameDetails.tsx";
 import PlayGame from "../pages/PostAuth/PlayGame/PlayGame.tsx";
 import PaymentSelection from "../pages/PostAuth/PaymentSelection/PaymentSelection.tsx";
+import Feedback from "../pages/PostAuth/Feedback/Feedback.tsx";
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -23,6 +24,7 @@ export const HomeStack = () => {
       <Stack.Screen name="ShareApp" component={ShareApp} />
       <Stack.Screen name="PlayGame" component={PlayGame} />
       <Stack.Screen name="PaymentSelection" component={PaymentSelection} />
+      <Stack.Screen name="Feedback" component={Feedback} />
     </Stack.Navigator>
   );
 };

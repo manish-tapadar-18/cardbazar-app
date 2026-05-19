@@ -12,6 +12,7 @@ export type HomeStackParamList = {
     Refer: undefined;
     AddMoney: undefined;
     ShareApp: undefined;
+    Feedback:undefined;
     PlayGame: { cardImages: string; GAME_MASTER_SCHEDULE_ID: string; GAME_CATEGORY: string },
     PaymentSelection: { ID: string; amount: number }
 };

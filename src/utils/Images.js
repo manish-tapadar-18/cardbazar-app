@@ -4,6 +4,7 @@ export const Images = {
     DATA_SECURITY : require('../assets/images/data_security.png'),
     BENGALI : require('../assets/images/bengali.png'),
     HINDI : require('../assets/images/hindi.png'),
+    FEEDBACK : require('../assets/images/feedback-review.png'),
     ENGLISH : require('../assets/images/english.png'),
     URDU : require('../assets/images/urdu.png'),
     CIRCLE_CHECK : require('../assets/images/circle_check.png'),
