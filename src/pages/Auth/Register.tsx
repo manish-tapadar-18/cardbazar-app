@@ -475,15 +475,6 @@ const Register = () => {
                     </LinearGradient>
                 )}
             </KeyboardAwareScrollView>
-
-            {/* ── iOS / Android "Done" keyboard toolbar ── */}
-            {keyboardHeight > 0 && (
-                <View style={[styles.keyboardToolbar, { bottom: keyboardHeight }]}>
-                    <TouchableOpacity onPress={Keyboard.dismiss} style={styles.doneButton}>
-                        <Text style={styles.doneText}>Done</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
         </View>
     );
 };

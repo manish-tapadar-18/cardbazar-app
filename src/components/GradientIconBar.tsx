@@ -8,7 +8,7 @@ import { useLanguageModalStore } from '../stores/languageModalStore';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 const ROUTE_ACTIVE_KEY: Record<string, string> = {
-  GameTimings: 'gameRules',
+  GameRules: 'gameRules',
   Refer: 'referEarn',
   Home: 'gamesList',
 };
@@ -20,7 +20,7 @@ const GradientIconBar: React.FC = () => {
   const route = useRoute();
 
   const activeKey = ROUTE_ACTIVE_KEY[route.name] ?? '';
-
+  console.log({ activeKey });
   const topBarItems: HorizontalIconBarItem[] = [
     { key: 'gamesList', image: Images.CLOCK, text: t('games_list') },
     { key: 'gameRules', image: Images.TROPHY, text: t('game_rules') },

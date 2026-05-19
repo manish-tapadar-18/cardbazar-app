@@ -199,7 +199,8 @@ const Home = () => {
   const fetchAllGameCategories = useCallback(async () => {
     clLog(TAGS.HOME, 'fetchAllGameCategories — start');
     try {
-      setIsLoading(true)
+      setIsLoading(true);
+      setGameCategories([]);
       const catResponse = await Repository.Game.getAllGameCategories()
       const { isSuccess, data, message } = catResponse
       if (!isSuccess || !data) {
@@ -251,7 +252,7 @@ const Home = () => {
       )}
     </ImageBackground>
       <DeviceBlockModal onCheckDevice={checkDeviceId} />
-      <MultiLoginModal />
+      {/* <MultiLoginModal /> */}
     </>
   )
 }
