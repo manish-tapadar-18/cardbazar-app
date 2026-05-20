@@ -5,9 +5,19 @@ import {
     ImageBackground,
     Pressable,
     ScrollView,
+    StyleSheet,
     View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withRepeat,
+    withTiming,
+    cancelAnimation,
+    Easing,
+} from 'react-native-reanimated';
 import { useFocusEffect } from '@react-navigation/native';
 import moment from 'moment';
 import GradientIconBar from '../../../components/GradientIconBar';
@@ -26,6 +36,8 @@ import { ITransactionItem } from '../../../response/module/ITransactionResponse'
 import { ITransactionRequest } from '../../../request/module/ITransactionRequest';
 import { styles } from './styles';
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
+import { rf, rh, rw } from '../../../utils/responsive';
+import { FontFamilyWithWeight } from '../../../utils/FontFamilyWithWeight';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PER_PAGE = 14;
@@ -38,6 +50,7 @@ const SORT_FILTER = {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TypeFilter = '' | 'ADD' | 'WITHDRAWAL' | 'PLAY_GAME' | 'SETTLE_GAME';
+type TxStyle   = 'deposit' | 'withdrawal' | 'gameplay' | 'win';
 
 interface FilterItem {
     label: string;
@@ -45,51 +58,20 @@ interface FilterItem {
     color: string;
 }
 
-// ─── Filter config — each chip has its own accent color ──────────────────────
+// ─── Filter config ─────────────────────────────────────────────────────────────
 const FILTERS: FilterItem[] = [
-    { label: 'ALL', value: '', color: Colors.GOLD },
-    { label: 'DEPOSIT', value: 'ADD', color: Colors.GREEN },
-    { label: 'WITHDRAWAL', value: 'WITHDRAWAL', color: '#F6AAAD' },
-    { label: 'GAME PLAY', value: 'PLAY_GAME', color: Colors.YELLOW },
-    { label: 'SETTLE GAME', value: 'SETTLE_GAME', color: Colors.WHITE },
+    { label: 'ALL',         value: '',            color: Colors.GOLD    },
+    { label: 'DEPOSIT',     value: 'ADD',         color: Colors.GREEN   },
+    { label: 'WITHDRAWAL',  value: 'WITHDRAWAL',  color: '#F6AAAD'      },
+    { label: 'GAME PLAY',   value: 'PLAY_GAME',   color: Colors.YELLOW  },
+    { label: 'SETTLE GAME', value: 'SETTLE_GAME', color: Colors.WHITE   },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const getTypeColor = (type: string): string => {
-    switch (type) {
-        case 'ADD': return Colors.GREEN;
-        case 'WITHDRAWAL': return '#F6AAAD';
-        case 'PLAY_GAME': return Colors.YELLOW;
-        case 'SETTLE_GAME': return Colors.WHITE;
-        default: return Colors.WHITE_75;
-    }
-};
-
-const getTypeLabel = (type: string): string => {
-    switch (type) {
-        case 'ADD': return 'DEPOSIT';
-        case 'WITHDRAWAL': return 'WITHDRAWAL';
-        case 'PLAY_GAME': return 'GAME PLAY';
-        case 'SETTLE_GAME': return 'SETTLEMENT';
-        default: return type;
-    }
-};
-
-const getTypeGradient = (type: string): string[] => {
-    switch (type) {
-        case 'ADD': return ['#66FF33', '#3BD414'];
-        case 'WITHDRAWAL': return ['#F6AAAD', '#fc0303'];
-        case 'PLAY_GAME': return ['#FFE600', '#FFD700'];
-        case 'SETTLE_GAME': return ['#FFFFFF', '#CCCCCC'];
-        default: return ['#FFFFFF', '#AAAAAA'];
-    }
-};
-
-// Always sends both date + (optional) type filter together
+// ─── Payload builder ──────────────────────────────────────────────────────────
 const buildPayload = (userId: string, typeFilter: TypeFilter, date: string): ITransactionRequest => {
     const search: ITransactionRequest['filters']['search'] = [
-        { FIELD_NAME: 'USER_TRANSACTION.USER_ID', FIELD_VALUE: userId, OPT: '=' },
-        { FIELD_NAME: 'USER_TRANSACTION.DATE', FIELD_VALUE: date, OPT: '=' },
+        { FIELD_NAME: 'USER_TRANSACTION.USER_ID',  FIELD_VALUE: userId, OPT: '=' },
+        { FIELD_NAME: 'USER_TRANSACTION.DATE',     FIELD_VALUE: date,   OPT: '=' },
     ];
     if (typeFilter !== '') {
         search.push({ FIELD_NAME: 'USER_TRANSACTION.TYPE', FIELD_VALUE: typeFilter, OPT: '=' });
@@ -97,22 +79,267 @@ const buildPayload = (userId: string, typeFilter: TypeFilter, date: string): ITr
     return { filters: { search, sortFilter: SORT_FILTER } };
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Transaction-type helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getTxStyle(type: string): TxStyle {
+    switch (type) {
+        case 'ADD':          return 'deposit';
+        case 'WITHDRAWAL':   return 'withdrawal';
+        case 'PLAY_GAME':    return 'gameplay';
+        case 'SETTLE_GAME':  return 'win';
+        default:             return 'deposit';
+    }
+}
+
+/** Display label shown inside the shining badge (right side) */
+function getTxLabel(type: string): string {
+    switch (type) {
+        case 'ADD':          return 'DEPOSIT';
+        case 'WITHDRAWAL':   return 'WITHDRAWAL';
+        case 'PLAY_GAME':    return 'GAME PLAY';
+        case 'SETTLE_GAME':  return 'WIN';
+        default:             return type;
+    }
+}
+
+/** Left-side headline for non-game transactions */
+function getTxTitle(type: string): string {
+    switch (type) {
+        case 'ADD':         return 'BALANCE\nCREDIT';
+        case 'WITHDRAWAL':  return 'WITHDRAWAL';
+        default:            return 'TRANSACTION';
+    }
+}
+
+/** Emoji icon shown next to the headline */
+function getTxIcon(type: string): string {
+    switch (type) {
+        case 'ADD':         return '💰';
+        case 'WITHDRAWAL':  return '💸';
+        case 'PLAY_GAME':   return '🎮';
+        case 'SETTLE_GAME': return '🏆';
+        default:            return '💳';
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ShineStatus — animated gradient text badge (no border, just shining text)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const TX_GRADIENT: Record<TxStyle, string[]> = {
+    win:        ['#43E97B', '#38F9D7', '#00FF55', '#43E97B', '#38F9D7'],
+    deposit:    ['#66FF33', '#00FF88', '#3BD414', '#66FF33', '#00FF88'],
+    withdrawal: ['#FF4444', '#FF8C00', '#FF4444', '#FF0055', '#FF4444'],
+    gameplay:   ['#FFE600', '#FFD700', '#FFA500', '#FFE600', '#FFD700'],
+};
+
+function txFontSize(label: string): number {
+    if (label.length >= 10) return rf(3.0); // WITHDRAWAL
+    if (label.length >= 8)  return rf(3.4); // GAME PLAY
+    if (label.length >= 6)  return rf(3.9); // DEPOSIT
+    return rf(4.6);                          // WIN
+}
+
+function shineWidth(label: string): number {
+    if (label === 'WIN')        return rw(18);
+    if (label === 'DEPOSIT')    return rw(24);
+    if (label === 'GAME PLAY')  return rw(28);
+    if (label === 'WITHDRAWAL') return rw(34);
+    return rw(26);
+}
+
+const ShineStatus: React.FC<{ label: string; type: TxStyle }> = ({ label, type }) => {
+    const shimmerX = useSharedValue(-rw(16));
+
+    React.useEffect(() => {
+        shimmerX.value = -rw(16);
+        shimmerX.value = withRepeat(
+            withTiming(rw(30), { duration: 1800, easing: Easing.linear }),
+            -1,
+            false,
+        );
+        return () => cancelAnimation(shimmerX);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const animShine = useAnimatedStyle(() => ({
+        transform: [{ translateX: shimmerX.value }, { skewX: '-18deg' }],
+    }));
+
+    const width = shineWidth(label);
+
+    return (
+        <MaskedView
+            style={[txStyles.shineWrapper, { width }]}
+            maskElement={
+                <View style={[txStyles.shineWrapper, { width, backgroundColor: 'transparent' }]}>
+                    <CustomText
+                        style={[txStyles.resultText, { fontSize: txFontSize(label) }]}
+                        numberOfLines={1}
+                    >
+                        {label}
+                    </CustomText>
+                </View>
+            }
+        >
+            <LinearGradient
+                colors={TX_GRADIENT[type]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={[txStyles.shineWrapper, { width }]}
+            />
+            <Animated.View style={[txStyles.shineBar, animShine]}>
+                <LinearGradient
+                    colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.80)', 'rgba(255,255,255,0)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFill}
+                />
+            </Animated.View>
+        </MaskedView>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LV — label → value row  (Inter font, full width)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const LV: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+    <View style={lvStyles.row}>
+        <CustomText style={lvStyles.label}>{label}</CustomText>
+        <View style={lvStyles.valueSide}>
+            {typeof value === 'string' || typeof value === 'number'
+                ? <CustomText style={lvStyles.valueText}>{value}</CustomText>
+                : value}
+        </View>
+    </View>
+);
+
+const lvStyles = StyleSheet.create({
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: rh(0.55),
+    },
+    label: {
+        width: rw(32),
+        fontSize: rf(3.8),
+        fontFamily: FontFamilyWithWeight.inter_400,
+        color: 'rgba(255,255,255,0.65)',
+        letterSpacing: 0.3,
+    },
+    valueSide: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+    },
+    valueText: {
+        fontSize: rf(4.2),
+        fontFamily: FontFamilyWithWeight.inter_700,
+        color: '#FFFFFF',
+        letterSpacing: 0.2,
+    },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inline card styles (scoped to this file)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const txStyles = StyleSheet.create({
+    cardWrapper: {
+        marginHorizontal: rw(3),
+        marginVertical: rh(0.7),
+    },
+    card: {
+        borderRadius: rw(3.5),
+        borderWidth: 1,
+        borderColor: 'rgba(255,215,0,0.22)',
+        overflow: 'hidden',
+        paddingHorizontal: rw(4),
+        paddingTop: rh(1.6),
+        paddingBottom: rh(1.6),
+    },
+    topRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: rh(0.9),
+    },
+    titleBlock: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: rw(2.5),
+        flex: 1,
+        marginRight: rw(2),
+    },
+    txIcon: {
+        fontSize: rf(6.5),
+        lineHeight: rf(8),
+    },
+    txTitleText: {
+        fontSize: rf(5.2),
+        fontFamily: FontFamilyWithWeight.inter_700,
+        letterSpacing: 0.5,
+        flexShrink: 1,
+    },
+    // ShineStatus
+    shineWrapper: {
+        height: rf(5.5),
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    shineBar: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        width: rw(12),
+    },
+    resultText: {
+        fontFamily: FontFamilyWithWeight.inter_700,
+        letterSpacing: 1.2,
+        color: Colors.WHITE,
+        backgroundColor: 'transparent',
+    },
+    separator: {
+        height: 1,
+        backgroundColor: 'rgba(255,215,0,0.32)',
+        marginBottom: rh(0.8),
+    },
+    inlineRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: rw(1.2),
+    },
+    inrText: {
+        fontSize: rf(4.4),
+        fontFamily: FontFamilyWithWeight.inter_700,
+        color: '#FFD700',
+        lineHeight: rf(5),
+    },
+    emojiIcon: {
+        fontSize: rf(3.6),
+        lineHeight: rf(4.4),
+    },
+});
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 const TransactionHistory = () => {
     const { userDetails } = useUserStore();
 
     const [transactions, setTransactions] = useState<ITransactionItem[]>([]);
-    const [total, setTotal] = useState(0);
-    const [pageNum, setPageNum] = useState(0);
-    const [typeFilter, setTypeFilter] = useState<TypeFilter>('');
+    const [total, setTotal]               = useState(0);
+    const [pageNum, setPageNum]           = useState(0);
+    const [typeFilter, setTypeFilter]     = useState<TypeFilter>('');
     const [selectedDate, setSelectedDate] = useState(TODAY);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading]       = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const { setAdminDetails } = useAdminDetailsStore();
-    const flatListRef = useRef<FlatList<ITransactionItem>>(null);
-    // Prevents onEndReached firing multiple times while a page request is in flight
-    const isFetchingMore = useRef(false);
+    const flatListRef      = useRef<FlatList<ITransactionItem>>(null);
+    const isFetchingMore   = useRef(false);
 
     // ── Fetch user details — logout if INACTIVE ───────────────────────────────
     const fetchUserDetails = useCallback(async () => {
@@ -120,20 +347,18 @@ const TransactionHistory = () => {
         if (!email) return;
         try {
             const { isSuccess, data } = await Repository.User.userDetails({ EMAIL: email });
-            if (isSuccess && data?.STATUS === 'INACTIVE') {
-                clearAllStores();
-            }
+            if (isSuccess && data?.STATUS === 'INACTIVE') clearAllStores();
         } catch (error: any) {
             Toast.error(error?.message ?? 'Failed to verify session.');
         }
     }, [userDetails?.EMAIL]);
 
-    // ── Core fetch — combines type + date, supports pagination ────────────────
+    // ── Core fetch ────────────────────────────────────────────────────────────
     const fetchTransactions = useCallback(async (
         type: TypeFilter,
         date: string,
         page: number,
-        append: boolean
+        append: boolean,
     ) => {
         const userId = userDetails?.ID;
         if (!userId) return;
@@ -141,7 +366,7 @@ const TransactionHistory = () => {
         try {
             const payload = buildPayload(userId, type, date);
             const { isSuccess, data, message } = await Repository.Transaction.getTransactionList(
-                payload, PER_PAGE * page, PER_PAGE
+                payload, PER_PAGE * page, PER_PAGE,
             );
             if (isSuccess && data) {
                 setTotal(data.TOTAL);
@@ -171,10 +396,10 @@ const TransactionHistory = () => {
             setSelectedDate(TODAY);
             setPageNum(0);
             fetchTransactions('', TODAY, 0, false);
-        }, [])
+        }, []),
     );
 
-    // ── Type chip press — keeps current date ──────────────────────────────────
+    // ── Type chip press ───────────────────────────────────────────────────────
     const onTypePress = (filter: TypeFilter) => {
         setTypeFilter(filter);
         setPageNum(0);
@@ -182,7 +407,7 @@ const TransactionHistory = () => {
         fetchTransactions(filter, selectedDate, 0, false);
     };
 
-    // ── Date confirmed — keeps current type filter ─────────────────────────────
+    // ── Date confirmed ────────────────────────────────────────────────────────
     const onDateConfirmed = (date: string) => {
         setShowDatePicker(false);
         setSelectedDate(date);
@@ -191,7 +416,7 @@ const TransactionHistory = () => {
         fetchTransactions(typeFilter, date, 0, false);
     };
 
-    // ── Clear — reset to ALL + today ──────────────────────────────────────────
+    // ── Clear filters ─────────────────────────────────────────────────────────
     const onClearFilters = () => {
         setTypeFilter('');
         setSelectedDate(TODAY);
@@ -209,10 +434,10 @@ const TransactionHistory = () => {
 
     // ── Pagination ────────────────────────────────────────────────────────────
     const onEndReached = ({ distanceFromEnd }: { distanceFromEnd: number }) => {
-        if (distanceFromEnd < 0) return;               // spurious negative event at startup
-        if (transactions.length === 0) return;          // skip if initial load hasn't settled
-        if (isLoading || isFetchingMore.current) return; // request already in flight
-        if (transactions.length >= total) return;       // all pages loaded
+        if (distanceFromEnd < 0) return;
+        if (transactions.length === 0) return;
+        if (isLoading || isFetchingMore.current) return;
+        if (transactions.length >= total) return;
 
         isFetchingMore.current = true;
         const next = pageNum + 1;
@@ -222,84 +447,73 @@ const TransactionHistory = () => {
 
     // ─── Render helpers ──────────────────────────────────────────────────────
     const renderItem = ({ item }: { item: ITransactionItem }) => {
-        const color = getTypeColor(item.TYPE);
-        const typeGradient = getTypeGradient(item.TYPE);
-        const hasGameInfo = !!(item.GAME_CATEGORY_NAME || item.GAME_MASTER_SCHEDULE_NAME);
+        const txStyle    = getTxStyle(item.TYPE);
+        const txLabel    = getTxLabel(item.TYPE);
+        const txIcon     = getTxIcon(item.TYPE);
+        const isGameType = item.TYPE === 'PLAY_GAME' || item.TYPE === 'SETTLE_GAME';
+
+        // Left-side headline: game category for game types, else type title
+        const headlineText = isGameType
+            ? (item.GAME_CATEGORY_NAME?.toUpperCase() ?? 'CARD GAME')
+            : getTxTitle(item.TYPE);
 
         return (
-            <LinearGradient
-                colors={['#260030', '#44004F' ]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.card}
-            >
-                {/* Left accent stripe */}
-                <View style={[styles.cardAccentStripe, { backgroundColor: color }]} />
+            <View style={txStyles.cardWrapper}>
+                <LinearGradient
+                    colors={['#260030', '#44004F']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={txStyles.card}
+                >
+                    {/* ── Top Row: icon + headline  |  shining type badge ── */}
+                    <View style={txStyles.topRow}>
+                        <View style={txStyles.titleBlock}>
+                            <CustomText style={txStyles.txIcon}>{txIcon}</CustomText>
+                            <GradientText
+                                colors={Colors.GRADIENT.GOLD}
+                                locations={Colors.GRADIENT.GOLD_LOCATIONS}
+                                style={txStyles.txTitleText}
+                                angle={180}
+                                numberOfLines={2}
+                            >
+                                {headlineText}
+                            </GradientText>
+                        </View>
 
-                <View style={styles.cardContent}>
-                    {/* Type + Date */}
-                    <View style={styles.cardHeaderRow}>
-                        <GradientText colors={typeGradient} style={styles.cardTypeLabel} angle={90}>
-                            {getTypeLabel(item.TYPE)}
-                        </GradientText>
-                        <CustomText style={styles.cardDateText}>
-                            {moment(item.DATE).utc().format('DD MMM YYYY')}
-                        </CustomText>
+                        {/* Shining type label — no border, right side */}
+                        <ShineStatus label={txLabel} type={txStyle} />
                     </View>
 
-                    {/* Game info */}
-                    {hasGameInfo && (
-                        <>
-                            <LinearGradient
-                                colors={['transparent', 'rgba(255,215,0,0.25)', 'transparent']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 0 }}
-                                style={styles.cardDivider}
-                            />
-                            <View style={styles.gameInfoSection}>
-                                {item.GAME_CATEGORY_NAME ? (
-                                    <CustomText style={styles.gameCategoryLabel}>
-                                        {item.GAME_CATEGORY_NAME.toUpperCase()}
-                                    </CustomText>
-                                ) : null}
-                                {item.GAME_MASTER_SCHEDULE_NAME ? (
-                                    <GradientText
-                                        colors={['#FFD540', '#FFE600', '#FFA500']}
-                                        locations={[0, 0.5, 1]}
-                                        style={styles.gameNameLabel}
-                                        angle={90}
-                                        numberOfLines={1}
-                                    >
-                                        {item.GAME_MASTER_SCHEDULE_NAME}
-                                    </GradientText>
-                                ) : null}
+                    {/* ── Gold separator ── */}
+                    <View style={txStyles.separator} />
+
+                    {/* ── AMOUNT ── */}
+                    <LV
+                        label="AMOUNT"
+                        value={
+                            <View style={txStyles.inlineRow}>
+                                <CustomText style={txStyles.inrText}>₹</CustomText>
+                                <CustomText style={lvStyles.valueText}>
+                                    {Math.abs(item.AMOUNT)}
+                                </CustomText>
                             </View>
-                        </>
-                    )}
-
-                    {/* Amount */}
-                    <LinearGradient
-                        colors={['transparent', 'rgba(255,215,0,0.2)', 'transparent']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.cardDivider}
+                        }
                     />
-                    <View style={styles.cardAmountRow}>
-                        <GradientText
-                            colors={['#FFD540', '#FFE600', '#FFF177', '#FFA500']}
-                            locations={[0, 0.35, 0.65, 1]}
-                            style={styles.cardAmountText}
-                            angle={90}
-                        >
-                            {`INR ${Math.abs(item.AMOUNT)}`}
-                        </GradientText>
-                    </View>
-                </View>
-            </LinearGradient>
+
+                    {/* ── CATEGORY (game transactions only) ── */}
+                    {item.GAME_CATEGORY_NAME ? (
+                        <LV label="CATEGORY" value={item.GAME_CATEGORY_NAME} />
+                    ) : null}
+
+                    {/* ── GAME NAME (game transactions only) ── */}
+                    {item.GAME_MASTER_SCHEDULE_NAME ? (
+                        <LV label="GAME NAME" value={item.GAME_MASTER_SCHEDULE_NAME} />
+                    ) : null}
+
+                </LinearGradient>
+            </View>
         );
     };
-
-    const ItemSeparator = () => null;
 
     const ListEmpty = () => {
         if (isLoading) return null;
@@ -321,15 +535,15 @@ const TransactionHistory = () => {
         );
     };
 
-    // ─── Derived ────────────────────────────────────────────────────────────────
-    const isDefaultState = typeFilter === '' && selectedDate === TODAY;
-    const activeTypeConfig = FILTERS.find(f => f.value === typeFilter);
+    // ─── Derived ─────────────────────────────────────────────────────────────
+    const isDefaultState    = typeFilter === '' && selectedDate === TODAY;
+    const activeTypeConfig  = FILTERS.find(f => f.value === typeFilter);
 
     return (
         <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.background} resizeMode="cover">
             <GradientIconBar />
 
-            {/* ── Filter Bar ────────────────────────────────────────────────────── */}
+            {/* ── Filter Bar ────────────────────────────────────────────────── */}
             <LinearGradient
                 colors={['#2A0D5C', '#3A1A72', '#2A0D5C']}
                 start={{ x: 0, y: 0 }}
@@ -337,7 +551,6 @@ const TransactionHistory = () => {
                 style={styles.filterBar}
             >
                 <View style={styles.filterRow}>
-
                     {/* Scrollable type chips */}
                     <ScrollView
                         horizontal
@@ -398,7 +611,7 @@ const TransactionHistory = () => {
                 </View>
 
                 {/* Active filter summary strip */}
-                {(!isDefaultState) && (
+                {!isDefaultState && (
                     <View style={styles.activeDateStrip}>
                         {activeTypeConfig && activeTypeConfig.value !== '' && (
                             <CustomText style={[styles.activeDateStripValue, { color: activeTypeConfig.color }]}>
@@ -415,7 +628,7 @@ const TransactionHistory = () => {
                 )}
             </LinearGradient>
 
-            {/* ── Transaction List / Skeleton ────────────────────────────────────── */}
+            {/* ── Transaction List / Skeleton ────────────────────────────────── */}
             {isLoading && pageNum === 0 ? (
                 <TransactionSkeleton />
             ) : (
@@ -424,13 +637,11 @@ const TransactionHistory = () => {
                     data={transactions}
                     keyExtractor={item => item.ID}
                     renderItem={renderItem}
-                    ItemSeparatorComponent={ItemSeparator}
+                    ItemSeparatorComponent={() => null}
                     ListEmptyComponent={ListEmpty}
                     ListFooterComponent={ListFooter}
                     contentContainerStyle={styles.listContent}
-                    style={{
-                        flex: 1,
-                    }}
+                    style={{ flex: 1 }}
                     onEndReached={onEndReached}
                     onEndReachedThreshold={0.3}
                     initialNumToRender={PER_PAGE}
@@ -440,7 +651,7 @@ const TransactionHistory = () => {
                 />
             )}
 
-            {/* ── Date Picker Modal ──────────────────────────────────────────────── */}
+            {/* ── Date Picker Modal ──────────────────────────────────────────── */}
             <DatePickerModal
                 visible={showDatePicker}
                 onConfirm={onDateConfirmed}

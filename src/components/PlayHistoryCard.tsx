@@ -370,8 +370,8 @@ const styles = StyleSheet.create({
     },
     cardImage: { width: rw(14), height: rw(14) },
     cardName: {
-        fontSize: rf(6),
-        fontFamily: FontFamilyWithWeight[700],
+        fontSize: rf(4),
+        fontFamily: FontFamilyWithWeight["inter_700"],
         letterSpacing: 0.5,
         flexShrink: 1,
     },

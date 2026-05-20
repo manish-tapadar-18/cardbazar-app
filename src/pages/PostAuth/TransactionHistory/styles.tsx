@@ -151,71 +151,8 @@ export const styles = StyleSheet.create({
         paddingBottom: rh(10),
     },
 
-    // ─── Transaction Card ────────────────────────────────────────────────────────
-    card: {
-        marginHorizontal: rw(3),
-        marginVertical: rh(0.7),
-        borderRadius: rw(3.5),
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
-        overflow: 'hidden',
-    },
-    cardAccentStripe: {
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        bottom: 0,
-        width: rw(1.2),
-    },
-    cardContent: {
-        paddingLeft: rw(5.5),
-        paddingRight: rw(4),
-        paddingTop: rh(1.4),
-        paddingBottom: rh(1.4),
-    },
-    cardHeaderRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    cardTypeLabel: {
-        fontFamily: FontFamilyWithWeight[800],
-        fontSize: rf(4),
-        letterSpacing: 0.8,
-        textTransform: 'uppercase',
-    },
-    cardDateText: {
-        fontFamily: FontFamilyWithWeight[500],
-        fontSize: rf(4),
-        color: 'rgba(255,215,0,0.75)',
-    },
-    cardDivider: {
-        height: 1,
-        marginVertical: rh(1),
-    },
-    gameInfoSection: {
-        gap: rh(0.5),
-    },
-    gameCategoryLabel: {
-        fontFamily: FontFamilyWithWeight[500],
-        fontSize: rf(5),
-        color: Colors.WHITE_55,
-        letterSpacing: 1,
-        textTransform: 'uppercase',
-    },
-    gameNameLabel: {
-        fontFamily: FontFamilyWithWeight[700],
-        fontSize: rf(4),
-        letterSpacing: 0.5,
-    },
-    cardAmountRow: {
-        alignItems: 'center',
-    },
-    cardAmountText: {
-        fontFamily: FontFamilyWithWeight[900],
-        fontSize: rf(5.5),
-        letterSpacing: 1,
-    },
+    // ─── Transaction Card — layout handled inline in TransactionHistory.tsx ─────
+    // (card gradient, LV rows, ShineStatus are co-located with renderItem)
 
     // ─── Empty State ──────────────────────────────────────────────────────────────
     emptyWrap: {

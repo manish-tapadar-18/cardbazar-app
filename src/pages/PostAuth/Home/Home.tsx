@@ -27,6 +27,7 @@ import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
 import { clLog, clRecordError, clSetAttribute, clSetUser, TAGS } from '../../../utils/CrashlyticsUtils'
 import DeviceBlockModal from '../../../components/DeviceBlockModal'
 import MultiLoginModal from '../../../components/MultiLoginModal'
+import EmptyState from '../../../components/EmptyState'
 const SKELETON_COUNT = 4
 
 const ListHeader: React.FC = () => (
@@ -238,6 +239,15 @@ const Home = () => {
           keyExtractor={(item) => item.ID}
           renderItem={({ item }) => <CategoryCard item={item} onPress={(id) => navigateToGameDetails(id)} contestCount={item.SCHEDULE_COUNT} />}
           ListHeaderComponent={<ListHeader />}
+          ListEmptyComponent={
+            isLoading ? null : (
+              <EmptyState
+                image={Images.GAME_LIST}
+                title="No Games Available"
+                subtitle={"No active game categories right now.\nPull down to refresh."}
+              />
+            )
+          }
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
