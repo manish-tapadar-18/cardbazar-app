@@ -212,7 +212,7 @@ const Authentication: React.FC = () => {
             </Animated.View>
           ))}
         </View>
-
+          {/* ── Shining app name  ── */}
         <MaskedView
           style={styles.appNameWrapper}
           maskElement={

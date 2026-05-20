@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   avatarInitials: {
     color: Colors.GOLD,
     fontSize: rh(2.8),
-    fontFamily: FontFamilyWithWeight[700],
+    fontFamily: FontFamilyWithWeight["inter_800"],
     letterSpacing: 1,
   },
   userInfo: {
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   userName: {
     color: Colors.WHITE,
     fontSize: rh(2.3),
-    fontFamily: FontFamilyWithWeight[700],
+    fontFamily: FontFamilyWithWeight["inter_600"],
     letterSpacing: 0.4,
   },
   phoneRow: {
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   phoneText: {
     color: Colors.WHITE_75,
     fontSize: rh(1.7),
-    fontFamily: FontFamilyWithWeight[400],
+    fontFamily: FontFamilyWithWeight["inter_600"],
     letterSpacing: 0.5,
   },
   // Wallet balance pill
@@ -368,13 +368,13 @@ const styles = StyleSheet.create({
   balanceLabel: {
     color: Colors.WHITE_55,
     fontSize: rh(1.5),
-    fontFamily: FontFamilyWithWeight[400],
+    fontFamily: FontFamilyWithWeight["inter_500"],
     letterSpacing: 0.3,
   },
   balanceValue: {
     color: Colors.GOLD,
     fontSize: rh(2.2),
-    fontFamily: FontFamilyWithWeight[700],
+    fontFamily: FontFamilyWithWeight["inter_600"],
     letterSpacing: 0.5,
   },
   // Referral badge
@@ -471,12 +471,12 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     fontSize: rh(2.2),
-    fontWeight:"semibold",
+    fontFamily: FontFamilyWithWeight["inter_600"],
     color: Colors.PRIMARY_BG
   },
   menuLabelActive: {
     fontSize: rh(1.9),
-    fontFamily: FontFamilyWithWeight[600],
+    fontFamily: FontFamilyWithWeight["inter_600"],
     color: Colors.WHITE,
     letterSpacing: 0.2,
   },
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   },
   logoutLabel: {
     fontSize: rh(1.9),
-    fontFamily: FontFamilyWithWeight[500],
+    fontFamily: FontFamilyWithWeight["inter_600"],
     color: Colors.ERROR_RED,
     letterSpacing: 0.2,
   },

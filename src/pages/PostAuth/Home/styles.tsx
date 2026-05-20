@@ -121,7 +121,7 @@ export const styles = StyleSheet.create({
   listHeaderText: {
     color: Colors.WHITE,
     fontSize: rf(5.4),
-    fontWeight:"bold",
+    fontFamily:FontFamilyWithWeight["inter_900"],
     letterSpacing: 1.2,
   },
 
@@ -144,21 +144,22 @@ export const styles = StyleSheet.create({
   },
   categoryCard: {
     paddingHorizontal: rw(4),
-    paddingVertical: rh(2),
+    paddingVertical: rh(1.3),
     minHeight: rh(17),
     justifyContent: 'space-between',
   },
   categoryName: {
     color: Colors.WHITE,
-    fontSize: rf(6.5),
+    fontSize: rf(5),
     fontWeight:"bold",
     marginBottom: rh(0.8),
     letterSpacing: 0.5,
+    textTransform:"uppercase"
   },
   categoryDesc: {
     color: Colors.WHITE_75,
-    fontSize: rf(5),
-    fontFamily: FontFamilyWithWeight[400],
+    fontSize: rf(4),
+    fontFamily: FontFamilyWithWeight["inter_400"],
     lineHeight: rf(4.8),
     flex: 1,
   },
@@ -171,6 +172,8 @@ export const styles = StyleSheet.create({
   contestsBadgeWrapper: {
     borderRadius: rh(3),
     overflow: 'hidden',
+    justifyContent:'center',
+    alignItems:"center"
   },
   contestsBadge: {
     paddingHorizontal: rw(3),
@@ -179,7 +182,7 @@ export const styles = StyleSheet.create({
   contestsText: {
     color: Colors.BADGE_TEXT,
     fontSize: rf(4),
-    fontWeight:"bold",
+    fontFamily: FontFamilyWithWeight["700"],
     letterSpacing: 0.8,
   },
   playBtn: {
@@ -194,7 +197,7 @@ export const styles = StyleSheet.create({
   playText: {
     color: Colors.WHITE,
     fontSize: rf(4),
-    fontWeight: "bold",
+    fontFamily: FontFamilyWithWeight["700"],
     letterSpacing: 0.5,
   },
 

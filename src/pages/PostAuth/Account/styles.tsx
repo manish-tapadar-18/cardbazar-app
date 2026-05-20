@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: rf(4.8),
-    fontFamily: FontFamilyWithWeight[700],
+    fontFamily: FontFamilyWithWeight["inter_700"],
     color: Colors.WHITE,
     flex: 1,
     lineHeight: rf(6),

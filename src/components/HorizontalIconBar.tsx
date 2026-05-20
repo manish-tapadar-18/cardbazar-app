@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   text: {
     color: Colors.WHITE,
     fontSize: rf(3.5),
-    fontFamily: FontFamilyWithWeight[500],
+    fontFamily: FontFamilyWithWeight["inter_700"],
     textAlign: 'center',
   },
   activeText: {

@@ -109,13 +109,13 @@ const styles = StyleSheet.create({
     balanceText: {
         color: Colors.WHITE,
         fontSize: Fonts.smaller,
-        fontWeight: "bold",
+        fontFamily:FontFamilyWithWeight["inter_800"],
         lineHeight: rh(2.4),
     },
     walletLabel: {
         color: Colors.WHITE_75,
         fontSize: rf(3.5),
-        fontWeight: "bold",
+        fontFamily:FontFamilyWithWeight["inter_800"],
         lineHeight: rh(1.8),
     },
     rightActions: {
