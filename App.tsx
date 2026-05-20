@@ -108,10 +108,10 @@ export default function App() {
                 <AppNavigator />
             </NavigationContainer>
 
-            {/* <SecurityBlockModal
+            <SecurityBlockModal
                 visible={violationReasons.length > 0}
                 reasons={violationReasons}
-            /> */}
+            />
 
             <PushNotificationPermissionModal
                 visible={showPermissionModal}
