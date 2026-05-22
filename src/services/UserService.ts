@@ -3,6 +3,8 @@ import { ICustomResponse } from "../response/generic/ICustomResponse";
 import { IAdminDetailsResponse } from "../response/module/IAdminDetailsResponse";
 import { IUserBalanceResponse } from "../response/module/IUserBalanceResponse";
 import { IUserDetailsResponse } from "../response/module/IUserDetailsResponse";
+import { IReferralHistoryResponse } from "../response/module/IReferralHistoryResponse";
+import { IReferralHistoryRequest } from "../request/module/IReferralHistoryRequest";
 import { genericErrorParser } from "../response/parser/genericErrorParser";
 import { genericResponseParser } from "../response/parser/genericResponseParser";
 import { http } from "../utils/http";
@@ -127,6 +129,21 @@ class UserService implements IUserService {
         } catch (error: any) {
             clRecordError(TAGS.USER_SERVICE, error, 'UpdateDevice');
             return genericErrorParser<null>(error);
+        }
+    }
+
+    async GetReferralHistory(payload: IReferralHistoryRequest): Promise<ICustomResponse<IReferralHistoryResponse>> {
+        clLog(TAGS.USER_SERVICE, 'GetReferralHistory — start');
+        try {
+            const response = await http.post<IApiResponse<IReferralHistoryResponse>>(
+                UriRepo.GETREFERRALHISTORY,
+                payload,
+                { requireAuth: true }
+            );
+            return genericResponseParser<IReferralHistoryResponse>(response.data);
+        } catch (error: any) {
+            clRecordError(TAGS.USER_SERVICE, error, 'GetReferralHistory');
+            return genericErrorParser<IReferralHistoryResponse>(error);
         }
     }
 }

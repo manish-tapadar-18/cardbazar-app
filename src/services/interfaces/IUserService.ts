@@ -3,6 +3,8 @@ import { IAdminDetailsResponse } from "../../response/module/IAdminDetailsRespon
 import { IDeviceDetailResponse } from "../../response/module/IDeviceDetailResponse";
 import { IUserBalanceResponse } from "../../response/module/IUserBalanceResponse";
 import { IUserDetailsResponse } from "../../response/module/IUserDetailsResponse";
+import { IReferralHistoryResponse } from "../../response/module/IReferralHistoryResponse";
+import { IReferralHistoryRequest } from "../../request/module/IReferralHistoryRequest";
 import { IRegisterFormValues } from "../../validations/interfaces";
 
 type IUserDetailsPayload = Pick<IRegisterFormValues, 'EMAIL'>;
@@ -56,4 +58,5 @@ export interface IUserService {
   UpdateUserFcm(userId: string): Promise<ICustomResponse<null>>;
   GetDeviceDetails(payload:FilterPayloadContainer): Promise<ICustomResponse<IDeviceDetailResponse>>;
   UpdateDevice(payload:UpdateDeviceRequestBody): Promise<ICustomResponse<null>>;
+  GetReferralHistory(payload: IReferralHistoryRequest): Promise<ICustomResponse<IReferralHistoryResponse>>;
 }

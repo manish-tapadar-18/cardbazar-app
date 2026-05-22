@@ -7,10 +7,12 @@ import {
   Share,
   View,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 import LinearGradient from 'react-native-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import GradientIconBar from '../../../components/GradientIconBar';
 import CustomText from '../../../components/CustomText';
+import ReferralHistoryModal from '../../../components/ReferralHistoryModal';
 import { Images } from '../../../utils/Images';
 import { Colors } from '../../../utils/Colors';
 import { Repository } from '../../../repository/Repository';
@@ -19,9 +21,13 @@ import { useUserStore } from '../../../stores/userStore';
 import { clearAllStores } from '../../../stores/clearAllStores';
 import { styles } from './styles';
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
+import { IReferralHistoryItem } from '../../../response/module/IReferralHistoryResponse';
 
 const Refer = () => {
   const [referralBonus, setReferralBonus] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyData, setHistoryData] = useState<IReferralHistoryItem[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const { userDetails } = useUserStore();
   const { setAdminDetails } = useAdminDetailsStore();
   const fetchUserAndReferralBonus = useCallback(async () => {
@@ -63,6 +69,41 @@ const Refer = () => {
     }, [])
   );
 
+  const onViewHistory = async () => {
+    const userId = userDetails?.ID;
+    if (!userId) return;
+    setShowHistory(true);
+    setIsHistoryLoading(true);
+    try {
+      const payload = {
+        filters: {
+          search: [
+            { FIELD_NAME: 'REFERRAL.JOINED_USER_ID', FIELD_VALUE: '', OPT: '=' },
+            { FIELD_NAME: 'REFERRAL.REFERRED_USER_ID', FIELD_VALUE: userId, OPT: '=' },
+            { FIELD_NAME: 'REFERRAL.STATUS', FIELD_VALUE: '', OPT: '=' },
+            { FIELD_NAME: 'REFERRAL.UPDATED_AT', FIELD_VALUE: '', OPT: '=' },
+          ],
+          sortFilter: { FIELD_NAME: 'REFERRAL.CREATED_AT', SORT_ORDER: 'ASC' as const },
+        },
+      };
+      const { isSuccess, data, message } = await Repository.User.GetReferralHistory(payload);
+      if (isSuccess && data) {
+        setHistoryData(data.DATA);
+      } else {
+        Toast.error(message ?? 'Failed to load referral history.');
+      }
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Something went wrong.');
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  };
+
+  const onCopyCode = () => {
+    Clipboard.setString(referralCode);
+    Toast.success('Referral code copied!');
+  };
+
   const onShareNow = async () => {
     const code = userDetails?.REFERRAL_CODE ?? '';
     const bonus = referralBonus ?? '10';
@@ -98,12 +139,15 @@ const Refer = () => {
         <View style={styles.card}>
           <CustomText style={styles.cardLabel}>Referral Code:</CustomText>
           <LinearGradient
-            colors={Colors.GRADIENT.GOLD}
+            colors={Colors.GRADIENT.SPACER_CORE}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.codePill}
           >
             <CustomText style={styles.codeText}>{referralCode}</CustomText>
+            <Pressable onPress={onCopyCode} hitSlop={8} style={styles.copyBtn}>
+              <Image source={Images.COPY} style={styles.copyIcon} resizeMode="contain" />
+            </Pressable>
           </LinearGradient>
         </View>
 
@@ -115,7 +159,7 @@ const Refer = () => {
         {/* Share Now button */}
         <Pressable style={styles.shareBtn} onPress={onShareNow}>
           <LinearGradient
-            colors={Colors.GRADIENT.GOLD}
+            colors={Colors.GRADIENT.SPACER_CORE}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.shareBtnGradient}
@@ -129,10 +173,17 @@ const Refer = () => {
         <View style={styles.divider} />
 
         {/* View Referral History */}
-        <Pressable style={styles.historyBtn} onPress={() => { }}>
-          <CustomText style={styles.historyBtnText}>View Referral history</CustomText>
+        <Pressable style={styles.historyBtn} onPress={onViewHistory}>
+          <CustomText style={styles.historyBtnText}>View Referral History</CustomText>
         </Pressable>
       </ScrollView>
+
+      <ReferralHistoryModal
+        visible={showHistory}
+        data={historyData}
+        isLoading={isHistoryLoading}
+        onClose={() => setShowHistory(false)}
+      />
     </ImageBackground>
   );
 };

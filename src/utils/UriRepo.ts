@@ -36,5 +36,6 @@ export const UriRepo = {
     ADDSECURITYERRORREPORT: `${version}addErrorReport?_format=json`,
     SECURITYDEBUG: `${version}getVariable?_format=json&name=SECURITY_DEBUG`,
     SECURITYLOCATION: `${version}getVariable?_format=json&name=SECURITY_LOCATION`,
-    ADDFEEDBACK: `${version}addFeedback?_format=json`
+    ADDFEEDBACK: `${version}addFeedback?_format=json`,
+    GETREFERRALHISTORY: `${version}getReferralHistory?_format=json&skip=0&take=100000`
 }

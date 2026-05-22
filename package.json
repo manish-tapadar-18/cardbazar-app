@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
+    "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native-firebase/app": "^24.0.0",
     "@react-native-firebase/crashlytics": "^24.0.0",
     "@react-native-firebase/messaging": "^24.0.0",

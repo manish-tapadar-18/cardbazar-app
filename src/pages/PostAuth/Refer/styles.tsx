@@ -39,15 +39,27 @@ export const styles = StyleSheet.create({
     color: Colors.BLAKISH_GRAY,
   },
   codePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: rw(2),
     paddingVertical: rh(0.8),
     paddingHorizontal: rw(4),
+    gap: rw(2.5),
   },
   codeText: {
     fontFamily: FontFamilyWithWeight[700],
     fontSize: rf(5),
     color: Colors.WHITE,
     letterSpacing: 1.5,
+  },
+  copyBtn: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  copyIcon: {
+    width: rw(5),
+    height: rw(5),
+    tintColor: Colors.WHITE,
   },
   infoText: {
     width: '90%',
