@@ -26,11 +26,11 @@ export const styles = StyleSheet.create({
   // Date badge — absolute, floats above the card
   groupDateBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: rw(2),
-    paddingVertical: rh(0.7),
+    paddingHorizontal: rw(2.5),
+    paddingVertical: rh(0.65),
     borderRadius: rw(2),
     position: 'absolute',
-    zIndex: 9999,
+    zIndex: 99999,
     top: -rh(2),
   },
   groupDateText: {
@@ -43,47 +43,77 @@ export const styles = StyleSheet.create({
   groupCard: {
     borderRadius: rw(2.5),
     borderWidth: 1,
-    borderColor: 'rgba(255,215,0,0.15)',
+    borderColor: 'rgba(255,215,0,0.20)',
     overflow: 'hidden',
-    paddingTop: rh(2),
+    paddingTop: rh(2.5),
   },
 
-  // Row — schedule name on left, image+card name on right
-  groupRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  // ── Per-item container ─────────────────────────────────────────────────────
+  item: {
     paddingHorizontal: rw(4),
-    paddingVertical: rh(1.4),
-    gap: rw(7),
-  },
-  groupScheduleName: {
-    flex: 1,
-    fontSize: rf(5),
-    fontFamily: FontFamilyWithWeight[700],
-    letterSpacing: 0.5,
-  },
-  groupRowRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: rw(2),
-    flexShrink: 0,
-  },
-  groupCardImage: {
-    width: rw(6),
-    height: rw(6),
-  },
-  groupCardName: {
-    fontSize: rf(5),
-    color: Colors.WHITE,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    paddingTop: rh(1),
+    paddingBottom: rh(1.5),
   },
 
-  // Divider between rows inside a card
+  // ── Top row: card image + formatted card name ──────────────────────────────
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rw(3),
+    marginBottom: rh(1),
+  },
+  cardImage: {
+    width: rw(14),
+    height: rw(14),
+  },
+  // Gives MaskedView (inside GradientText) a real flex width to render into
+  cardNameWrapper: {
+    flex: 1,
+  },
+  cardName: {
+    fontSize: rf(4),
+    fontFamily: FontFamilyWithWeight.inter_700,
+    letterSpacing: 0.5,
+    flexShrink: 1,
+  },
+
+  // ── Gold separator (below top row) ────────────────────────────────────────
+  separator: {
+    height: 1,
+    backgroundColor: 'rgba(255,215,0,0.35)',
+    marginBottom: rh(0.8),
+  },
+
+  // ── Paired cells row (START TIME | END TIME) ───────────────────────────────
+  pairRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: rh(0.6),
+  },
+  pairSep: {
+    width: 1,
+    backgroundColor: 'rgba(255,215,0,0.25)',
+    alignSelf: 'stretch',
+    marginHorizontal: rw(3),
+  },
+
+  // ── Inline icon + text ─────────────────────────────────────────────────────
+  inlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rw(1.2),
+  },
+  emojiIcon: {
+    fontSize: rf(3.6),
+    lineHeight: rf(4.4),
+  },
+
+  // Divider between items inside a card
   groupDivider: {
     height: 1,
     marginHorizontal: rw(4),
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    marginVertical: rh(0.5),
   },
 
   // ── Footer loader ──────────────────────────────────────────────────────────
@@ -95,5 +125,56 @@ export const styles = StyleSheet.create({
     color: Colors.WHITE_55,
     fontSize: rf(4),
     fontFamily: FontFamilyWithWeight[400],
+  },
+});
+
+// ── LV — full-width label → value row ─────────────────────────────────────────
+export const lv = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: rh(0.6),
+  },
+  label: {
+    width: rw(32),
+    fontSize: rf(3.8),
+    fontFamily: FontFamilyWithWeight.inter_400,
+    color: 'rgba(255,255,255,0.72)',
+    letterSpacing: 0.3,
+  },
+  valueSide: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  valueText: {
+    fontSize: rf(4.2),
+    fontFamily: FontFamilyWithWeight.inter_700,
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
+  },
+});
+
+// ── PC — paired cell (label stacked above value, flex:1 in a pair row) ────────
+export const pc = StyleSheet.create({
+  cell: { flex: 1 },
+  label: {
+    fontSize: rf(3.3),
+    fontFamily: FontFamilyWithWeight.inter_400,
+    color: 'rgba(255,255,255,0.72)',
+    letterSpacing: 0.3,
+    marginBottom: rh(0.25),
+  },
+  valueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: rw(1.2),
+  },
+  value: {
+    fontSize: rf(3.9),
+    fontFamily: FontFamilyWithWeight.inter_700,
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
   },
 });

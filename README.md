@@ -545,6 +545,319 @@ Each item is keyed by `item.ID` so React can reconcile efficiently during pagina
 
 ---
 
+---
+
+## Result Screen — `src/pages/PostAuth/Result/Result.tsx`
+
+### Purpose
+
+The Result screen lets authenticated users browse **published game draw results**, filtered by **game category** (horizontal tab bar). Results are loaded in pages of 10, grouped visually by draw date, and presented as gold-badged cards. The screen also silently validates the user session and refreshes admin config on every navigation focus.
+
+---
+
+### Data Flow Overview
+
+```
+useFocusEffect
+  ├─ fetchUserDetails()      → session guard (logout if INACTIVE)
+  ├─ fetchCategories()       → loads tabs → auto-selects first → fetchResults(firstId, page 0)
+  └─ fetchAdminDetails()     → syncs admin config to adminDetailsStore
+
+onTabPress(tab)              → fetchResults(tab.ID, page 0)   [replace list]
+onRefresh()                  → fetchResults(activeRef,  page 0)   [replace list]
+onEndReached()               → fetchResults(activeRef,  pageNum+1) [append list]
+```
+
+---
+
+### Type Definitions
+
+```ts
+// A single schedule record enriched with its parent game's date and name
+type FlatResultItem = IResultScheduleDetail & {
+  GAME_DATE: string;   // "YYYY-MM-DD" from GAME_MASTER
+  GAME_NAME: string;   // display name of the parent game
+};
+
+// One visual card = one date with N schedule rows
+type DateGroup = {
+  GAME_DATE: string;         // "YYYY-MM-DD" — used as FlatList key
+  items: FlatResultItem[];   // all schedules for that date
+};
+```
+
+---
+
+### State Architecture
+
+| State | Type | Role |
+|---|---|---|
+| `categories` | `IGameCategoryResponse[]` | All game categories fetched from backend |
+| `activeCategory` | `string` | ID of the currently selected tab |
+| `resultGroups` | `DateGroup[]` | Date-grouped result records shown in the list |
+| `pageNum` | `number` | Current zero-based page index for pagination |
+| `isCatLoading` | `boolean` | Hides tab bar while categories are loading |
+| `isLoading` | `boolean` | Shows full-list loading on first page fetch |
+| `isRefreshing` | `boolean` | Drives `FlatList` pull-to-refresh spinner |
+
+**Refs (stale-closure guards & mutexes):**
+
+| Ref | Role |
+|---|---|
+| `flatListRef` | Programmatic scroll-to-top on tab switch |
+| `activeCatRef` | Mirrors `activeCategory` — read inside async callbacks to avoid stale closures |
+| `isFetchingMore` | Mutex — prevents duplicate pagination calls on fast scroll |
+| `hasInteracted` | `true` only after the user starts scrolling; gates `onEndReached` to prevent false triggers on mount |
+| `hasMore` | `false` when `(page + 1) * PER_PAGE >= TOTAL`; stops further pagination |
+
+---
+
+### Business Logic
+
+#### 1. Session Validation (on every focus)
+
+`fetchUserDetails` runs on every `useFocusEffect` cycle. It re-fetches the user profile using the stored email. If the backend returns `STATUS = 'INACTIVE'`, `clearAllStores()` is called immediately, wiping all Zustand stores and triggering a logout.
+
+#### 2. Admin Details Sync (on every focus)
+
+`fetchAdminDetails` is called alongside `fetchUserDetails` on every focus. It writes global admin configuration (e.g., support contact) into `adminDetailsStore`, which is consumed by modals elsewhere in the post-auth tree.
+
+#### 3. Category Load & Auto-select (on every focus)
+
+`fetchCategories` fetches the full list of game categories via `Repository.Game.getAllGameCategories`. On success it:
+- Stores the list in `categories` state.
+- Auto-selects the **first category** (`data[0].ID`).
+- Writes that ID into both `activeCategory` state and `activeCatRef`.
+- Resets `pageNum` to 0, clears `resultGroups`, and resets `hasMore` / `hasInteracted`.
+- Immediately calls `fetchResults(firstId, 0, false)`.
+
+While categories are loading, the tab bar is hidden entirely (`isCatLoading`).
+
+#### 4. Result Fetch (`fetchResults`)
+
+`fetchResults(categoryId, page, append)` is the single source of truth for loading records.
+
+**API payload** (`buildPayload`):
+
+| Filter field | Operator | Value | Effect |
+|---|---|---|---|
+| `GAME_MASTER.NAME` | `LIKE` | `''` | Match all games (wildcard search) |
+| `GAME_MASTER.CATEGORY_ID` | `=` | `categoryId` | Scope to selected category |
+| `GAME_CATEGORY.STATUS` | `=` | `'ACTIVE'` | Only active categories |
+| `GAME_MASTER.GAME_DATE` | `<=` | today (`YYYY-MM-DD`) | Only past/today draws |
+
+Sort: `GAME_MASTER.GAME_DATE DESC` — newest draws first.
+
+Pagination is offset-based: `offset = PER_PAGE * page`, `limit = PER_PAGE` (`PER_PAGE = 10`).
+
+**Published-only filter:** After the API responds, only schedule items where `RESULT_PUBLISH !== 0` are included — unpublished results are silently dropped client-side.
+
+**Flattening:** Each game in the response can have multiple `SCHEDULE_DETAILS`. The code flattens them into a single `FlatResultItem[]`, tagging each item with its parent's `GAME_DATE` and `NAME`.
+
+**Merging into groups** (`mergeIntoGroups`): The flat array is merged into the existing `DateGroup[]` using a `Map<GAME_DATE, FlatResultItem[]>`. Items for an already-present date are appended to that group; new dates create a new group. When `append = false` (first page / refresh), it merges into an empty `[]`, effectively replacing the list.
+
+#### 5. Category Tab Switch
+
+Pressing a tab calls `onTabPress`. If the same tab is already active the call is a no-op. Otherwise:
+- Updates `activeCategory` state and `activeCatRef`.
+- Resets `pageNum` to 0, clears `resultGroups`, resets `hasMore` and `hasInteracted`.
+- Scrolls `FlatList` back to the top via `flatListRef`.
+- Fetches results for the new category from page 0 (`append = false`).
+
+#### 6. Pagination (Infinite Scroll)
+
+`onEndReached` fires when the user scrolls within 30% of the list bottom (`onEndReachedThreshold={0.3}`). It is guarded by five conditions — all must pass:
+
+| Guard | Reason |
+|---|---|
+| `hasInteracted.current === true` | Skips the false-positive trigger that React Native fires on initial mount/layout |
+| `distanceFromEnd >= 0` | Avoids a known RN negative-distance false positive |
+| `resultGroups.length > 0` | No pagination on an empty list |
+| `!isLoading && !isFetchingMore.current` | Prevents concurrent fetches |
+| `hasMore.current === true` | Stops when all records are loaded |
+
+On a valid trigger, `pageNum` increments and `fetchResults` is called with `append = true`.
+
+#### 7. Pull-to-Refresh
+
+`onRefresh` sets `isRefreshing = true`, resets `pageNum` to 0 and `hasMore` / `hasInteracted`, then calls `fetchResults` with the current `activeCatRef` and `append = false`. `isRefreshing` is reset inside the `finally` block of `fetchResults`.
+
+---
+
+### Helper Functions
+
+#### `buildPayload(categoryId: string): IGameResultRequest`
+
+Constructs the API request body with four `search` filters (see table above) and a fixed `DESC` sort on `GAME_MASTER.GAME_DATE`. Centralising this here means `fetchResults` stays readable and the filter logic is testable in isolation.
+
+#### `formatCardName(name: string | null): string`
+
+```ts
+formatCardName('ace-of-spades') // → "Ace Of Spades"
+```
+
+Transforms a hyphen-separated card identifier into a human-readable title:
+1. Replaces all `-` with spaces.
+2. Title-cases each word (`\b\w` → uppercase).
+Returns `''` for `null`/falsy input.
+
+#### `mergeIntoGroups(prev: DateGroup[], newItems: FlatResultItem[]): DateGroup[]`
+
+Incrementally merges a fresh batch of flat items into the current date-group list without re-sorting:
+- Builds a `Map` from the existing groups (preserving order).
+- For each new item: if its date already exists in the map, append to that bucket; otherwise create a new bucket.
+- Converts the map back to an array, retaining insertion order (newest first, as delivered by the API).
+
+---
+
+### Render Structure
+
+```
+<ImageBackground source={DASHBOARD_SPLASH}>
+  <GradientIconBar />                          ← shared top nav bar
+
+  {!isCatLoading && categories.length > 0 &&
+    <HorizontalTabBar                          ← category filter tabs
+      tabs={categories}
+      activeKey={activeCategory}
+      onPress={onTabPress}
+    />
+  }
+
+  <FlatList data={resultGroups}
+    keyExtractor={item => item.GAME_DATE}      ← one entry per date
+    renderItem={renderItem}                    ← see below
+    ListEmptyComponent={<ListEmpty />}         ← EmptyState when no results
+    ListFooterComponent={<ListFooter />}       ← "Loading more..." indicator
+    onScrollBeginDrag → hasInteracted = true   ← enables pagination
+    onEndReached={onEndReached}
+    onRefresh={onRefresh}
+  />
+</ImageBackground>
+```
+
+#### `renderItem` — Date Group Card
+
+Each `DateGroup` renders as a two-layer visual unit:
+
+```
+┌─ [date badge] ─────────────────────────────────┐   ← gold gradient pill (floated above card, zIndex applied)
+│                                                 │
+│  [card body — dark purple gradient]             │
+│  ┌─ row ─────────────────────────────────────┐ │
+│  │  [schedule name — gold GradientText]      │ │
+│  │  [card image]  [card name — formatted]    │ │
+│  └───────────────────────────────────────────┘ │
+│  ─────────────────── divider ─────────────────  │   ← 1px white line, not after last row
+│  ┌─ row ─────────────────────────────────────┐ │
+│  │  ...                                      │ │
+│  └───────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────┘
+```
+
+- **Date badge**: `LinearGradient` `['#FFD700', '#D4940A']` — gold-to-amber, displays `DD-MM-YYYY`.
+- **Card body**: `LinearGradient` `['#260030', '#44004F']` — dark purple.
+- **Schedule name**: `GradientText` with `Colors.GRADIENT.GOLD` at `180°`.
+- **Card image**: loaded from `ENV.BASE_URL + schedule.CARD_IMAGE_URL`; falls back to `Images.SMALL_CARD` for broken URLs.
+- **Card name**: `formatCardName(schedule.CARD_NAME)` with `numberOfLines={1}` clamp.
+- **Divider**: rendered only between rows (`index < item.items.length - 1`).
+
+#### `ListFooter`
+
+Renders a `"Loading more..."` text row when `hasMore.current === true` and the list is non-empty. Hidden when all pages are loaded or the list is empty.
+
+#### `ListEmpty`
+
+Returns `null` while the first page is loading (avoids flash). After loading completes with no data, renders `<EmptyState image={Images.RESULT} title="No Results Found" subtitle="No published results for this category." />`.
+
+---
+
+### Component Reference
+
+#### `GradientIconBar`
+
+**File:** `src/components/GradientIconBar.tsx`
+
+Shared top navigation bar with gradient background. See the **Home Screen** section for full details.
+
+---
+
+#### `HorizontalTabBar`
+
+**File:** `src/components/HorizontalTabBar.tsx`
+
+A horizontally scrollable row of category tabs. The active tab is highlighted.
+
+| Detail | Value |
+|---|---|
+| Props | `tabs: IGameCategoryResponse[]`, `activeKey: string`, `onPress: (tab) => void` |
+| Reusable | Yes — used by Result, PlayHistory, and any screen that needs category filtering |
+
+```tsx
+import HorizontalTabBar from 'src/components/HorizontalTabBar';
+
+<HorizontalTabBar
+  tabs={categories}
+  activeKey={activeCategory}
+  onPress={(tab) => onTabPress(tab)}
+/>
+```
+
+---
+
+#### `EmptyState`
+
+**File:** `src/components/EmptyState.tsx`
+
+Generic empty-list placeholder with a centred image, title, and subtitle.
+
+| Detail | Value |
+|---|---|
+| Props | `image: ImageSourcePropType`, `title: string`, `subtitle: string` |
+| Reusable | Yes — pass any image and copy |
+
+```tsx
+import EmptyState from 'src/components/EmptyState';
+
+<EmptyState
+  image={Images.RESULT}
+  title="No Results Found"
+  subtitle="No published results for this category."
+/>
+```
+
+---
+
+#### `GradientText`
+
+**File:** `src/components/GradientText.tsx`
+
+Renders text with a linear gradient fill using `react-native-linear-gradient` and SVG masking.
+
+| Detail | Value |
+|---|---|
+| Props | `colors: string[]`, `style?: TextStyle`, `angle?: number`, `children: ReactNode` |
+| Used in Result | Schedule name rows — `Colors.GRADIENT.GOLD` at `180°` |
+
+---
+
+#### `CustomText`
+
+**File:** `src/components/CustomText.tsx`
+
+A thin wrapper around `Text` that applies the project-wide font family. Drop-in replacement for `<Text>` throughout the app.
+
+---
+
+### Implementation Notes
+
+- **Stale closure prevention**: `activeCatRef` is kept in sync with `activeCategory` state on every write. The async `fetchResults` callback reads `activeCatRef.current` rather than capturing the state variable, ensuring it always uses the latest category even after React batches state updates.
+- **`hasInteracted` gate**: React Native's `FlatList` can fire `onEndReached` immediately on mount before the user scrolls. Setting `hasInteracted.current = true` only inside `onScrollBeginDrag` ensures the first pagination call is always user-initiated.
+- **`mergeIntoGroups` idempotency**: passing `[]` as `prev` is equivalent to a full list replacement, so `fetchResults` can use the same merge helper for both first-load and append scenarios.
+- **UTC date formatting**: `moment(item.GAME_DATE).utc().format('DD-MM-YYYY')` is used to prevent local timezone offsets from shifting dates when the API returns midnight UTC timestamps.
+
+---
+
 # Learn More
 
 To learn more about React Native, take a look at the following resources:

@@ -23,7 +23,7 @@ import { clearAllStores } from '../../../stores/clearAllStores';
 import { IGameCategoryResponse } from '../../../response/module/IGameCategoryResponse';
 import { IResultScheduleDetail } from '../../../response/module/IGameResultResponse';
 import { IGameResultRequest } from '../../../request/module/IGameResultRequest';
-import { styles } from './styles';
+import { styles, lv, pc } from './styles';
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -61,9 +61,18 @@ const buildPayload = (categoryId: string): IGameResultRequest => ({
   },
 });
 
+const RANK_MAP: Record<string, string> = { a: 'ACE', k: 'KING', q: 'QUEEN', j: 'JACK' };
+
 const formatCardName = (name: string | null): string => {
   if (!name) return '';
-  return name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return name.split('-').map(p => RANK_MAP[p.toLowerCase()] ?? p.toUpperCase()).join(' ');
+};
+
+/** "14:30:00" → "02:30 PM" */
+const formatTimeAMPM = (raw: string): string => {
+  if (!raw) return '';
+  const m = moment(raw, ['HH:mm:ss', 'HH:mm', 'h:mm A', 'h:mm:ss A'], true);
+  return m.isValid() ? m.format('hh:mm A') : raw;
 };
 
 // Merges new flat items into existing date groups.
@@ -82,6 +91,30 @@ const mergeIntoGroups = (prev: DateGroup[], newItems: FlatResultItem[]): DateGro
   });
   return Array.from(map.entries()).map(([GAME_DATE, items]) => ({ GAME_DATE, items }));
 };
+
+// ─── LV — full-width label → value row ───────────────────────────────────────
+const LV: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+  <View style={lv.row}>
+    <CustomText style={lv.label}>{label}</CustomText>
+    <View style={lv.valueSide}>
+      {typeof value === 'string' || typeof value === 'number'
+        ? <CustomText style={lv.valueText}>{value}</CustomText>
+        : value}
+    </View>
+  </View>
+);
+
+// ─── PC — paired cell (label above value, flex:1) ─────────────────────────────
+const PC: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+  <View style={pc.cell}>
+    <CustomText style={pc.label}>{label}</CustomText>
+    <View style={pc.valueRow}>
+      {typeof value === 'string' || typeof value === 'number'
+        ? <CustomText style={pc.value}>{value}</CustomText>
+        : value}
+    </View>
+  </View>
+);
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 const Result = () => {
@@ -245,7 +278,7 @@ const Result = () => {
 
       {/* Card body */}
       <LinearGradient
-        colors={['#260030', '#44004F' ]}
+        colors={['#260030', '#44004F']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.groupCard}
@@ -254,28 +287,73 @@ const Result = () => {
           const imageUri = schedule.CARD_IMAGE_URL
             ? `${ENV.BASE_URL}/${schedule.CARD_IMAGE_URL}`
             : null;
+          const cardName = formatCardName(schedule.CARD_NAME);
+          const publishDate = schedule.RESULT_PUBLISH_TIME
+            ? moment(schedule.RESULT_PUBLISH_TIME).format('DD-MM-YYYY')
+            : '';
+
           return (
             <React.Fragment key={schedule.ID}>
-              <View style={styles.groupRow}>
-                <GradientText
-                  colors={Colors.GRADIENT.GOLD}
-                  style={styles.groupScheduleName}
-                  angle={180}
-                >
-                  {schedule.NAME}
-                </GradientText>
+              <View style={styles.item}>
 
-                <View style={styles.groupRowRight}>
+                {/* ── Top: card image + formatted card name ── */}
+                <View style={styles.topRow}>
                   <Image
                     source={imageUri ? { uri: imageUri } : Images.SMALL_CARD}
                     defaultSource={Images.SMALL_CARD}
-                    style={styles.groupCardImage}
+                    style={styles.cardImage}
                     resizeMode="contain"
                   />
-                  <CustomText style={styles.groupCardName} numberOfLines={1}>
-                    {formatCardName(schedule.CARD_NAME)}
-                  </CustomText>
+                  {/* Wrapper gives MaskedView a real flex width to render into */}
+                  <View style={styles.cardNameWrapper}>
+                    <GradientText
+                      colors={Colors.GRADIENT.GOLD}
+                      locations={Colors.GRADIENT.GOLD_LOCATIONS}
+                      style={styles.cardName}
+                      angle={180}
+                      numberOfLines={2}
+                    >
+                      {cardName}
+                    </GradientText>
+                  </View>
                 </View>
+
+                {/* ── Gold separator ── */}
+                <View style={styles.separator} />
+
+                {/* ── GAME NAME — full width ── */}
+                <LV label="GAME NAME" value={schedule.NAME} />
+
+                {/* ── DATE — publish date only ── */}
+                <LV label="DATE" value={publishDate} />
+
+                {/* ── START TIME | END TIME — paired cells ── */}
+                <View style={styles.pairRow}>
+                  <PC
+                    label="START TIME"
+                    value={
+                      <View style={styles.inlineRow}>
+                        <CustomText style={styles.emojiIcon}>🕐</CustomText>
+                        <CustomText style={pc.value}>
+                          {formatTimeAMPM(schedule.START_TIME)}
+                        </CustomText>
+                      </View>
+                    }
+                  />
+                  <View style={styles.pairSep} />
+                  <PC
+                    label="END TIME"
+                    value={
+                      <View style={styles.inlineRow}>
+                        <CustomText style={styles.emojiIcon}>🕐</CustomText>
+                        <CustomText style={pc.value}>
+                          {formatTimeAMPM(schedule.END_TIME)}
+                        </CustomText>
+                      </View>
+                    }
+                  />
+                </View>
+
               </View>
 
               {index < item.items.length - 1 && (
