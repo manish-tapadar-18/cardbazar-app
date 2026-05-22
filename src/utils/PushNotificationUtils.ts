@@ -117,9 +117,36 @@ const displayNotificationFromRemote = async (
 };
 
 // ── Background message handler  (register in index.js) ───────────────────────
+//
+// Duplicate-notification guard
+// ─────────────────────────────
+// FCM has two display paths on Android when the app is in the background:
+//
+//   1. Notification-type messages  (payload has a `notification` key)
+//      → The FCM SDK **automatically** renders the notification in the system
+//        tray without involving JS at all.
+//      → setBackgroundMessageHandler ALSO fires, reaching this handler.
+//      → Calling notifee.displayNotification here would produce a SECOND,
+//        identical notification — the duplicate the user sees.
+//
+//   2. Data-only messages  (payload has ONLY a `data` key, no `notification`)
+//      → The FCM SDK does NOT auto-display anything.
+//      → setBackgroundMessageHandler fires and this handler is the ONLY
+//        display path, so we must call notifee.
+//
+// Fix: bail out early when `remoteMessage.notification` is present — FCM has
+// already handled display.  Only call notifee for data-only messages.
+//
+// Backend recommendation: send data-only topic messages so all display is
+// handled by notifee (custom channel, sound, priority, press actions).
 export const handleBackgroundMessage = async (
     remoteMessage: FirebaseMessagingTypes.RemoteMessage,
 ): Promise<void> => {
+    if (remoteMessage.notification) {
+        // FCM auto-displayed this notification — do nothing to avoid the duplicate.
+        return;
+    }
+    // Data-only message: FCM won't display anything, so notifee must.
     await displayNotificationFromRemote(remoteMessage);
 };
 
