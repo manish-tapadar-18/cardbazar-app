@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
+    ActivityIndicator,
     Modal,
     View,
     StyleSheet,
@@ -16,9 +17,14 @@ import { useAdminDetailsStore } from '../stores/adminDetailsStore';
 import { clearAllStores } from '../stores/clearAllStores';
 import { useSwitchStackStore } from '../stores/switchStackStore';
 
-const MultiLoginModal: React.FC = () => {
+interface MultiLoginModalProps {
+    onRefresh?: () => Promise<void>;
+}
+
+const MultiLoginModal: React.FC<MultiLoginModalProps> = ({ onRefresh }) => {
     const { isMultiLoginVisible } = useDeviceModalStore();
     const { adminDetails } = useAdminDetailsStore();
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const handleCallSupport = () => {
         const phone = adminDetails?.DEVICE_SUPPORT_NUMBER || adminDetails?.MOBILE;
@@ -30,6 +36,16 @@ const MultiLoginModal: React.FC = () => {
     const handleLogout = () => {
         clearAllStores();
         useSwitchStackStore.getState().setAuthStatus(false);
+    };
+
+    const handleRefresh = async () => {
+        if (!onRefresh || isRefreshing) return;
+        setIsRefreshing(true);
+        try {
+            await onRefresh();
+        } finally {
+            setIsRefreshing(false);
+        }
     };
 
     return (
@@ -81,12 +97,48 @@ const MultiLoginModal: React.FC = () => {
                     />
 
                     <View style={styles.messageBox}>
+                        <CustomText style={styles.messageLabel}>⚠  Account Conflict</CustomText>
                         <CustomText style={styles.messageText}>
-                            Your account is currently active on another device. Please contact support.
+                            Your account is currently active on another device. Only one session is allowed at a time.
                         </CustomText>
+                        <View style={styles.messageTip}>
+                            <CustomText style={styles.messageTipText}>
+                                If you just logged in, tap Refresh Status below to re-verify your session.
+                            </CustomText>
+                        </View>
                     </View>
 
-                    {/* Buttons */}
+                    {/* Refresh Status Button */}
+                    <TouchableOpacity
+                        style={[styles.refreshBtn, isRefreshing && styles.refreshBtnDisabled]}
+                        onPress={handleRefresh}
+                        activeOpacity={0.8}
+                        disabled={isRefreshing}
+                    >
+                        <LinearGradient
+                            colors={isRefreshing
+                                ? ['rgba(255,255,255,0.04)', 'rgba(255,255,255,0.04)']
+                                : ['rgba(99,60,180,0.55)', 'rgba(60,20,120,0.75)']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.refreshBtnInner}
+                        >
+                            {isRefreshing ? (
+                                <>
+                                    <ActivityIndicator
+                                        size="small"
+                                        color={Colors.GOLD}
+                                        style={styles.refreshSpinner}
+                                    />
+                                    <CustomText style={styles.refreshBtnText}>Checking Status…</CustomText>
+                                </>
+                            ) : (
+                                <CustomText style={styles.refreshBtnText}>🔄  Refresh Status</CustomText>
+                            )}
+                        </LinearGradient>
+                    </TouchableOpacity>
+
+                    {/* Action Buttons */}
                     <View style={styles.buttonsRow}>
                         {/* Call Customer Care */}
                         <TouchableOpacity
@@ -100,7 +152,8 @@ const MultiLoginModal: React.FC = () => {
                                 end={{ x: 1, y: 0 }}
                                 style={styles.btnGradient}
                             >
-                                <CustomText style={styles.btnTextDark}>📞 Support</CustomText>
+                                <CustomText style={styles.btnIcon}>📞</CustomText>
+                                <CustomText style={styles.btnTextDark}>Support</CustomText>
                             </LinearGradient>
                         </TouchableOpacity>
 
@@ -116,6 +169,7 @@ const MultiLoginModal: React.FC = () => {
                                 end={{ x: 1, y: 0 }}
                                 style={styles.btnGradient}
                             >
+                                <CustomText style={styles.btnIcon}>🚪</CustomText>
                                 <CustomText style={styles.btnTextLight}>Logout</CustomText>
                             </LinearGradient>
                         </TouchableOpacity>
@@ -189,18 +243,18 @@ const styles = StyleSheet.create({
     },
     title: {
         color: Colors.WHITE,
-        fontSize: rf(7),
+        fontSize: rf(6.5),
         fontFamily: FontFamilyWithWeight[700],
         textAlign: 'center',
-        letterSpacing: 0.5,
+        letterSpacing: 1,
     },
     titleAccent: {
         color: Colors.GOLD,
-        fontSize: rf(7),
+        fontSize: rf(6.5),
         fontFamily: FontFamilyWithWeight[700],
         textAlign: 'center',
         marginBottom: rh(1.5),
-        letterSpacing: 0.5,
+        letterSpacing: 1,
     },
     divider: {
         height: 1,
@@ -210,21 +264,78 @@ const styles = StyleSheet.create({
     },
     messageBox: {
         width: '88%',
-        backgroundColor: 'rgba(200,0,0,0.1)',
-        borderRadius: 12,
+        backgroundColor: 'rgba(200,0,0,0.08)',
+        borderRadius: 14,
         borderWidth: 1,
-        borderColor: 'rgba(200,0,0,0.25)',
-        padding: rw(4),
-        marginBottom: rh(2.5),
-        alignItems: 'center',
+        borderColor: 'rgba(200,0,0,0.22)',
+        paddingHorizontal: rw(4),
+        paddingTop: rh(1.6),
+        paddingBottom: rh(1.8),
+        marginBottom: rh(2),
+    },
+    messageLabel: {
+        color: '#ff6666',
+        fontSize: rf(3.4),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 0.6,
+        marginBottom: rh(0.8),
     },
     messageText: {
         color: Colors.WHITE_75,
-        fontSize: rf(3.8),
+        fontSize: rf(3.7),
         fontFamily: FontFamilyWithWeight[400],
-        textAlign: 'center',
         lineHeight: rh(2.8),
+        letterSpacing: 0.2,
     },
+    messageTip: {
+        marginTop: rh(1.2),
+        paddingTop: rh(1),
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.08)',
+    },
+    messageTipText: {
+        color: 'rgba(255,215,0,0.6)',
+        fontSize: rf(3.3),
+        fontFamily: FontFamilyWithWeight[400],
+        letterSpacing: 0.2,
+        lineHeight: rh(2.6),
+    },
+
+    /* Refresh button */
+    refreshBtn: {
+        width: '88%',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: rh(2),
+        borderWidth: 1,
+        borderColor: 'rgba(150,100,255,0.4)',
+        elevation: 3,
+        shadowColor: '#9060ff',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+    },
+    refreshBtnDisabled: {
+        borderColor: 'rgba(255,255,255,0.1)',
+        elevation: 0,
+    },
+    refreshBtnInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: rh(1.7),
+    },
+    refreshSpinner: {
+        marginRight: rw(2),
+    },
+    refreshBtnText: {
+        color: Colors.WHITE,
+        fontSize: rf(3.7),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 0.5,
+    },
+
+    /* Action buttons */
     buttonsRow: {
         flexDirection: 'row',
         width: '88%',
@@ -246,17 +357,22 @@ const styles = StyleSheet.create({
         paddingVertical: rh(1.8),
         alignItems: 'center',
         justifyContent: 'center',
+        flexDirection: 'row',
+        gap: rw(1.5),
+    },
+    btnIcon: {
+        fontSize: rf(3.4),
     },
     btnTextDark: {
         color: Colors.BLACK,
-        fontSize: rf(3.5),
+        fontSize: rf(3.6),
         fontFamily: FontFamilyWithWeight[700],
-        letterSpacing: 0.3,
+        letterSpacing: 0.4,
     },
     btnTextLight: {
         color: Colors.WHITE,
-        fontSize: rf(3.5),
+        fontSize: rf(3.6),
         fontFamily: FontFamilyWithWeight[700],
-        letterSpacing: 0.3,
+        letterSpacing: 0.4,
     },
 });

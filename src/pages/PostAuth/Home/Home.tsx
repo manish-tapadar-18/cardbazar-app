@@ -262,7 +262,7 @@ const Home = () => {
       )}
     </ImageBackground>
       <DeviceBlockModal onCheckDevice={checkDeviceId} />
-      <MultiLoginModal />
+      <MultiLoginModal onRefresh={getProfileDetails} />
     </>
   )
 }
