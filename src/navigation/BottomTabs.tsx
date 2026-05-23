@@ -45,7 +45,9 @@ export const BottomTabs = () => {
                 component={HomeStack}
                 options={{
                     tabBarLabel: () => (
-                        <CustomText children={t('home_menu')} style={{ color: Colors.WHITE, fontSize: rh(1.2), fontFamily:FontFamilyWithWeight["inter_600"] }} />
+                        <CustomText children={t('home_menu')} 
+                        style={styles.tabText} 
+                        />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -67,7 +69,7 @@ export const BottomTabs = () => {
                 component={AddMoneyStack}
                 options={{
                     tabBarLabel: () => (
-                        <CustomText children={t('add_money')} style={{ color: Colors.WHITE, fontSize: rh(1.2), fontFamily:FontFamilyWithWeight["inter_600"] }} />
+                        <CustomText children={t('add_money')} style={styles.tabText} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -96,7 +98,7 @@ export const BottomTabs = () => {
                 component={WithdrawMoneyStack}
                 options={{
                     tabBarLabel: () => (
-                        <CustomText children={t('withdraw_money')} style={{ color: Colors.WHITE, fontSize: rh(1.2), fontFamily:FontFamilyWithWeight["inter_600"] }} />
+                        <CustomText children={t('withdraw_money')} style={styles.tabText} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -125,7 +127,7 @@ export const BottomTabs = () => {
                 component={PlayHistoryStack}
                 options={{
                     tabBarLabel: () => (
-                        <CustomText children={t('play_history')} style={{ color: Colors.WHITE, fontSize: rh(1.2), fontFamily:FontFamilyWithWeight["inter_600"] }} />
+                        <CustomText children={t('play_history')} style={styles.tabText} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -154,7 +156,7 @@ export const BottomTabs = () => {
                 component={ResultStack}
                 options={{
                     tabBarLabel: () => (
-                        <CustomText children={t('result_menu')} style={{ color: Colors.WHITE, fontSize: rh(1.2), fontFamily:FontFamilyWithWeight["inter_600"] }} />
+                        <CustomText children={t('result_menu')} style={styles.tabText} />
                     ),
                     tabBarIcon: ({ focused }) => (
                         <Image
@@ -182,3 +184,7 @@ export const BottomTabs = () => {
         </Tab.Navigator>
     );
 };
+
+const styles = StyleSheet.create({
+    tabText:{ color: Colors.WHITE, fontSize: rh(1.2), fontFamily:FontFamilyWithWeight["inter_600"], textTransform:"capitalize" }
+})

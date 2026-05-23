@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     fontSize: rf(3.5),
     fontFamily: FontFamilyWithWeight["inter_700"],
     textAlign: 'center',
+    textTransform:"capitalize"
   },
   activeText: {
     color: Colors.GOLD,

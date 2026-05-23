@@ -93,12 +93,14 @@ const styles = StyleSheet.create({
     fontSize: rf(6.5),
     fontFamily: FontFamilyWithWeight[700],
     letterSpacing: 0.5,
+    textTransform:"capitalize"
   },
   inactiveLabel: {
     fontSize: rf(6.5),
     fontFamily: FontFamilyWithWeight[600],
     color: '#FFFFFF',
     letterSpacing: 0.5,
+    textTransform:"capitalize"
   },
   indicator: {
     height: 3,

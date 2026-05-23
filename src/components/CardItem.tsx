@@ -14,10 +14,11 @@ export interface PlayOption {
   cardOrder?: number;
 }
 
-export const formatCardName = (name: string): string => {
-  const parts = name.split('-');
-  if (parts.length < 2) return name.toUpperCase();
-  return `${parts[0].toUpperCase()} - ${parts[1].toUpperCase()}`;
+const RANK_MAP: Record<string, string> = { a: 'ACE', k: 'KING', q: 'QUEEN', j: 'JACK' };
+
+export const formatCardName = (name: string | null): string => {
+  if (!name) return '';
+  return name.split('-').map(p => RANK_MAP[p.toLowerCase()] ?? p.toUpperCase()).join(' ');
 };
 
 interface CardItemProps {

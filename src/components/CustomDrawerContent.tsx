@@ -4,7 +4,6 @@ import { DrawerContentScrollView } from '@react-navigation/drawer';
 import CustomText from "./CustomText";
 import { rh, rw } from "../utils/responsive";
 import { Images } from "../utils/Images";
-// import LottieView from "lottie-react-native";
 import { useUserStore } from "../stores/userStore";
 import { FontFamilyWithWeight } from "../utils/FontFamilyWithWeight";
 import { clearAllStores } from "../stores/clearAllStores";
@@ -131,7 +130,7 @@ const CustomDrawerContent = (props: DrawerContentComponentProps) => {
         </View>
 
         {/* Wallet balance pill */}
-        <LinearGradient
+        {/* <LinearGradient
           colors={['rgba(255,215,0,0.18)', 'rgba(255,165,0,0.12)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -144,7 +143,7 @@ const CustomDrawerContent = (props: DrawerContentComponentProps) => {
               {`₹ ${Number(userDetails?.USER_BALANCE ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             </CustomText>
           </View>
-        </LinearGradient>
+        </LinearGradient> */}
 
         {/* Gold divider */}
         <LinearGradient

@@ -3,11 +3,8 @@ import { DrawerParamList } from "./RouteTypes";
 import CustomDrawerContent from "../components/CustomDrawerContent";
 import { BottomTabs } from "./BottomTabs";
 import CommonHeader from "../components/CommonHeader";
-import { useUserStore } from "../stores/userStore";
 import { useAdminDetailsStore } from "../stores/adminDetailsStore";
 import { Alert, Linking } from "react-native";
-import { useCallback, useEffect } from "react";
-import { Repository } from "../repository/Repository";
 import { useWalletStore } from "../stores/walletStore";
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
