@@ -204,13 +204,13 @@ const WalletStatusModal: React.FC<Props> = ({ visible, onClose }) => {
                     end={{ x: 1, y: 0 }}
                     style={styles.actionBtnGradient}
                   >
-                    <Image source={Images.ADD_MONEY} style={styles.actionBtnIcon} resizeMode="contain" />
-                    <CustomText style={styles.actionBtnText}>ADD MONEY</CustomText>
+                    
+                    <CustomText style={styles.actionBtnText} numberOfLines={1}>ADD MONEY</CustomText>
                   </LinearGradient>
                 </TouchableOpacity>
 
                 {/* Move To Wallet (conditional) */}
-                {hasPendingWithdrawal && (
+                {!hasPendingWithdrawal && (
                   <TouchableOpacity
                     style={[styles.actionBtn, styles.actionBtnFlex]}
                     onPress={handleMoveToWallet}
@@ -225,10 +225,7 @@ const WalletStatusModal: React.FC<Props> = ({ visible, onClose }) => {
                     >
                       {isMoveLoading
                         ? <ActivityIndicator size="small" color={Colors.WHITE} />
-                        : <>
-                            <Image source={Images.TAB_WALLET} style={[styles.actionBtnIcon, { tintColor: Colors.WHITE }]} resizeMode="contain" />
-                            <CustomText style={[styles.actionBtnText, { color: Colors.WHITE }]}>MOVE TO WALLET</CustomText>
-                          </>
+                        : <CustomText style={[styles.actionBtnText, { color: Colors.WHITE }]} numberOfLines={2}>MOVE TO WALLET</CustomText>
                       }
                     </LinearGradient>
                   </TouchableOpacity>
@@ -240,7 +237,7 @@ const WalletStatusModal: React.FC<Props> = ({ visible, onClose }) => {
                   onPress={onClose}
                   activeOpacity={0.85}
                 >
-                  <CustomText style={styles.cancelBtnText}>CANCEL</CustomText>
+                  <CustomText style={styles.cancelBtnText} numberOfLines={1}>CANCEL</CustomText>
                 </TouchableOpacity>
 
               </View>
@@ -427,6 +424,8 @@ const styles = StyleSheet.create({
     gap: rw(3),
   },
   actionBtn: {
+    flex: 1,
+    height: rh(6),
     borderRadius: rh(1.2),
     overflow: 'hidden',
     elevation: 3,
@@ -439,11 +438,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionBtnGradient: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: rh(1.8),
-    gap: rw(1.5),
+    paddingHorizontal: rw(2),
+    gap: rw(1),
   },
   actionBtnIcon: {
     width: rw(5),
@@ -452,23 +452,25 @@ const styles = StyleSheet.create({
   },
   actionBtnText: {
     color: Colors.BLACK,
-    fontSize: rf(4),
+    fontSize: rf(3.2),
     fontFamily: FontFamilyWithWeight[700],
-    letterSpacing: 0.5,
+    letterSpacing: 0.2,
+    textAlign: 'center',
   },
   cancelBtn: {
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
     elevation: 0,
     shadowOpacity: 0,
   },
   cancelBtnText: {
     color: Colors.WHITE_55,
-    fontSize: rf(4),
+    fontSize: rf(3.2),
     fontFamily: FontFamilyWithWeight[600],
-    letterSpacing: 0.5,
+    letterSpacing: 0.2,
     textAlign: 'center',
-    paddingVertical: rh(1.8),
   },
 })

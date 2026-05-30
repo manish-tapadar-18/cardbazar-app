@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   ImageBackground,
+  RefreshControl,
   TextInput,
   TouchableOpacity,
   View,
@@ -59,6 +60,7 @@ const Withdraw = () => {
   // ── UI state ────────────────────────────────────────────────────────────
   const [isInitLoading, setIsInitLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [isOverlayRefreshing, setIsOverlayRefreshing] = useState(false)
 
   // ── Feature flags ───────────────────────────────────────────────────────
@@ -101,9 +103,9 @@ const Withdraw = () => {
 
   // ─── Init data fetch ───────────────────────────────────────────────────────
   const fetchInitData = useCallback(
-    async (isRefresh = false) => {
+    async (isRefresh = false, skipInitLoader = false) => {
       if (isRefresh) setIsOverlayRefreshing(true)
-      else setIsInitLoading(true)
+      else if (!skipInitLoader) setIsInitLoading(true)
 
       try {
         const [userRes, autoRes] = await Promise.all([
@@ -140,11 +142,27 @@ const Withdraw = () => {
         Toast.error(error?.message ?? 'Failed to load. Please try again.')
       } finally {
         if (isRefresh) setIsOverlayRefreshing(false)
-        else setIsInitLoading(false)
+        else if (!skipInitLoader) setIsInitLoading(false)
       }
     },
     [userDetails?.EMAIL, adminDetails],
   )
+
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    setGlobalError('')
+    setConfirmAccountNumber('')
+    setConfirmAccountNumberError('')
+    setManualAmount('')
+    setErrors({})
+    try {
+      await fetchInitData(false, true)
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to refresh. Please try again.')
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [fetchInitData, setErrors])
 
   useFocusEffect(
     useCallback(() => {
@@ -292,7 +310,6 @@ const Withdraw = () => {
       ],
     )
   }
-  console.log({ isBlocked,autoWithdrawMode });
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.background} resizeMode="cover">
@@ -319,6 +336,14 @@ const Withdraw = () => {
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 enableOnAndroid
+                refreshControl={
+                  <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={onRefresh}
+                    tintColor={Colors.GOLD}
+                    colors={[Colors.GOLD]}
+                  />
+                }
               >
                 {/* Balance card */}
                 <View style={styles.balanceCard}>
