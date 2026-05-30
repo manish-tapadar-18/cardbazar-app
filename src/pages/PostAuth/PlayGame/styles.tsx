@@ -229,9 +229,9 @@ export const styles = StyleSheet.create({
     },
     addBtnText: {
         color: Colors.WHITE,
-        fontSize: rf(8),
-        fontFamily: FontFamilyWithWeight[300],
-        lineHeight: rw(15),
+        fontSize: rf(4),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 0.5,
     },
 
     // ─── Line Items ───────────────────────────────────────────────────────────

@@ -7,6 +7,7 @@ import {
   Keyboard,
   Modal,
   Pressable,
+  RefreshControl,
   TextInput,
   View
 } from 'react-native';
@@ -85,6 +86,7 @@ const PlayGame: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [gameRules, setGameRule] = useState<IGameRulesItem[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [gameType, setGameType] = useState<IGameTypeResponse[]>([]);
   const flatListRef = useRef<FlatList<CardGroup>>(null);
@@ -145,16 +147,39 @@ const PlayGame: React.FC = () => {
     }
   }, [userDetails?.ID, setWallet]);
 
-  useFocusEffect(useCallback(() => {
-    const fetchAdminDetails = async () => {
+  // ── Fetch admin details ──────────────────────────────────────────────────
+  const fetchAdminDetails = useCallback(async () => {
+    try {
       const { isSuccess, data } = await Repository.User.adminDetails();
       if (isSuccess && data != null) setAdminDetails(data);
-    };
-    fetchAdminDetails();
-    fetchGameTypes();
-    fetchGameRules();
-    fetchWalletBalance();
-  }, []));
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to load admin details.');
+    }
+  }, [setAdminDetails]);
+
+  // ── Fetch everything in parallel ─────────────────────────────────────────
+  const fetchAll = useCallback(async () => {
+    await Promise.all([
+      fetchAdminDetails(),
+      fetchGameTypes(),
+      fetchGameRules(),
+      fetchWalletBalance(),
+    ]);
+  }, [fetchAdminDetails, fetchGameTypes, fetchGameRules, fetchWalletBalance]);
+
+  useFocusEffect(useCallback(() => {
+    fetchAll();
+  }, [fetchAll]));
+
+  // ── Pull-to-refresh ───────────────────────────────────────────────────────
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchAll();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [fetchAll]);
 
   // ── Dropdown group select ────────────────────────────────────────────────
   const selectGroup = (index: number) => {
@@ -331,6 +356,14 @@ const PlayGame: React.FC = () => {
           keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
           bounces={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              tintColor={Colors.GOLD}
+              colors={[Colors.GOLD]}
+            />
+          }
         >
           {/* ── Dropdown ─────────────────────────────────────────────────── */}
           <Pressable onPress={() => setIsDropdownOpen(true)} style={styles.dropdown}>
@@ -366,14 +399,14 @@ const PlayGame: React.FC = () => {
                 style={styles.amountInput}
                 placeholder="Enter Amount Rs."
                 placeholderTextColor={Colors.GRAY_ALT}
-                keyboardType="numeric"
+                keyboardType="number-pad"
                 value={amount}
-                onChangeText={setAmount}
+                onChangeText={(text) => setAmount(text.replace(/[^0-9]/g, '').replace(/^0+/, ''))}
                 returnKeyType="done"
                 onSubmitEditing={onAddLineItem}
               />
               <Pressable onPress={onAddLineItem} style={styles.addBtn}>
-                <CustomText style={styles.addBtnText}>+</CustomText>
+                <CustomText style={styles.addBtnText}>Add</CustomText>
               </Pressable>
             </View>
           </View>

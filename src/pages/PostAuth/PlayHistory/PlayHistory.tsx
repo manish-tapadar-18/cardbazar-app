@@ -71,7 +71,7 @@ const PlayHistory = () => {
   const [pageNum, setPageNum] = useState(0);
   const [selectedDate, setSelectedDate] = useState('');
   const [isCatLoading, setIsCatLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { setAdminDetails } = useAdminDetailsStore();
@@ -137,9 +137,11 @@ const PlayHistory = () => {
         fetchHistory(firstId, activeDateRef.current, 0, false);
       } else {
         Toast.error(message ?? 'Failed to load categories.');
+        setIsLoading(false);
       }
     } catch (error: any) {
       Toast.error(error?.message ?? 'Something went wrong.');
+      setIsLoading(false);
     } finally {
       setIsCatLoading(false);
     }

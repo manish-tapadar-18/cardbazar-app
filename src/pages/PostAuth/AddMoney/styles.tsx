@@ -1,7 +1,12 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import { rh, rw, rf } from '../../../utils/responsive';
 import { FontFamilyWithWeight } from '../../../utils/FontFamilyWithWeight';
 import { Colors } from '../../../utils/Colors';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// scrollContent has paddingHorizontal: rw(4) on each side; chips have marginHorizontal: rw(1) each
+const CHIP_H_MARGIN = rw(1);
+const CHIP_WIDTH = (SCREEN_WIDTH - rw(4) * 2 - CHIP_H_MARGIN * 2 * 4) / 4;
 
 export const styles = StyleSheet.create({
 
@@ -110,8 +115,8 @@ export const styles = StyleSheet.create({
     marginBottom: rh(1),
   },
   chip: {
-    width: '23%',
-    marginHorizontal: '1%',
+    width: CHIP_WIDTH,
+    marginHorizontal: CHIP_H_MARGIN,
     marginBottom: rh(1.8),
     paddingVertical: rh(1.6),
     borderRadius: rh(1),
