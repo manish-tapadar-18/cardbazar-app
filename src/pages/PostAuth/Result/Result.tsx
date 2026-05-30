@@ -13,6 +13,7 @@ import CustomText from '../../../components/CustomText';
 import GradientText from '../../../components/GradientText';
 import HorizontalTabBar from '../../../components/HorizontalTabBar';
 import EmptyState from '../../../components/EmptyState';
+import ResultSkeleton from '../../../components/ResultSkeleton';
 import { Images } from '../../../utils/Images';
 import { Colors } from '../../../utils/Colors';
 import { ENV } from '../../../utils/env';
@@ -125,7 +126,7 @@ const Result = () => {
   const [resultGroups, setResultGroups] = useState<DateGroup[]>([]);
   const [pageNum, setPageNum] = useState(0);
   const [isCatLoading, setIsCatLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { setAdminDetails } = useAdminDetailsStore();
   const flatListRef = useRef<FlatList<DateGroup>>(null);
@@ -375,16 +376,13 @@ const Result = () => {
     );
   };
 
-  const ListEmpty = () => {
-    if (isLoading) return null;
-    return (
-      <EmptyState
-        image={Images.RESULT}
-        title="No Results Found"
-        subtitle="No published results for this category."
-      />
-    );
-  };
+  const ListEmpty = () => (
+    <EmptyState
+      image={Images.RESULT}
+      title="No Results Found"
+      subtitle="No published results for this category."
+    />
+  );
 
   return (
     <ImageBackground
@@ -402,23 +400,27 @@ const Result = () => {
         />
       )}
 
-      <FlatList
-        ref={flatListRef}
-        data={resultGroups}
-        keyExtractor={(item) => item.GAME_DATE}
-        renderItem={renderItem}
-        ListEmptyComponent={ListEmpty}
-        ListFooterComponent={ListFooter}
-        contentContainerStyle={styles.listContent}
-        style={styles.flex1}
-        onScrollBeginDrag={() => { hasInteracted.current = true; }}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.3}
-        initialNumToRender={PER_PAGE}
-        refreshing={isRefreshing}
-        onRefresh={onRefresh}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading ? (
+        <ResultSkeleton />
+      ) : (
+        <FlatList
+          ref={flatListRef}
+          data={resultGroups}
+          keyExtractor={(item) => item.GAME_DATE}
+          renderItem={renderItem}
+          ListEmptyComponent={ListEmpty}
+          ListFooterComponent={ListFooter}
+          contentContainerStyle={styles.listContent}
+          style={styles.flex1}
+          onScrollBeginDrag={() => { hasInteracted.current = true; }}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.3}
+          initialNumToRender={PER_PAGE}
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </ImageBackground>
   );
 };

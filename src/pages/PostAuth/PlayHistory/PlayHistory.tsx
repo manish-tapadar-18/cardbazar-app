@@ -289,7 +289,7 @@ const PlayHistory = () => {
       </LinearGradient>
 
       {/* ── List / Skeleton ───────────────────────────────────────────────── */}
-      {isLoading && pageNum === 0 ? (
+      {isLoading ? (
         <PlayHistorySkeleton />
       ) : (
         <FlatList

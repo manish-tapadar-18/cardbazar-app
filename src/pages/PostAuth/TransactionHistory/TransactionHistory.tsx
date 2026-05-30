@@ -629,7 +629,7 @@ const TransactionHistory = () => {
             </LinearGradient>
 
             {/* ── Transaction List / Skeleton ────────────────────────────────── */}
-            {isLoading && pageNum === 0 ? (
+            {isLoading ? (
                 <TransactionSkeleton />
             ) : (
                 <FlatList
