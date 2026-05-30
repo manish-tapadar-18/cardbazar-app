@@ -210,7 +210,7 @@ const WalletStatusModal: React.FC<Props> = ({ visible, onClose }) => {
                 </TouchableOpacity>
 
                 {/* Move To Wallet (conditional) */}
-                {!hasPendingWithdrawal && (
+                {hasPendingWithdrawal && (
                   <TouchableOpacity
                     style={[styles.actionBtn, styles.actionBtnFlex]}
                     onPress={handleMoveToWallet}

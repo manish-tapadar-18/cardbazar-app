@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
-  Alert,
   ImageBackground,
   RefreshControl,
   TextInput,
@@ -20,6 +19,7 @@ import { styles } from './styles'
 import GradientIconBar from '../../../components/GradientIconBar'
 import CustomText from '../../../components/CustomText'
 import WithdrawBlockedOverlay from '../../../components/WithdrawBlockedOverlay'
+import ConfirmAlertModal, { ConfirmAlertRow } from '../../../components/ConfirmAlertModal'
 import { Repository } from '../../../repository/Repository'
 import { useUserStore } from '../../../stores/userStore'
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
@@ -78,6 +78,15 @@ const Withdraw = () => {
   // ── Manual mode amount ──────────────────────────────────────────────────
   const [manualAmount, setManualAmount] = useState('')
   const [globalError, setGlobalError] = useState('')
+
+  // ── Confirm modal ────────────────────────────────────────────────────────
+  const [confirmConfig, setConfirmConfig] = useState<{
+    visible: boolean
+    rows: ConfirmAlertRow[]
+    onConfirm: () => void
+  }>({ visible: false, rows: [], onConfirm: () => {} })
+
+  const closeConfirm = () => setConfirmConfig(prev => ({ ...prev, visible: false }))
 
   // ── Derived ─────────────────────────────────────────────────────────────
   const isBlocked = !adminWithdrawEnabled || !userWithdrawEnabled
@@ -254,21 +263,16 @@ const Withdraw = () => {
     if (!allowed) return
 
     const amount = parseInt(manualAmount, 10)
-    Alert.alert(
-      'Confirm Withdrawal',
-      `Amount: ₹${amount}\n\nProceed with withdrawal request?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm', onPress: () => postWithdrawalRequest(amount, {
-            BANK_IFSC: values.BANK_IFSC,
-            BANK_ACCOUNT_HOLDER_NAME: values.BANK_ACCOUNT_HOLDER_NAME,
-            BANK_ACCOUNT_NO: values.BANK_ACCOUNT_NO,
-            BANK_NAME: values.BANK_NAME,
-          })
-        },
-      ],
-    )
+    setConfirmConfig({
+      visible: true,
+      rows: [{ label: 'AMOUNT', value: `₹${amount}` }],
+      onConfirm: () => postWithdrawalRequest(amount, {
+        BANK_IFSC: values.BANK_IFSC,
+        BANK_ACCOUNT_HOLDER_NAME: values.BANK_ACCOUNT_HOLDER_NAME,
+        BANK_ACCOUNT_NO: values.BANK_ACCOUNT_NO,
+        BANK_NAME: values.BANK_NAME,
+      }),
+    })
   }
 
   // ─── Auto mode submit (called from Formik onSubmit) ────────────────────────
@@ -294,21 +298,22 @@ const Withdraw = () => {
     if (!allowed) return
 
     const amount = parseInt(values.AMOUNT, 10)
-    Alert.alert(
-      'Confirm Withdrawal',
-      `Account Holder: ${values.BANK_ACCOUNT_HOLDER_NAME}\n\nAccount No: ${values.BANK_ACCOUNT_NO}\n\nIFSC: ${values.BANK_IFSC}\n\nBank: ${values.BANK_NAME}\n\nAmount: ₹${amount}`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm', onPress: () => postWithdrawalRequest(amount, {
-            BANK_IFSC: values.BANK_IFSC,
-            BANK_ACCOUNT_HOLDER_NAME: values.BANK_ACCOUNT_HOLDER_NAME,
-            BANK_ACCOUNT_NO: values.BANK_ACCOUNT_NO,
-            BANK_NAME: values.BANK_NAME,
-          })
-        },
+    setConfirmConfig({
+      visible: true,
+      rows: [
+        { label: 'ACCOUNT HOLDER', value: values.BANK_ACCOUNT_HOLDER_NAME },
+        { label: 'ACCOUNT NO', value: values.BANK_ACCOUNT_NO },
+        { label: 'IFSC', value: values.BANK_IFSC },
+        { label: 'BANK', value: values.BANK_NAME },
+        { label: 'AMOUNT', value: `₹${amount}` },
       ],
-    )
+      onConfirm: () => postWithdrawalRequest(amount, {
+        BANK_IFSC: values.BANK_IFSC,
+        BANK_ACCOUNT_HOLDER_NAME: values.BANK_ACCOUNT_HOLDER_NAME,
+        BANK_ACCOUNT_NO: values.BANK_ACCOUNT_NO,
+        BANK_NAME: values.BANK_NAME,
+      }),
+    })
   }
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
@@ -555,6 +560,13 @@ const Withdraw = () => {
           </>
         )}
       </View>
+      <ConfirmAlertModal
+        visible={confirmConfig.visible}
+        title="CONFIRM WITHDRAWAL"
+        rows={confirmConfig.rows}
+        onConfirm={confirmConfig.onConfirm}
+        onClose={closeConfirm}
+      />
     </ImageBackground>
   )
 }
