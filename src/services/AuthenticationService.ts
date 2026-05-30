@@ -36,7 +36,7 @@ class AuthenticationService implements IAuthenticationService {
     ): Promise<ICustomResponse<ISendOtpResponse>> {
         try {
             const response = await http.post<IApiResponse<ISendOtpResponse>>(
-                UriRepo.SENDOTP,
+                UriRepo.REQUEST_OTP,
                 payload
             );
 

@@ -142,7 +142,7 @@ const Register = () => {
                 const loginResponse = await Repository.Auth.login({ EMAIL: payload.MOBILE, PASSWORD: payload.PASSWORD });
                 const { isSuccess: loginSuccess, data: loginData, message: loginMessage } = loginResponse;
                 if (!loginSuccess || !loginData) {
-                    Toast.error(`Error:- ${loginMessage}`, { placement: 'bottom', duration: 3000 });
+                    Toast.error(`Error:- ${loginMessage}`, { placement: 'center', duration: 3000 });
                     return;
                 }
                 setToken(loginData.ACCESS_TOKEN);
@@ -280,6 +280,7 @@ const Register = () => {
                                     value={values.MOBILE}
                                     placeholder={t("enter_mobile_number_placeholder","Enter mobile number")}
                                     keyboardType="number-pad"
+                                    maxLength={10}
                                     returnKeyType="next"
                                     style={styles.textInput}
                                     focusedPlaceholderColor={Colors.GOLD}
@@ -479,7 +480,7 @@ const Register = () => {
     );
 };
 
-// ─── Field row: label + icon + focused-border + error ────────────────────────
+
 type FieldRowProps = {
     label: string;
     icon: any;

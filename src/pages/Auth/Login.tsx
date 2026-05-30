@@ -98,7 +98,7 @@ const Login = () => {
             const loginResponse = await Repository.Auth.login(vals);
             const { isSuccess, data: loginData, message: loginMessage } = loginResponse;
             if (!isSuccess || !loginData) {
-                Toast.error(`Error:- ${loginMessage}`, { placement: 'bottom', duration: 3000 });
+                Toast.error(`${loginMessage}`, { placement: 'center', duration: 3000 });
                 return;
             }
             setToken(loginData.ACCESS_TOKEN);
@@ -110,7 +110,7 @@ const Login = () => {
             setAdminDetails(adminDetailsData);
             setAuthenticationStatus(true);
         } catch (error: any) {
-            Toast.error(error.message, { placement: 'bottom', duration: 3000 });
+            Toast.error(error.message, { placement: 'center', duration: 3000 });
         } finally {
             setLoading(false);
         }
@@ -172,6 +172,7 @@ const Login = () => {
                                         onChangeText={(value: string) =>
                                             setFieldValue('EMAIL', value.replace(/[^0-9]/g, ''))
                                         }
+                                        maxLength={10}
                                         onBlur={(e) => { handleBlur('EMAIL')(e); setFocusedField(null); }}
                                         onFocus={() => setFocusedField('EMAIL')}
                                         value={values.EMAIL}

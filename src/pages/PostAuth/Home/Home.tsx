@@ -4,6 +4,7 @@ import {
   ImageBackground,
   Platform,
   RefreshControl,
+  TouchableOpacity,
   View,
 } from 'react-native'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
@@ -28,6 +29,7 @@ import { clLog, clRecordError, clSetAttribute, clSetUser, TAGS } from '../../../
 import DeviceBlockModal from '../../../components/DeviceBlockModal'
 import MultiLoginModal from '../../../components/MultiLoginModal'
 import EmptyState from '../../../components/EmptyState'
+import CardRevealModal from '../../../components/CardRevealModal'
 const SKELETON_COUNT = 4
 
 const ListHeader: React.FC = () => (
@@ -48,6 +50,9 @@ const SkeletonList: React.FC = () => (
 const Home = () => {
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [showReveal, setShowReveal] = useState(false)
+  // Change this value (0–3) to control which card wins
+  const revealWinner: 0 | 1 | 2 | 3 = 2
   const navigation = useNavigation();
   const { userDetails } = useUserStore();
   const { setWallet } = useWalletStore();
@@ -262,7 +267,32 @@ const Home = () => {
       )}
     </ImageBackground>
       <DeviceBlockModal onCheckDevice={checkDeviceId} />
-      <MultiLoginModal onRefresh={getProfileDetails} />
+      {/* <MultiLoginModal onRefresh={getProfileDetails} /> */}
+
+      {/* TODO: remove — temp trigger for CardRevealModal testing */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          bottom: 100,
+          alignSelf: 'center',
+          backgroundColor: Colors.GOLD,
+          paddingHorizontal: 24,
+          paddingVertical: 10,
+          borderRadius: 20,
+        }}
+        onPress={() => setShowReveal(true)}
+        activeOpacity={0.8}
+      >
+        <CustomText style={{ color: Colors.BLACK, fontWeight: '700', fontSize: 13, letterSpacing: 1 }}>
+          TEST CARD REVEAL
+        </CustomText>
+      </TouchableOpacity>
+
+      <CardRevealModal
+        visible={showReveal}
+        onClose={() => setShowReveal(false)}
+        winnerIndex={revealWinner}
+      />
     </>
   )
 }

@@ -97,7 +97,7 @@ export default function App() {
 
     return (
         <ToastProvider
-            placement="top"
+            placement="center"
             duration={3000}
             animationType="slide-in"
         >
@@ -108,10 +108,10 @@ export default function App() {
                 <AppNavigator />
             </NavigationContainer>
 
-            <SecurityBlockModal
+            {/* <SecurityBlockModal
                 visible={violationReasons.length > 0}
                 reasons={violationReasons}
-            />
+            /> */}
 
             <PushNotificationPermissionModal
                 visible={showPermissionModal}

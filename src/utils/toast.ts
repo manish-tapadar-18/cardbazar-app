@@ -2,7 +2,7 @@ type AppToastType = "success" | "danger" | "warning" | "normal";
 
 type ToastOptions = {
   duration?: number;
-  placement?: "top" | "bottom";
+  placement?: "top" | "bottom" | "center";
 };
 
 interface ToastHandler {
