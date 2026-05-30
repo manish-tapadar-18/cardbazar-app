@@ -103,7 +103,7 @@ const GameRules = () => {
         setAdminDetails(adminDetailsData);
         const { isSuccess: catSuccess, data: catData, message: catMsg } = catResponse;
         if (!catSuccess || !catData) {
-          Toast.error(`${catMsg}`, { placement: "bottom", duration: 3000 });
+          Toast.error(`${catMsg}`, { placement: "center", duration: 3000 });
         } else {
           setGameCategoryTabs(catData);
           if (catData.length) {
@@ -113,12 +113,12 @@ const GameRules = () => {
 
         const { isSuccess: rulesSuccess, data: rulesData, message: rulesMsg } = rulesResponse;
         if (!rulesSuccess || !rulesData) {
-          Toast.error(`${rulesMsg}`, { placement: "bottom", duration: 3000 });
+          Toast.error(`${rulesMsg}`, { placement: "center", duration: 3000 });
         } else {
           setGameRules(rulesData.DATA);
         }
       } catch (error: any) {
-        Toast.error(`${error.message}`, { placement: "bottom", duration: 3000 });
+        Toast.error(`${error.message}`, { placement: "center", duration: 3000 });
       } finally {
         setLoading(false);
       }

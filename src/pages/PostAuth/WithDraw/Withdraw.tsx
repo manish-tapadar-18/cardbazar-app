@@ -213,7 +213,7 @@ const Withdraw = () => {
         await Promise.all([refreshWallet(), fetchInitData()])
         Toast.success(
           'Your withdrawal request has been submitted. It will be processed within 2 hours.',
-          { placement: 'bottom', duration: 3500 },
+          { placement: 'center', duration: 3500 },
         )
         setManualAmount('')
       } else {

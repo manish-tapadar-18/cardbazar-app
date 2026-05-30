@@ -125,10 +125,10 @@ const GameDetails = () => {
       if (isSuccess && data) {
         setGameCategories(data)
       } else {
-        Toast.error(`${message}`, { placement: 'bottom', duration: 3000 })
+        Toast.error(`${message}`, { placement: 'center', duration: 3000 })
       }
     } catch (error: any) {
-      Toast.error(`${error.message}`, { placement: 'bottom', duration: 3000 })
+      Toast.error(`${error.message}`, { placement: 'center', duration: 3000 })
     } finally {
       setIsCategoriesLoading(false)
     }
@@ -159,7 +159,7 @@ const GameDetails = () => {
       const response = await Repository.Game.getAllGamesList(buildPayload())
       const { isSuccess, data, message } = response
       if (!isSuccess || !data) {
-        Toast.error(`Error: ${message}`, { placement: 'bottom', duration: 3000 })
+        Toast.error(`Error: ${message}`, { placement: 'center', duration: 3000 })
         return
       }
       const allSchedules = data.DATA.flatMap(game =>
@@ -167,7 +167,7 @@ const GameDetails = () => {
       )
       setSchedules(allSchedules)
     } catch (error: any) {
-      Toast.error(error.message, { placement: 'bottom', duration: 3000 })
+      Toast.error(error.message, { placement: 'center', duration: 3000 })
     } finally {
       setIsGamesLoading(false)
     }

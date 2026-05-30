@@ -27,6 +27,7 @@ import { IGameTypeResponse } from '../../../response/module/IGameTypeResponse';
 import CardItem, { PlayOption, formatCardName } from '../../../components/CardItem';
 import SectionDivider from '../../../components/SectionDivider';
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
+import { ENV } from '../../../utils/env';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface LineItem {
@@ -160,7 +161,6 @@ const PlayGame: React.FC = () => {
     try {
       setCurrentGroupIndex(index);
       setIsDropdownOpen(false);
-      setSelectedCardIds(new Set());
       flatListRef.current?.scrollToIndex({ index, animated: true });
     } catch (error: any) {
       Toast.error(error?.message ?? 'Failed to switch category.');
@@ -186,12 +186,12 @@ const PlayGame: React.FC = () => {
     try {
       const numAmount = parseFloat(amount);
       if (!amount || isNaN(numAmount) || numAmount <= 0) {
-        Toast.error('Please enter a valid amount.', { placement: 'bottom', duration: 2500 });
+        Toast.error('Please enter a valid amount.', { placement: 'center', duration: 2500 });
         return;
       }
 
       if (selectedCardIds.size === 0) {
-        Toast.error('Please select at least one card.', { placement: 'bottom', duration: 2500 });
+        Toast.error('Please select at least one card.', { placement: 'center', duration: 2500 });
         return;
       }
 
@@ -199,18 +199,18 @@ const PlayGame: React.FC = () => {
         r => r.CATEGORY_ID === GAME_CATEGORY && r.TYPE_ID === (gameType[0]?.ID ?? '')
       );
       if (!activeRule) {
-        Toast.error('No rules found for this game.', { placement: 'bottom', duration: 2500 });
+        Toast.error('No rules found for this game.', { placement: 'center', duration: 2500 });
         return;
       }
 
       const min = parseFloat(activeRule.MIN_BET);
       const max = parseFloat(activeRule.MAX_BET);
       if (numAmount < min) {
-        Toast.error(`Minimum bet is ₹${min}.`, { placement: 'bottom', duration: 2500 });
+        Toast.error(`Minimum bet is ₹${min}.`, { placement: 'center', duration: 2500 });
         return;
       }
       if (numAmount > max) {
-        Toast.error(`Maximum bet is ₹${max}.`, { placement: 'bottom', duration: 2500 });
+        Toast.error(`Maximum bet is ₹${max}.`, { placement: 'center', duration: 2500 });
         return;
       }
 
@@ -219,7 +219,7 @@ const PlayGame: React.FC = () => {
 
       const duplicates = selectedCards.filter(c => lineItems.some(i => i.card.ID === c.ID));
       if (duplicates.length > 0) {
-        Toast.error('Some selected cards are already added.', { placement: 'bottom', duration: 2500 });
+        Toast.error('Some selected cards are already added.', { placement: 'center', duration: 2500 });
         return;
       }
 
@@ -246,13 +246,13 @@ const PlayGame: React.FC = () => {
   // ── Submit bets ──────────────────────────────────────────────────────────
   const onPlayGame = async () => {
     if (lineItems.length === 0) {
-      Toast.error('Please add at least one bet before playing.', { placement: 'bottom', duration: 2500 });
+      Toast.error('Please add at least one bet before playing.', { placement: 'center', duration: 2500 });
       return;
     }
 
     const totalAmount = lineItems.reduce((sum, i) => sum + parseFloat(i.amount), 0);
     if (totalAmount > balance) {
-      Toast.error('Insufficient balance.', { placement: 'bottom', duration: 2500 });
+      Toast.error('Insufficient balance.', { placement: 'center', duration: 2500 });
       return;
     }
 
@@ -273,15 +273,15 @@ const PlayGame: React.FC = () => {
       const { isSuccess, message } = await Repository.Game.playGameMultiple(body);
 
       if (!isSuccess) {
-        Toast.error(`${message}`, { placement: 'bottom', duration: 3000 });
+        Toast.error(`${message}`, { placement: 'center', duration: 3000 });
         return;
       }
 
-      Toast.success(`${message}`, { placement: 'bottom', duration: 3000 });
+      Toast.success(`${message}`, { placement: 'center', duration: 3000 });
       setLineItems([]);
       await fetchWalletBalance();
     } catch (error: any) {
-      Toast.error(error?.message ?? 'Failed to place bets. Please try again.', { placement: 'bottom', duration: 3000 });
+      Toast.error(error?.message ?? 'Failed to place bets. Please try again.', { placement: 'center', duration: 3000 });
     } finally {
       setIsPlaying(false);
     }
@@ -292,7 +292,6 @@ const PlayGame: React.FC = () => {
     if (viewableItems.length > 0) {
       const idx = viewableItems[0].index ?? 0;
       setCurrentGroupIndex(idx);
-      setSelectedCardIds(new Set());
     }
   }).current;
 
@@ -300,7 +299,7 @@ const PlayGame: React.FC = () => {
 
   // ── Render card group page ───────────────────────────────────────────────
   const renderGroupPage = ({ item }: { item: CardGroup }) => (
-    <View style={styles.groupPage}>
+    <View style={[styles.groupPage, item.cards.length < 4 && { justifyContent: 'center' }]}>
       {item.cards.map(card => (
         <CardItem
           key={card.ID}
@@ -354,6 +353,7 @@ const PlayGame: React.FC = () => {
               onViewableItemsChanged={onViewableItemsChanged}
               viewabilityConfig={viewabilityConfig}
               getItemLayout={getItemLayout}
+              extraData={selectedCardIds}
               style={styles.cardFlatList}
               keyboardShouldPersistTaps="always"
             />
@@ -398,9 +398,22 @@ const PlayGame: React.FC = () => {
                   const isPendingDelete = confirmDeleteId === item.card.ID;
                   return (
                     <View key={item.card.ID} style={styles.lineItem}>
-                      <CustomText style={styles.lineItemName} numberOfLines={1}>
-                        {formatCardName(item.card.NAME)}
-                      </CustomText>
+                      {/* Card thumbnail */}
+                      <View style={styles.lineItemThumb}>
+                        <Image
+                          source={{ uri: `${ENV.BASE_URL}/${item.card.IMAGE_URL}` }}
+                          defaultSource={Images.SMALL_CARD}
+                          style={styles.lineItemThumbImg}
+                          resizeMode="contain"
+                        />
+                      </View>
+                      {/* Card name */}
+                      <View style={styles.lineItemContent}>
+                        <CustomText style={styles.lineItemName} numberOfLines={1}>
+                          {formatCardName(item.card.NAME)}
+                        </CustomText>
+                      </View>
+                      {/* Amount + delete */}
                       {isPendingDelete ? (
                         <View style={styles.deleteConfirmRow}>
                           <Pressable
@@ -423,13 +436,13 @@ const PlayGame: React.FC = () => {
                         </View>
                       ) : (
                         <>
-                          <CustomText style={styles.lineItemAmount}>INR {item.amount}</CustomText>
+                          <CustomText style={styles.lineItemAmount}>₹{item.amount}</CustomText>
                           <Pressable
                             onPress={() => setConfirmDeleteId(item.card.ID)}
                             style={styles.trashBtn}
                             hitSlop={12}
                           >
-                            <Image source={Images.TRASH} style={styles.trashIcon} tintColor="#340000" />
+                            <Image source={Images.TRASH} style={styles.trashIcon} tintColor="rgba(255,80,80,0.9)" />
                           </Pressable>
                         </>
                       )}
@@ -442,7 +455,7 @@ const PlayGame: React.FC = () => {
         </KeyboardAwareScrollView>
 
         {/* ── Play Game button — pinned outside scroll ───────────────────── */}
-        <Pressable
+        {lineItems.length > 0 && <Pressable
           onPress={onPlayGame}
           disabled={isPlaying}
           style={styles.playBtnWrapper}
@@ -457,7 +470,7 @@ const PlayGame: React.FC = () => {
               {isPlaying ? 'PLACING BETS...' : 'PLAY GAME'}
             </CustomText>
           </LinearGradient>
-        </Pressable>
+        </Pressable>}
       </View>
 
       {/* ── Suit group dropdown modal ───────────────────────────────────────── */}

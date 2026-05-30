@@ -136,7 +136,7 @@ const Account = () => {
         prefillForm(data);
       }
     } catch (error: any) {
-      Toast.error(error.message, { placement: 'bottom', duration: 3000 });
+      Toast.error(error.message, { placement: 'center', duration: 3000 });
     } finally {
       setFetchingDetails(false);
     }
@@ -180,12 +180,12 @@ const Account = () => {
       });
       const { isSuccess, message } = response;
       if (isSuccess) {
-        Toast.success(message, { placement: 'bottom', duration: 3000 });
+        Toast.success(message, { placement: 'center', duration: 3000 });
       } else {
-        Toast.error(message, { placement: 'bottom', duration: 3000 });
+        Toast.error(message, { placement: 'center', duration: 3000 });
       }
     } catch (error: any) {
-      Toast.error(error.message ?? 'Something went wrong', { placement: 'bottom', duration: 3000 });
+      Toast.error(error.message ?? 'Something went wrong', { placement: 'center', duration: 3000 });
     } finally {
       setLoading(false);
     }

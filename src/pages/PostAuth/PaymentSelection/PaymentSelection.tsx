@@ -117,10 +117,10 @@ const PaymentSelection = () => {
           if (isSuccess && data) {
             setPayments(data)
           } else {
-            Toast.error(message ?? 'Failed to load payment options.', { placement: 'bottom', duration: 3000 })
+            Toast.error(message ?? 'Failed to load payment options.', { placement: 'center', duration: 3000 })
           }
         } catch (error: any) {
-          Toast.error(error?.message ?? 'Something went wrong.', { placement: 'bottom', duration: 3000 })
+          Toast.error(error?.message ?? 'Something went wrong.', { placement: 'center', duration: 3000 })
         } finally {
           setIsLoading(false)
         }
@@ -161,10 +161,10 @@ const PaymentSelection = () => {
       if (supported) {
         await Linking.openURL(url)
       } else {
-        Toast.error('App not installed on this device.', { placement: 'bottom', duration: 3000 })
+        Toast.error('App not installed on this device.', { placement: 'center', duration: 3000 })
       }
     } catch {
-      Toast.error('Unable to open payment app.', { placement: 'bottom', duration: 3000 })
+      Toast.error('Unable to open payment app.', { placement: 'center', duration: 3000 })
     }
   }
 

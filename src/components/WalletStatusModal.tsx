@@ -72,7 +72,7 @@ const WalletStatusModal: React.FC<Props> = ({ visible, onClose }) => {
       const { isSuccess, data } = await Repository.User.getUserBalance(userId)
       if (isSuccess && data) setWallet(data)
     } catch (error: any) {
-      Toast.error(error?.message ?? 'Failed to refresh balance.', { placement: 'bottom', duration: 2500 })
+      Toast.error(error?.message ?? 'Failed to refresh balance.', { placement: 'center', duration: 2500 })
     } finally {
       setIsLoading(false)
     }
@@ -91,12 +91,12 @@ const WalletStatusModal: React.FC<Props> = ({ visible, onClose }) => {
       const { isSuccess, message } = await Repository.User.updateWithdrawalRequestUser(userId)
       if (isSuccess) {
         await fetchBalance()
-        Toast.success('Moved to wallet successfully!', { placement: 'bottom', duration: 2500 })
+        Toast.success('Moved to wallet successfully!', { placement: 'center', duration: 2500 })
       } else {
-        Toast.error(message ?? 'Failed to move to wallet.', { placement: 'bottom', duration: 3000 })
+        Toast.error(message ?? 'Failed to move to wallet.', { placement: 'center', duration: 3000 })
       }
     } catch (error: any) {
-      Toast.error(error?.message ?? 'Something went wrong.', { placement: 'bottom', duration: 3000 })
+      Toast.error(error?.message ?? 'Something went wrong.', { placement: 'center', duration: 3000 })
     } finally {
       setIsMoveLoading(false)
     }

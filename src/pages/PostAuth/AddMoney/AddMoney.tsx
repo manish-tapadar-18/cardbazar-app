@@ -124,13 +124,13 @@ const AddMoney = () => {
     Keyboard.dismiss();
     const amount = Number(otherAmount)
     if (!otherAmount || isNaN(amount) || amount <= 0) {
-      Toast.error('Please enter a valid amount.', { placement: 'bottom', duration: 2500 })
+      Toast.error('Please enter a valid amount.', { placement: 'center', duration: 2500 })
       return
     }
     if (amount < minDeposit || amount > maxDeposit) {
       Toast.error(
         `Amount must be between ₹${minDeposit} and ₹${maxDeposit}.`,
-        { placement: 'bottom', duration: 3000 }
+        { placement: 'center', duration: 3000 }
       )
       return
     }
@@ -145,11 +145,11 @@ const AddMoney = () => {
       if (isSuccess && data && data.length > 0) {
         setSelectedGateway(data[0])
       } else {
-        Toast.error(message ?? 'No payment gateways available.', { placement: 'bottom', duration: 3000 })
+        Toast.error(message ?? 'No payment gateways available.', { placement: 'center', duration: 3000 })
         setSelectedGateway(null)
       }
     } catch (error: any) {
-      Toast.error(error?.message ?? 'Failed to load payment methods.', { placement: 'bottom', duration: 3000 })
+      Toast.error(error?.message ?? 'Failed to load payment methods.', { placement: 'center', duration: 3000 })
       setSelectedGateway(null)
     } finally {
       setIsGatewayLoading(false)
@@ -173,10 +173,10 @@ const AddMoney = () => {
       if (isSuccess && data?.ID) {
         navigation.navigate('PaymentSelection', { ID: data.ID, amount })
       } else {
-        Toast.error(message ?? 'Failed to initiate payment.', { placement: 'bottom', duration: 3000 })
+        Toast.error(message ?? 'Failed to initiate payment.', { placement: 'center', duration: 3000 })
       }
     } catch (error: any) {
-      Toast.error(error?.message ?? 'Something went wrong.', { placement: 'bottom', duration: 3000 })
+      Toast.error(error?.message ?? 'Something went wrong.', { placement: 'center', duration: 3000 })
     } finally {
       setIsAddingMoney(false)
     }
@@ -277,8 +277,8 @@ const AddMoney = () => {
                     <TextInput
                       style={styles.otherInput}
                       value={otherAmount}
-                      onChangeText={setOtherAmount}
-                      keyboardType="number-pad"
+                      onChangeText={(text) => setOtherAmount(text.replace(/[^0-9]/g, '').replace(/^0+/, ''))}
+                      keyboardType="phone-pad"
                       placeholder="0"
                       placeholderTextColor="rgba(255,255,255,0.25)"
                       maxLength={7}

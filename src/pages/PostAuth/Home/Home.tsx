@@ -93,7 +93,7 @@ const Home = () => {
       checkDeviceId(data.ID);
     } catch (error: any) {
       clRecordError(TAGS.HOME, error, 'getProfileDetails');
-      Toast.error(error?.message ?? 'Failed to load profile.', { placement: 'bottom', duration: 3000 });
+      Toast.error(error?.message ?? 'Failed to load profile.', { placement: 'center', duration: 3000 });
     }
   };
 
@@ -212,13 +212,13 @@ const Home = () => {
       const catResponse = await Repository.Game.getAllGameCategories()
       const { isSuccess, data, message } = catResponse
       if (!isSuccess || !data) {
-        Toast.error(`${message}`, { placement: 'bottom', duration: 3000 })
+        Toast.error(`${message}`, { placement: 'center', duration: 3000 })
       } else {
         setGameCategories(data)
       }
     } catch (error: any) {
       clRecordError(TAGS.HOME, error, 'fetchAllGameCategories');
-      Toast.error(`${error.message}`, { placement: 'bottom', duration: 3000 })
+      Toast.error(`${error.message}`, { placement: 'center', duration: 3000 })
     } finally {
       setIsLoading(false)
     }

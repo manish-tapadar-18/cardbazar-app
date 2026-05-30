@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(cat src/utils/responsive.ts)",
-      "Bash(cat src/utils/responsive.js)"
+      "Bash(cat src/utils/responsive.js)",
+      "Bash(node -e \"const j=require\\('./src/assets/lottie/celebration.json'\\); console.log\\('v:',j.v,'fr:',j.fr,'ip:',j.ip,'op:',j.op,'w:',j.w,'h:',j.h,'nm:',j.nm,'layers:',j.layers?.length,'assets:',j.assets?.length\\)\")",
+      "Bash(node -e ' *)"
     ]
   }
 }

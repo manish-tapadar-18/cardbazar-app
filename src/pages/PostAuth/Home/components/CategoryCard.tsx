@@ -46,7 +46,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ item, onPress, contestCount
             </LinearGradient>
           </View>
         )}
-        <TouchableOpacity style={styles.playBtn} activeOpacity={0.8}>
+        <TouchableOpacity onPress={() => { onPress(item.ID) }} style={styles.playBtn} activeOpacity={0.8}>
           <Image source={Images.PLAY_CIRCLE} style={styles.playIcon} resizeMode="contain" />
           <CustomText style={styles.playText}>LET'S PLAY</CustomText>
         </TouchableOpacity>

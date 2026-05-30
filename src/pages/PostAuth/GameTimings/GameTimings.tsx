@@ -139,7 +139,7 @@ const GameTimings = () => {
           const response = await Repository.Game.getAllGamesList(buildPayload());
           const { isSuccess, data, message } = response;
           if (!isSuccess || !data) {
-            Toast.error(`Error: ${message}`, { placement: 'bottom', duration: 3000 });
+            Toast.error(`Error: ${message}`, { placement: 'center', duration: 3000 });
             return;
           }
 
@@ -178,7 +178,7 @@ const GameTimings = () => {
             setActiveTab(tabs[0].ID);
           }
         } catch (error: any) {
-          Toast.error(error.message, { placement: 'bottom', duration: 3000 });
+          Toast.error(error.message, { placement: 'center', duration: 3000 });
         } finally {
           setLoading(false);
         }

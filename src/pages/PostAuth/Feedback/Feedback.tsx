@@ -101,19 +101,19 @@ const Feedback = () => {
             });
             if (isSuccess) {
                 Toast.success(message || 'Thank you for your feedback!', {
-                    placement: 'bottom',
+                    placement: 'center',
                     duration: 3000,
                 });
                 resetForm();
             } else {
                 Toast.error(message || 'Something went wrong. Please try again.', {
-                    placement: 'bottom',
+                    placement: 'center',
                     duration: 3000,
                 });
             }
         } catch (error: any) {
             Toast.error(error?.message ?? 'Something went wrong', {
-                placement: 'bottom',
+                placement: 'center',
                 duration: 3000,
             });
         } finally {

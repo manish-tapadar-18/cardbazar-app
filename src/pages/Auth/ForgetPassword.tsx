@@ -181,13 +181,13 @@ const ForgetPassword = () => {
         try {
             const { isSuccess, message } = await Repository.Auth.sendOtp({ MOBILE: mobile });
             if (!isSuccess) {
-                Toast.error(`Error: ${message}`, { placement: 'bottom', duration: 3000 });
+                Toast.error(`Error: ${message}`, { placement: 'center', duration: 3000 });
                 return;
             }
             setPhase('otp');
             startCooldown();
         } catch {
-            Toast.error('Failed to send OTP. Please try again.', { placement: 'bottom', duration: 3000 });
+            Toast.error('Failed to send OTP. Please try again.', { placement: 'center', duration: 3000 });
         } finally {
             setIsLoading(false);
         }
@@ -210,13 +210,13 @@ const ForgetPassword = () => {
                 PASSWORD: vals.PASSWORD,
             });
             if (!isSuccess) {
-                Toast.error(`Error: ${message}`, { placement: 'bottom', duration: 3000 });
+                Toast.error(`Error: ${message}`, { placement: 'center', duration: 3000 });
                 return;
             }
-            Toast.success(message || 'Password changed successfully!', { placement: 'bottom', duration: 3000 });
+            Toast.success(message || 'Password changed successfully!', { placement: 'center', duration: 3000 });
             navigation.navigate('Authentication');
         } catch {
-            Toast.error('Failed to update password. Please try again.', { placement: 'bottom', duration: 3000 });
+            Toast.error('Failed to update password. Please try again.', { placement: 'center', duration: 3000 });
         } finally {
             setIsLoading(false);
         }
