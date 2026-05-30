@@ -1,7 +1,8 @@
-import React, { useEffect, useCallback, useState } from 'react'
+import React, { useEffect, useCallback, useState, useRef } from 'react'
 import {
   Modal,
   View,
+  Image,
   StyleSheet,
   TouchableOpacity,
   Dimensions,
@@ -19,6 +20,7 @@ import Animated, {
   Easing,
   cancelAnimation,
 } from 'react-native-reanimated'
+import LottieView from 'lottie-react-native'
 import { Colors } from '../utils/Colors'
 import CustomText from './CustomText'
 
@@ -26,83 +28,120 @@ const { width: SW, height: SH } = Dimensions.get('window')
 
 const CARD_W = 90
 const CARD_H = 130
-// Cards start stacked slightly above true center for visual balance
 const CARD_TOP = SH / 2 - CARD_H / 2 - 20
 const CARD_LEFT = SW / 2 - CARD_W / 2
 
-const FAN_DURATION = 700   // ms per half-cycle (fan-out or fan-in)
-const LOOP_COUNT = 4
+const FAN_DURATION = 700
+const LOOP_COUNT = 2
 
-// Spread targets derived from Lottie analysis — symmetrical fan
+const WINNER_BADGE_TOP = SH / 2 + CARD_H / 2 + 30
+
+// Fan spread — symmetrical, derived from Lottie analysis
 const SPREADS = [
-  { tx: -90, ty: 20, rot: -40 },   // card1 — far left, counter-clockwise
-  { tx: -32, ty: 10, rot: -15 },   // card2 — left, slight counter-clockwise
-  { tx:  32, ty: 10, rot:  15 },   // card3 — right, slight clockwise
-  { tx:  90, ty: 20, rot:  40 },   // card4 — far right, clockwise
+  { tx: -90, ty: 20, rot: -40 },
+  { tx: -32, ty: 10, rot: -15 },
+  { tx: 32, ty: 10, rot: 15 },
+  { tx: 90, ty: 20, rot: 40 },
 ]
 
-const IMAGES = [
+// Scatter destinations — each card flings to a different screen corner
+const SCATTER = [
+  { tx: -SW * 0.85, ty: SH * 0.55, rot: -110 },
+  { tx: -SW * 0.65, ty: -SH * 0.65, rot: -75 },
+  { tx: SW * 0.65, ty: -SH * 0.60, rot: 75 },
+  { tx: SW * 0.85, ty: SH * 0.50, rot: 110 },
+]
+
+const CARD_IMAGES = [
   require('../assets/images/card1.png'),
   require('../assets/images/card2.png'),
   require('../assets/images/card3.png'),
   require('../assets/images/card4.png'),
 ]
 
-const WINNER_BADGE_TOP = SH / 2 + CARD_H / 2 + 30
+const BALLOON_IMAGE = require('../assets/images/balloon.png')
+const CELEBRATION_LOTTIE = require('../assets/lottie/celebration.json')
+
+// 7 balloons — varied colours, x-positions, and sizes for depth
+const BALLOON_TINTS = [Colors.GOLD, Colors.GREEN, '#4A90D9', Colors.ORANGE, '#C947E8', '#00D4D4', '#FF6B9D'] as const
+const BALLOON_POSITIONS = [SW * 0.06, SW * 0.20, SW * 0.36, SW * 0.50, SW * 0.63, SW * 0.77, SW * 0.88] as const
+const BALLOON_SIZES = [48, 42, 52, 44, 50, 40, 46] as const
 
 export interface CardRevealModalProps {
   visible: boolean
   onClose: () => void
-  /** 0 = card1.png, 1 = card2.png, 2 = card3.png, 3 = card4.png */
+  /** 0 = card1.png  1 = card2.png  2 = card3.png  3 = card4.png */
   winnerIndex: 0 | 1 | 2 | 3
+  /** How non-winner cards exit after the reveal. Default: 'fadeOut' */
+  exitMode?: 'fadeOut' | 'scatter'
 }
 
 const CardRevealModal: React.FC<CardRevealModalProps> = ({
   visible,
   onClose,
   winnerIndex,
+  exitMode = 'fadeOut',
 }) => {
   const [isRevealed, setIsRevealed] = useState(false)
+  const lottieRef = useRef<LottieView>(null)
 
+  // ── Core ──────────────────────────────────────────────────────────────────
   const fanProgress = useSharedValue(0)
-  const winnerY     = useSharedValue(0)
+  const winnerY = useSharedValue(0)
   const winnerScale = useSharedValue(1)
-  const otherOp     = useSharedValue(1)
-  const labelOp     = useSharedValue(0)
-  const labelScale  = useSharedValue(0.8)
-  const winnerIdx   = useSharedValue<number>(winnerIndex)
+  const otherOp = useSharedValue(1)
+  const labelOp = useSharedValue(0)
+  const labelScale = useSharedValue(0.8)
+  const winnerIdx = useSharedValue<number>(winnerIndex)
+
+  // ── Scatter (per-card, stay at 0 in fadeOut mode) ─────────────────────────
+  const s0x = useSharedValue(0); const s0y = useSharedValue(0); const s0r = useSharedValue(0)
+  const s1x = useSharedValue(0); const s1y = useSharedValue(0); const s1r = useSharedValue(0)
+  const s2x = useSharedValue(0); const s2y = useSharedValue(0); const s2r = useSharedValue(0)
+  const s3x = useSharedValue(0); const s3y = useSharedValue(0); const s3r = useSharedValue(0)
+
+  // ── Balloons (7) ──────────────────────────────────────────────────────────
+  const b0y = useSharedValue(0); const b0sway = useSharedValue(0)
+  const b1y = useSharedValue(0); const b1sway = useSharedValue(0)
+  const b2y = useSharedValue(0); const b2sway = useSharedValue(0)
+  const b3y = useSharedValue(0); const b3sway = useSharedValue(0)
+  const b4y = useSharedValue(0); const b4sway = useSharedValue(0)
+  const b5y = useSharedValue(0); const b5sway = useSharedValue(0)
+  const b6y = useSharedValue(0); const b6sway = useSharedValue(0)
 
   useEffect(() => { winnerIdx.value = winnerIndex }, [winnerIndex])
 
-  // Cancel all animations on unmount
-  useEffect(() => {
-    return () => {
-      cancelAnimation(fanProgress)
-      cancelAnimation(winnerY)
-      cancelAnimation(winnerScale)
-      cancelAnimation(otherOp)
-      cancelAnimation(labelOp)
-      cancelAnimation(labelScale)
-    }
+  const cancelAll = useCallback(() => {
+    ;[
+      fanProgress, winnerY, winnerScale, otherOp, labelOp, labelScale,
+      s0x, s0y, s0r, s1x, s1y, s1r, s2x, s2y, s2r, s3x, s3y, s3r,
+      b0y, b0sway, b1y, b1sway, b2y, b2sway,
+      b3y, b3sway, b4y, b4sway, b5y, b5sway, b6y, b6sway,
+    ].forEach(cancelAnimation)
   }, [])
+
+  useEffect(() => () => cancelAll(), [])
 
   const onFanComplete = useCallback(() => setIsRevealed(true), [])
 
-  // Phase 1 — fan loop, triggered when modal opens
+  // ── Phase 1 — fan loop ────────────────────────────────────────────────────
   useEffect(() => {
     if (!visible) {
-      cancelAnimation(fanProgress)
-      cancelAnimation(winnerY)
-      cancelAnimation(winnerScale)
-      cancelAnimation(otherOp)
-      cancelAnimation(labelOp)
-      cancelAnimation(labelScale)
-      fanProgress.value = 0
-      winnerY.value     = 0
-      winnerScale.value = 1
-      otherOp.value     = 1
-      labelOp.value     = 0
-      labelScale.value  = 0.8
+      cancelAll()
+      fanProgress.value = 0; winnerY.value = 0; winnerScale.value = 1
+      otherOp.value = 1; labelOp.value = 0; labelScale.value = 0.8
+      s0x.value = 0; s0y.value = 0; s0r.value = 0
+      s1x.value = 0; s1y.value = 0; s1r.value = 0
+      s2x.value = 0; s2y.value = 0; s2r.value = 0
+      s3x.value = 0; s3y.value = 0; s3r.value = 0
+      b0y.value = 0; b0sway.value = 0
+      b1y.value = 0; b1sway.value = 0
+      b2y.value = 0; b2sway.value = 0
+      b3y.value = 0; b3sway.value = 0
+      b4y.value = 0; b4sway.value = 0
+      b5y.value = 0; b5sway.value = 0
+      b6y.value = 0; b6sway.value = 0
+      lottieRef.current?.reset()
       setIsRevealed(false)
       return
     }
@@ -116,36 +155,80 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
       ),
       LOOP_COUNT,
       false,
-      (finished) => {
-        if (finished) runOnJS(onFanComplete)()
-      },
+      (finished) => { if (finished) runOnJS(onFanComplete)() },
     )
   }, [visible])
 
-  // Phase 2 — winner reveal, triggered after all fan loops finish
+  // ── Phase 2 — winner reveal ───────────────────────────────────────────────
   useEffect(() => {
     if (!isRevealed) return
-    otherOp.value     = withTiming(0, { duration: 450 })
-    winnerY.value     = withSpring(-210, { damping: 14, stiffness: 90 })
-    winnerScale.value = withTiming(1.2, { duration: 600 })
-    labelOp.value     = withDelay(750, withTiming(1, { duration: 400 }))
-    labelScale.value  = withDelay(750, withTiming(1, {
-      duration: 400,
-      easing: Easing.out(Easing.back(1.5)),
-    }))
-  }, [isRevealed])
 
-  // Animated styles — all 4 at top level to satisfy hooks rules
+    winnerY.value = withSpring(-210, { damping: 14, stiffness: 90 })
+    winnerScale.value = withTiming(1.2, { duration: 600 })
+
+    const exitDur = exitMode === 'scatter' ? 700 : 450
+    otherOp.value = withTiming(0, { duration: exitDur })
+
+    if (exitMode === 'scatter') {
+      const cfg = { duration: exitDur, easing: Easing.in(Easing.cubic) } as const
+      s0x.value = withTiming(SCATTER[0].tx, cfg); s0y.value = withTiming(SCATTER[0].ty, cfg); s0r.value = withTiming(SCATTER[0].rot, cfg)
+      s1x.value = withTiming(SCATTER[1].tx, cfg); s1y.value = withTiming(SCATTER[1].ty, cfg); s1r.value = withTiming(SCATTER[1].rot, cfg)
+      s2x.value = withTiming(SCATTER[2].tx, cfg); s2y.value = withTiming(SCATTER[2].ty, cfg); s2r.value = withTiming(SCATTER[2].rot, cfg)
+      s3x.value = withTiming(SCATTER[3].tx, cfg); s3y.value = withTiming(SCATTER[3].ty, cfg); s3r.value = withTiming(SCATTER[3].rot, cfg)
+    }
+
+    labelOp.value = withDelay(750, withTiming(1, { duration: 400 }))
+    labelScale.value = withDelay(750, withTiming(1, { duration: 400, easing: Easing.out(Easing.back(1.5)) }))
+
+    // Lottie confetti fires after the winner card has risen partway
+    const timer = setTimeout(() => lottieRef.current?.play(), 450)
+
+    const swayOpts = (amp: number, period: number) =>
+      withRepeat(
+        withSequence(
+          withTiming(amp, { duration: period, easing: Easing.inOut(Easing.quad) }),
+          withTiming(-amp, { duration: period, easing: Easing.inOut(Easing.quad) }),
+        ),
+        -1, false,
+      )
+
+    // 7 balloons — staggered 150 ms apart, varied float durations and sway
+    b0y.value = withDelay(0, withTiming(-(SH + 200), { duration: 3200, easing: Easing.out(Easing.quad) }))
+    b0sway.value = swayOpts(10, 800)
+
+    b1y.value = withDelay(150, withTiming(-(SH + 200), { duration: 2800, easing: Easing.out(Easing.quad) }))
+    b1sway.value = withDelay(150, swayOpts(7, 650))
+
+    b2y.value = withDelay(300, withTiming(-(SH + 200), { duration: 3600, easing: Easing.out(Easing.quad) }))
+    b2sway.value = withDelay(300, swayOpts(12, 920))
+
+    b3y.value = withDelay(450, withTiming(-(SH + 200), { duration: 3000, easing: Easing.out(Easing.quad) }))
+    b3sway.value = withDelay(450, swayOpts(9, 750))
+
+    b4y.value = withDelay(600, withTiming(-(SH + 200), { duration: 3800, easing: Easing.out(Easing.quad) }))
+    b4sway.value = withDelay(600, swayOpts(11, 840))
+
+    b5y.value = withDelay(750, withTiming(-(SH + 200), { duration: 2900, easing: Easing.out(Easing.quad) }))
+    b5sway.value = withDelay(750, swayOpts(8, 700))
+
+    b6y.value = withDelay(900, withTiming(-(SH + 200), { duration: 3400, easing: Easing.out(Easing.quad) }))
+    b6sway.value = withDelay(900, swayOpts(13, 880))
+
+    return () => clearTimeout(timer)
+  }, [isRevealed, exitMode])
+
+  // ── Animated styles ───────────────────────────────────────────────────────
+
   const cardStyle0 = useAnimatedStyle(() => {
     const isW = winnerIdx.value === 0
     return {
-      opacity:   isW ? 1 : otherOp.value,
-      zIndex:    isW ? 10 : 1,
+      opacity: isW ? 1 : otherOp.value,
+      zIndex: isW ? 10 : 1,
       elevation: isW ? 20 : 2,
       transform: [
-        { translateX: interpolate(fanProgress.value, [0, 1], [0, SPREADS[0].tx]) },
-        { translateY: interpolate(fanProgress.value, [0, 1], [0, SPREADS[0].ty]) + (isW ? winnerY.value : 0) },
-        { rotate: `${interpolate(fanProgress.value, [0, 1], [0, SPREADS[0].rot])}deg` },
+        { translateX: interpolate(fanProgress.value, [0, 1], [0, SPREADS[0].tx]) + (isW ? 0 : s0x.value) },
+        { translateY: interpolate(fanProgress.value, [0, 1], [0, SPREADS[0].ty]) + (isW ? winnerY.value : s0y.value) },
+        { rotate: `${interpolate(fanProgress.value, [0, 1], [0, SPREADS[0].rot]) + (isW ? 0 : s0r.value)}deg` },
         { scale: isW ? winnerScale.value : 1 },
       ],
     }
@@ -154,13 +237,13 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
   const cardStyle1 = useAnimatedStyle(() => {
     const isW = winnerIdx.value === 1
     return {
-      opacity:   isW ? 1 : otherOp.value,
-      zIndex:    isW ? 10 : 2,
+      opacity: isW ? 1 : otherOp.value,
+      zIndex: isW ? 10 : 2,
       elevation: isW ? 20 : 4,
       transform: [
-        { translateX: interpolate(fanProgress.value, [0, 1], [0, SPREADS[1].tx]) },
-        { translateY: interpolate(fanProgress.value, [0, 1], [0, SPREADS[1].ty]) + (isW ? winnerY.value : 0) },
-        { rotate: `${interpolate(fanProgress.value, [0, 1], [0, SPREADS[1].rot])}deg` },
+        { translateX: interpolate(fanProgress.value, [0, 1], [0, SPREADS[1].tx]) + (isW ? 0 : s1x.value) },
+        { translateY: interpolate(fanProgress.value, [0, 1], [0, SPREADS[1].ty]) + (isW ? winnerY.value : s1y.value) },
+        { rotate: `${interpolate(fanProgress.value, [0, 1], [0, SPREADS[1].rot]) + (isW ? 0 : s1r.value)}deg` },
         { scale: isW ? winnerScale.value : 1 },
       ],
     }
@@ -169,13 +252,13 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
   const cardStyle2 = useAnimatedStyle(() => {
     const isW = winnerIdx.value === 2
     return {
-      opacity:   isW ? 1 : otherOp.value,
-      zIndex:    isW ? 10 : 3,
+      opacity: isW ? 1 : otherOp.value,
+      zIndex: isW ? 10 : 3,
       elevation: isW ? 20 : 6,
       transform: [
-        { translateX: interpolate(fanProgress.value, [0, 1], [0, SPREADS[2].tx]) },
-        { translateY: interpolate(fanProgress.value, [0, 1], [0, SPREADS[2].ty]) + (isW ? winnerY.value : 0) },
-        { rotate: `${interpolate(fanProgress.value, [0, 1], [0, SPREADS[2].rot])}deg` },
+        { translateX: interpolate(fanProgress.value, [0, 1], [0, SPREADS[2].tx]) + (isW ? 0 : s2x.value) },
+        { translateY: interpolate(fanProgress.value, [0, 1], [0, SPREADS[2].ty]) + (isW ? winnerY.value : s2y.value) },
+        { rotate: `${interpolate(fanProgress.value, [0, 1], [0, SPREADS[2].rot]) + (isW ? 0 : s2r.value)}deg` },
         { scale: isW ? winnerScale.value : 1 },
       ],
     }
@@ -184,13 +267,13 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
   const cardStyle3 = useAnimatedStyle(() => {
     const isW = winnerIdx.value === 3
     return {
-      opacity:   isW ? 1 : otherOp.value,
-      zIndex:    isW ? 10 : 4,
+      opacity: isW ? 1 : otherOp.value,
+      zIndex: isW ? 10 : 4,
       elevation: isW ? 20 : 8,
       transform: [
-        { translateX: interpolate(fanProgress.value, [0, 1], [0, SPREADS[3].tx]) },
-        { translateY: interpolate(fanProgress.value, [0, 1], [0, SPREADS[3].ty]) + (isW ? winnerY.value : 0) },
-        { rotate: `${interpolate(fanProgress.value, [0, 1], [0, SPREADS[3].rot])}deg` },
+        { translateX: interpolate(fanProgress.value, [0, 1], [0, SPREADS[3].tx]) + (isW ? 0 : s3x.value) },
+        { translateY: interpolate(fanProgress.value, [0, 1], [0, SPREADS[3].ty]) + (isW ? winnerY.value : s3y.value) },
+        { rotate: `${interpolate(fanProgress.value, [0, 1], [0, SPREADS[3].rot]) + (isW ? 0 : s3r.value)}deg` },
         { scale: isW ? winnerScale.value : 1 },
       ],
     }
@@ -200,6 +283,16 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
     opacity: labelOp.value,
     transform: [{ scale: labelScale.value }],
   }))
+
+  const b0Style = useAnimatedStyle(() => ({ transform: [{ translateY: b0y.value }, { translateX: b0sway.value }] }))
+  const b1Style = useAnimatedStyle(() => ({ transform: [{ translateY: b1y.value }, { translateX: b1sway.value }] }))
+  const b2Style = useAnimatedStyle(() => ({ transform: [{ translateY: b2y.value }, { translateX: b2sway.value }] }))
+  const b3Style = useAnimatedStyle(() => ({ transform: [{ translateY: b3y.value }, { translateX: b3sway.value }] }))
+  const b4Style = useAnimatedStyle(() => ({ transform: [{ translateY: b4y.value }, { translateX: b4sway.value }] }))
+  const b5Style = useAnimatedStyle(() => ({ transform: [{ translateY: b5y.value }, { translateX: b5sway.value }] }))
+  const b6Style = useAnimatedStyle(() => ({ transform: [{ translateY: b6y.value }, { translateX: b6sway.value }] }))
+
+  const balloonStyles = [b0Style, b1Style, b2Style, b3Style, b4Style, b5Style, b6Style]
 
   return (
     <Modal
@@ -214,16 +307,53 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
         {/* Dark purple backdrop */}
         <View style={styles.backdrop} />
 
-        {/* Purple ambient glow behind the card stack */}
+        {/* Ambient glow orb behind the card stack */}
         <View style={styles.glowOrb} pointerEvents="none" />
 
-        {/* Cards — rendered bottom (card1) to top (card4) for default z-stacking */}
-        <Animated.Image source={IMAGES[0]} style={[styles.card, cardStyle0]} resizeMode="cover" />
-        <Animated.Image source={IMAGES[1]} style={[styles.card, cardStyle1]} resizeMode="cover" />
-        <Animated.Image source={IMAGES[2]} style={[styles.card, cardStyle2]} resizeMode="cover" />
-        <Animated.Image source={IMAGES[3]} style={[styles.card, cardStyle3]} resizeMode="cover" />
+        {/* Cards — rendered bottom→top for default z-stacking */}
+        <Animated.Image source={CARD_IMAGES[0]} style={[styles.card, cardStyle0]} resizeMode="cover" />
+        <Animated.Image source={CARD_IMAGES[1]} style={[styles.card, cardStyle1]} resizeMode="cover" />
+        <Animated.Image source={CARD_IMAGES[2]} style={[styles.card, cardStyle2]} resizeMode="cover" />
+        <Animated.Image source={CARD_IMAGES[3]} style={[styles.card, cardStyle3]} resizeMode="cover" />
 
-        {/* Header — non-interactive */}
+        {/* 7 balloons — float up from below the screen after winner reveal */}
+        {BALLOON_TINTS.map((tint, i) => (
+          <Animated.View
+            key={`balloon-${i}`}
+            pointerEvents="none"
+            style={[
+              styles.balloonWrapper,
+              {
+                left: BALLOON_POSITIONS[i],
+                width: BALLOON_SIZES[i],
+                height: BALLOON_SIZES[i] * 1.56,
+              },
+              balloonStyles[i],
+            ]}
+          >
+            <Image
+              source={BALLOON_IMAGE}
+              style={{ width: BALLOON_SIZES[i], height: BALLOON_SIZES[i] * 1.56, tintColor: tint }}
+              resizeMode="contain"
+            />
+          </Animated.View>
+        ))}
+
+        {/* Lottie confetti — mounts on reveal, plays once (loop=false) */}
+        {isRevealed && (
+          <View style={styles.lottie} pointerEvents="none">
+            <LottieView
+              ref={lottieRef}
+              source={CELEBRATION_LOTTIE}
+              style={StyleSheet.absoluteFill}
+              loop={false}
+              autoPlay={false}
+              resizeMode="cover"
+            />
+          </View>
+        )}
+
+        {/* Header */}
         <View style={styles.header} pointerEvents="none">
           <CustomText style={styles.titleText}>CARD REVEAL</CustomText>
           <CustomText style={styles.subtitleText}>
@@ -238,13 +368,9 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
           </View>
         </Animated.View>
 
-        {/* Close button — only shown after reveal completes */}
+        {/* Close button — only shown once reveal is done */}
         {isRevealed && (
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={onClose}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.8}>
             <CustomText style={styles.closeText}>CLOSE</CustomText>
           </TouchableOpacity>
         )}
@@ -256,7 +382,11 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
 
 const styles = StyleSheet.create({
   backdrop: {
-    ...StyleSheet.absoluteFill,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(12, 1, 30, 0.93)',
   },
   glowOrb: {
@@ -283,6 +413,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 10,
+  },
+  balloonWrapper: {
+    position: 'absolute',
+    bottom: -80,
+  },
+  lottie: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   header: {
     position: 'absolute',

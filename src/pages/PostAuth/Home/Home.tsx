@@ -51,8 +51,10 @@ const Home = () => {
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showReveal, setShowReveal] = useState(false)
-  // Change this value (0–3) to control which card wins
-  const revealWinner: 0 | 1 | 2 | 3 = 2
+  // ── Card reveal controls (change these to test different outcomes) ─────────
+  const revealWinner: 0 | 1 | 2 | 3 = 2          // 0=card1  1=card2  2=card3  3=card4
+  const revealExitMode: 'fadeOut' | 'scatter' = 'scatter'  // 'fadeOut' | 'scatter'
+  // ─────────────────────────────────────────────────────────────────────────
   const navigation = useNavigation();
   const { userDetails } = useUserStore();
   const { setWallet } = useWalletStore();
@@ -292,6 +294,7 @@ const Home = () => {
         visible={showReveal}
         onClose={() => setShowReveal(false)}
         winnerIndex={revealWinner}
+        exitMode={revealExitMode}
       />
     </>
   )
