@@ -7,12 +7,28 @@ import {
     getInitialNotification,
     FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
-import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
-import { Alert, Platform } from 'react-native';
+import notifee, { AndroidImportance, AndroidStyle, EventType } from '@notifee/react-native';
+import { Alert, NativeModules, Platform } from 'react-native';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { checkNotifications, requestNotifications, RESULTS } from 'react-native-permissions';
 
 const CHANNEL_ID = 'cardbazar_default';
+
+// Typed accessor for the native image compositor
+const NotificationImageModule = NativeModules.NotificationImageModule as
+    | { prepareNotificationImage: (url: string) => Promise<string> }
+    | undefined;
+
+// Downloads `url`, paints it contain-scaled + centered on a #44004F landscape
+// canvas, saves to cache, and returns the file:// path. Falls back to the
+// original URL on any error so a notification is still shown.
+const prepareCardImage = async (url: string): Promise<string> => {
+    try {
+        return await NotificationImageModule!.prepareNotificationImage(url);
+    } catch {
+        return url;
+    }
+};
 const BG_PRESS_KEY = '_pn_bg_press';
 const BG_PRESS_CATEGORY_KEY = '_pn_bg_category';
 const MODAL_DISMISSED_KEY = '_pn_modal_dismissed';
@@ -122,26 +138,38 @@ const showOpenedFromAlert = (state: 'Foreground' | 'Background' | 'Quit State') 
     );
 };
 
-const buildNotifeePayload = (
+const buildNotifeePayload = async (
     remoteMessage: FirebaseMessagingTypes.RemoteMessage,
-): Parameters<typeof notifee.displayNotification>[0] => ({
-    title: remoteMessage.notification?.title ?? 'CardBazar',
-    body: remoteMessage.notification?.body ?? '',
-    data: (remoteMessage.data ?? {}) as Record<string, string>,
-    android: {
-        channelId: CHANNEL_ID,
-        importance: AndroidImportance.HIGH,
-        pressAction: { id: 'default' },
-        smallIcon: 'ic_launcher',
-    },
-});
+): Promise<Parameters<typeof notifee.displayNotification>[0]> => {
+    const rawCardImage = remoteMessage.data?.cardImage as string | undefined;
+    const cardImage = rawCardImage ? await prepareCardImage(rawCardImage) : undefined;
+    return {
+        title: remoteMessage.notification?.title ?? 'CardBazar',
+        body: remoteMessage.notification?.body ?? '',
+        data: (remoteMessage.data ?? {}) as Record<string, string>,
+        android: {
+            channelId: CHANNEL_ID,
+            importance: AndroidImportance.HIGH,
+            pressAction: { id: 'default' },
+            smallIcon: 'ic_launcher',
+            ...(cardImage && {
+                largeIcon: cardImage,
+                color: '#44004F',
+                style: {
+                    type: AndroidStyle.BIGPICTURE,
+                    picture: cardImage,
+                },
+            }),
+        },
+    };
+};
 
 // ── Display ───────────────────────────────────────────────────────────────────
 const displayNotificationFromRemote = async (
     remoteMessage: FirebaseMessagingTypes.RemoteMessage,
 ): Promise<void> => {
     await createNotificationChannel();
-    await notifee.displayNotification(buildNotifeePayload(remoteMessage));
+    await notifee.displayNotification(await buildNotifeePayload(remoteMessage));
 };
 
 // ── Background message handler  (register in index.js) ───────────────────────
@@ -177,12 +205,16 @@ export const handleBackgroundMessage = async (
     remoteMessage: FirebaseMessagingTypes.RemoteMessage,
 ): Promise<void> => {
     logNotification('Background', remoteMessage);
-    if (remoteMessage.notification) {
+    const hasCardImage = !!remoteMessage.data?.cardImage;
+    if (remoteMessage.notification && !hasCardImage) {
         // FCM auto-displayed this on cardbazar_default channel (see manifest meta-data).
         // Do nothing — calling notifee here would create a duplicate notification.
         return;
     }
-    // Data-only message: FCM won't display anything, so notifee must.
+    // Data-only message, OR a notification-type message that carries cardImage.
+    // When cardImage is present we must use notifee so the image and #44004F background
+    // are shown. To avoid a duplicate the server should send data-only messages
+    // (no `notification` key) whenever cardImage is included in the payload.
     await displayNotificationFromRemote(remoteMessage);
 };
 

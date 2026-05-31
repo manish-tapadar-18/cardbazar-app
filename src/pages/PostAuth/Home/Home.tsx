@@ -272,7 +272,7 @@ const Home = () => {
       {/* <MultiLoginModal onRefresh={getProfileDetails} /> */}
 
       {/* TODO: remove — temp trigger for CardRevealModal testing */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={{
           position: 'absolute',
           bottom: 100,
@@ -295,7 +295,7 @@ const Home = () => {
         onClose={() => setShowReveal(false)}
         winnerIndex={revealWinner}
         exitMode={revealExitMode}
-      />
+      /> */}
     </>
   )
 }

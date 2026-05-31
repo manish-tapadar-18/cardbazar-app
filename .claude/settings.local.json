@@ -4,7 +4,8 @@
       "Bash(cat src/utils/responsive.ts)",
       "Bash(cat src/utils/responsive.js)",
       "Bash(node -e \"const j=require\\('./src/assets/lottie/celebration.json'\\); console.log\\('v:',j.v,'fr:',j.fr,'ip:',j.ip,'op:',j.op,'w:',j.w,'h:',j.h,'nm:',j.nm,'layers:',j.layers?.length,'assets:',j.assets?.length\\)\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(grep -r \"getMessaging\\\\|setBackgroundMessageHandler\\\\|onNotificationOpenedApp\\\\|getInitialNotification\\\\|onForegroundEvent\" \"e:\\\\updated_rn\\\\ts\\\\card-bazaar-ts\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" ! -path \"*/node_modules/*\" -l)"
     ]
   }
 }
