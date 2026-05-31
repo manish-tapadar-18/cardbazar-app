@@ -14,7 +14,10 @@ import { checkNotifications, requestNotifications, RESULTS } from 'react-native-
 
 const CHANNEL_ID = 'cardbazar_default';
 const BG_PRESS_KEY = '_pn_bg_press';
+const BG_PRESS_CATEGORY_KEY = '_pn_bg_category';
 const MODAL_DISMISSED_KEY = '_pn_modal_dismissed';
+
+export type OnCategoryIdCallback = (categoryId: string) => void;
 
 // ── Android notification channel ──────────────────────────────────────────────
 export const createNotificationChannel = async (): Promise<void> => {
@@ -31,9 +34,9 @@ export const createNotificationChannel = async (): Promise<void> => {
 
 export type NotificationPermissionStatus =
     | 'granted'
-    | 'denied'     // can still request
-    | 'blocked'    // permanently denied — must go to Settings
-    | 'unavailable'; // Android < 13: no runtime permission needed
+    | 'denied'
+    | 'blocked'
+    | 'unavailable';
 
 export const getNotificationPermissionStatus =
     async (): Promise<NotificationPermissionStatus> => {
@@ -78,7 +81,7 @@ export const getFCMToken = async (): Promise<string | null> => {
         // 'unavailable' means Android < 13 — notifications work without a grant
         if (status !== 'granted' && status !== 'unavailable') return null;
         const token = await getToken(getMessaging());
-        console.log({token});
+        console.log({ token });
         return token;
     } catch (e) {
         console.warn('[FCM] getToken failed:', e);
@@ -87,6 +90,30 @@ export const getFCMToken = async (): Promise<string | null> => {
 };
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
+const logNotification = (
+    state: 'Foreground' | 'Background' | 'Quit State',
+    remoteMessage: FirebaseMessagingTypes.RemoteMessage,
+): void => {
+    console.log(`[FCM] Notification received — state: ${state}`);
+    console.log('[FCM] messageId     :', remoteMessage.messageId);
+    console.log('[FCM] from          :', remoteMessage.from);
+    console.log('[FCM] sentTime      :', remoteMessage.sentTime);
+    console.log('[FCM] notification  :', JSON.stringify(remoteMessage.notification, null, 2));
+    console.log('[FCM] data          :', JSON.stringify(remoteMessage.data, null, 2));
+};
+
+const fireCategoryId = (
+    data: Record<string, any> | undefined,
+    onCategoryId: OnCategoryIdCallback,
+): boolean => {
+    const id = data?.categoryId;
+    if (typeof id === 'string' && id.length > 0) {
+        onCategoryId(id);
+        return true;
+    }
+    return false;
+};
+
 const showOpenedFromAlert = (state: 'Foreground' | 'Background' | 'Quit State') => {
     Alert.alert(
         'Notification Opened',
@@ -149,6 +176,7 @@ const displayNotificationFromRemote = async (
 export const handleBackgroundMessage = async (
     remoteMessage: FirebaseMessagingTypes.RemoteMessage,
 ): Promise<void> => {
+    logNotification('Background', remoteMessage);
     if (remoteMessage.notification) {
         // FCM auto-displayed this on cardbazar_default channel (see manifest meta-data).
         // Do nothing — calling notifee here would create a duplicate notification.
@@ -159,9 +187,14 @@ export const handleBackgroundMessage = async (
 };
 
 // ── Notifee background press handler  (register in index.js) ─────────────────
-export const onNotifeeBackgroundPress = async (): Promise<void> => {
+export const onNotifeeBackgroundPress = async (
+    notificationData?: Record<string, string>,
+): Promise<void> => {
     try {
         await EncryptedStorage.setItem(BG_PRESS_KEY, 'true');
+        if (notificationData?.categoryId) {
+            await EncryptedStorage.setItem(BG_PRESS_CATEGORY_KEY, notificationData.categoryId);
+        }
     } catch (_) { }
 };
 
@@ -176,16 +209,30 @@ export const subscribeToAppTopic = async (): Promise<void> => {
 };
 
 // ── Setup foreground handlers  (call inside App useEffect) ───────────────────
-export const setupPushNotificationHandlers = (): (() => void) => {
-    const unsubFcmForeground = onMessage(getMessaging(), displayNotificationFromRemote);
-
-    const unsubFcmBackgroundOpened = onNotificationOpenedApp(getMessaging(), () => {
-        showOpenedFromAlert('Background');
+export const setupPushNotificationHandlers = (
+    onCategoryId: OnCategoryIdCallback,
+): (() => void) => {
+    // Foreground: notification arrives while app is open → display + open modal if categoryId present
+    const unsubFcmForeground = onMessage(getMessaging(), (remoteMessage) => {
+        logNotification('Foreground', remoteMessage);
+        fireCategoryId(remoteMessage.data, onCategoryId);
+        return displayNotificationFromRemote(remoteMessage);
     });
 
-    const unsubNotifeeFg = notifee.onForegroundEvent(({ type }) => {
+    // Background: user taps an FCM auto-displayed notification → open modal if categoryId present
+    const unsubFcmBackgroundOpened = onNotificationOpenedApp(getMessaging(), (remoteMessage) => {
+        if (!fireCategoryId(remoteMessage.data, onCategoryId)) {
+            showOpenedFromAlert('Background');
+        }
+    });
+
+    // Foreground press on a notifee heads-up notification → open modal if categoryId present
+    const unsubNotifeeFg = notifee.onForegroundEvent(({ type, detail }) => {
         if (type === EventType.PRESS) {
-            showOpenedFromAlert('Foreground');
+            const data = detail.notification?.data as Record<string, string> | undefined;
+            if (!fireCategoryId(data, onCategoryId)) {
+                showOpenedFromAlert('Foreground');
+            }
         }
     });
 
@@ -197,24 +244,41 @@ export const setupPushNotificationHandlers = (): (() => void) => {
 };
 
 // ── Initial notification check  (call once on app mount) ─────────────────────
-export const checkInitialNotification = async (): Promise<void> => {
+export const checkInitialNotification = async (
+    onCategoryId: OnCategoryIdCallback,
+): Promise<void> => {
+    // Quit state — app launched by tapping an FCM notification
     const fcmInitial = await getInitialNotification(getMessaging());
     if (fcmInitial) {
-        showOpenedFromAlert('Quit State');
+        logNotification('Quit State', fcmInitial);
+        if (!fireCategoryId(fcmInitial.data, onCategoryId)) {
+            showOpenedFromAlert('Quit State');
+        }
         return;
     }
 
+    // Quit state — app launched by tapping a notifee-displayed notification
     const notifeeInitial = await notifee.getInitialNotification();
     if (notifeeInitial) {
-        showOpenedFromAlert('Quit State');
+        const data = notifeeInitial.notification.data as Record<string, string> | undefined;
+        if (!fireCategoryId(data, onCategoryId)) {
+            showOpenedFromAlert('Quit State');
+        }
         return;
     }
 
+    // Background press — categoryId was persisted by onNotifeeBackgroundPress
     try {
         const flag = await EncryptedStorage.getItem(BG_PRESS_KEY);
         if (flag) {
             await EncryptedStorage.removeItem(BG_PRESS_KEY);
-            showOpenedFromAlert('Background');
+            const categoryId = await EncryptedStorage.getItem(BG_PRESS_CATEGORY_KEY);
+            if (categoryId) {
+                await EncryptedStorage.removeItem(BG_PRESS_CATEGORY_KEY);
+                onCategoryId(categoryId);
+            } else {
+                showOpenedFromAlert('Background');
+            }
         }
     } catch (_) { }
 };

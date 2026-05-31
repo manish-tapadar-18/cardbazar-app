@@ -19,9 +19,9 @@ setBackgroundMessageHandler(getMessaging(), handleBackgroundMessage);
 // Handles notifee events (press, dismiss, actions) when app is in background.
 // On PRESS we persist a flag so App.tsx can show the correct "opened from
 // Background" alert when the app comes to the foreground.
-notifee.onBackgroundEvent(async ({ type }) => {
+notifee.onBackgroundEvent(async ({ type, detail }) => {
     if (type === EventType.PRESS) {
-        await onNotifeeBackgroundPress();
+        await onNotifeeBackgroundPress(detail.notification?.data);
     }
 });
 // LogBox.ignoreLogs()

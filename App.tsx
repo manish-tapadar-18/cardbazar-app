@@ -16,7 +16,9 @@ import {
     setupPushNotificationHandlers,
     storePermissionModalDismissed,
     subscribeToAppTopic,
+    type OnCategoryIdCallback,
 } from './src/utils/PushNotificationUtils';
+import CardRevealModal from './src/components/CardRevealModal';
 import { initCrashlytics } from './src/utils/CrashlyticsUtils';
 import { runSecurityChecks } from './src/utils/SecurityCheck';
 import { AppState } from 'react-native';
@@ -28,6 +30,18 @@ let _permissionPromptShown = false;
 export default function App() {
     const [violationReasons, setViolationReasons] = React.useState<string[]>([]);
     const [showPermissionModal, setShowPermissionModal] = React.useState(false);
+    const [cardRevealVisible, setCardRevealVisible] = React.useState(false);
+    const [cardRevealCategoryId, setCardRevealCategoryId] = React.useState('0');
+
+    const handleCategoryId = React.useCallback<OnCategoryIdCallback>((categoryId) => {
+        setCardRevealCategoryId(categoryId);
+        setCardRevealVisible(true);
+    }, []);
+
+    const cardRevealWinnerIndex = React.useMemo((): 0 | 1 | 2 | 3 => {
+        const n = parseInt(cardRevealCategoryId, 10);
+        return (isNaN(n) ? 0 : Math.abs(n) % 4) as 0 | 1 | 2 | 3;
+    }, [cardRevealCategoryId]);
 
     React.useEffect(() => {
         initCrashlytics();
@@ -52,12 +66,12 @@ export default function App() {
 
     React.useEffect(() => {
         createNotificationChannel();
-        initPushNotifications();
-        const cleanupHandlers = setupPushNotificationHandlers();
+        initPushNotifications(handleCategoryId);
+        const cleanupHandlers = setupPushNotificationHandlers(handleCategoryId);
         return cleanupHandlers;
-    }, []);
+    }, [handleCategoryId]);
 
-    const initPushNotifications = async () => {
+    const initPushNotifications = async (onCategoryId: OnCategoryIdCallback) => {
         const status = await getNotificationPermissionStatus();
 
         if (status === 'granted' || status === 'unavailable') {
@@ -75,7 +89,7 @@ export default function App() {
         }
         // status === 'blocked': permanently denied, nothing we can do without Settings
 
-        await checkInitialNotification();
+        await checkInitialNotification(onCategoryId);
     };
 
     const handlePermissionDeny = async () => {
@@ -117,6 +131,12 @@ export default function App() {
                 visible={showPermissionModal}
                 onDeny={handlePermissionDeny}
                 onAllow={handlePermissionAllow}
+            />
+
+            <CardRevealModal
+                visible={cardRevealVisible}
+                onClose={() => setCardRevealVisible(false)}
+                winnerIndex={cardRevealWinnerIndex}
             />
         </ToastProvider>
     );
