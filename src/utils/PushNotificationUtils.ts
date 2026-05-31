@@ -78,6 +78,7 @@ export const getFCMToken = async (): Promise<string | null> => {
         // 'unavailable' means Android < 13 — notifications work without a grant
         if (status !== 'granted' && status !== 'unavailable') return null;
         const token = await getToken(getMessaging());
+        console.log({token});
         return token;
     } catch (e) {
         console.warn('[FCM] getToken failed:', e);
@@ -128,22 +129,29 @@ const displayNotificationFromRemote = async (
 //      → setBackgroundMessageHandler ALSO fires, reaching this handler.
 //      → Calling notifee.displayNotification here would produce a SECOND,
 //        identical notification — the duplicate the user sees.
+//      → IMPORTANT: AndroidManifest.xml must declare
+//          <meta-data
+//              android:name="com.google.firebase.messaging.default_notification_channel_id"
+//              android:value="cardbazar_default" />
+//        Without this, FCM auto-displays on the silent system default channel
+//        (low importance, no custom sound) — topic notifications appear to
+//        "not arrive" even though they do. The meta-data entry routes all
+//        FCM auto-displayed notifications to our custom high-importance channel.
 //
 //   2. Data-only messages  (payload has ONLY a `data` key, no `notification`)
 //      → The FCM SDK does NOT auto-display anything.
 //      → setBackgroundMessageHandler fires and this handler is the ONLY
 //        display path, so we must call notifee.
 //
-// Fix: bail out early when `remoteMessage.notification` is present — FCM has
-// already handled display.  Only call notifee for data-only messages.
-//
-// Backend recommendation: send data-only topic messages so all display is
-// handled by notifee (custom channel, sound, priority, press actions).
+// Rule: bail out early when `remoteMessage.notification` is present — FCM has
+// already handled display on our channel (via the manifest meta-data).
+// Only call notifee for data-only messages to avoid duplicates.
 export const handleBackgroundMessage = async (
     remoteMessage: FirebaseMessagingTypes.RemoteMessage,
 ): Promise<void> => {
     if (remoteMessage.notification) {
-        // FCM auto-displayed this notification — do nothing to avoid the duplicate.
+        // FCM auto-displayed this on cardbazar_default channel (see manifest meta-data).
+        // Do nothing — calling notifee here would create a duplicate notification.
         return;
     }
     // Data-only message: FCM won't display anything, so notifee must.
