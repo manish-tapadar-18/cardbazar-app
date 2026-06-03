@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
         padding: 1,
     },
     cardInner: {
-        backgroundColor: 'rgba(18, 4, 45, 0.96)',
+        backgroundColor: Colors.PRIMARY_BG,
         borderRadius: rh(2) - 1,
         paddingHorizontal: rw(4.5),
         paddingTop: rh(2.5),

@@ -216,6 +216,7 @@ const Result = () => {
 
   useFocusEffect(
     useCallback(() => {
+      setIsLoading(true);
       const fetchAdminDetails = async () => {
         const { isSuccess, data } = await Repository.User.adminDetails();
         if (isSuccess && data != null) setAdminDetails(data);
@@ -279,7 +280,7 @@ const Result = () => {
 
       {/* Card body */}
       <LinearGradient
-        colors={['#260030', '#44004F']}
+        colors={Colors.GRADIENT.GRADIENTHEADER}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.groupCard}

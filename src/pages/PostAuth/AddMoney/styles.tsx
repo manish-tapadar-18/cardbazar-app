@@ -67,7 +67,7 @@ export const styles = StyleSheet.create({
   limitsBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(40,10,90,0.7)',
+    backgroundColor: Colors.PRIMARY_BG,
     borderRadius: rh(1.2),
     borderWidth: 1,
     borderColor: 'rgba(255,215,0,0.15)',
@@ -122,7 +122,7 @@ export const styles = StyleSheet.create({
     borderRadius: rh(1),
     borderWidth: 1.5,
     borderColor: 'rgba(255,215,0,0.22)',
-    backgroundColor: 'rgba(50,18,100,0.65)',
+    backgroundColor: Colors.PRIMARY_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },

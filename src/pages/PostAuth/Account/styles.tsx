@@ -100,7 +100,7 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: rh(1),
     borderWidth: 1,
-    borderColor: 'rgba(255,215,0,0.18)',
+    borderColor: Colors.WHITE,
     paddingHorizontal: rw(3),
     height: rh(6.5),
   },
@@ -109,9 +109,9 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,215,0,0.07)',
   },
   inputRowLocked: {
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: Colors.WHITE,
     backgroundColor: 'rgba(255,255,255,0.03)',
-    opacity: 0.7,
+    opacity: 0.85,
   },
   textInput: {
     backgroundColor: 'transparent',

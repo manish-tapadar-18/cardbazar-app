@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { rh, rw } from '../utils/responsive';
+import { Colors } from '../utils/Colors';
 
 // ─── Pulsing box ──────────────────────────────────────────────────────────────
 const SkeletonBox = ({ style }: { style: any }) => {
@@ -106,13 +107,13 @@ const styles = StyleSheet.create({
     width: rw(28),
     height: rh(3.2),
     borderRadius: rh(0.8),
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
     marginBottom: -rh(1.5),
     marginLeft: rw(3),
     zIndex: 1,
   },
   groupCard: {
-    backgroundColor: 'rgba(38,0,48,0.85)',
+    backgroundColor: Colors.PRIMARY_BG,
     borderRadius: rw(3),
     paddingHorizontal: rw(4),
     paddingTop: rh(3),
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     width: rw(14),
     height: rh(8),
     borderRadius: rw(2),
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   cardNameWrapper: {
     flex: 1,
@@ -142,18 +143,18 @@ const styles = StyleSheet.create({
     width: '75%',
     height: rh(2),
     borderRadius: 4,
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   cardNameLine2: {
     width: '50%',
     height: rh(2),
     borderRadius: 4,
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   separator: {
     height: 1,
     width: '100%',
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
     borderRadius: 1,
   },
   lvRow: {
@@ -166,19 +167,19 @@ const styles = StyleSheet.create({
     width: rw(24),
     height: rh(1.6),
     borderRadius: 4,
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   lvValue: {
     flex: 1,
     height: rh(1.6),
     borderRadius: 4,
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   lvValueShort: {
     width: rw(22),
     height: rh(1.6),
     borderRadius: 4,
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   pairRow: {
     flexDirection: 'row',
@@ -192,24 +193,24 @@ const styles = StyleSheet.create({
     width: rw(18),
     height: rh(1.4),
     borderRadius: 4,
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   pairValue: {
     width: rw(22),
     height: rh(1.8),
     borderRadius: 4,
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   pairSep: {
     width: 1,
     height: rh(5),
-    backgroundColor: 'rgba(80,32,160,0.4)',
+    backgroundColor: Colors.SECONDARY_BG,
     marginHorizontal: rw(3),
   },
   groupDivider: {
     height: 1,
     marginVertical: rh(1.2),
-    backgroundColor: '#5020A0',
+    backgroundColor: Colors.SECONDARY_BG,
     borderRadius: 1,
   },
 });

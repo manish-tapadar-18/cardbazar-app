@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ImageBackground,
   RefreshControl,
@@ -96,14 +96,6 @@ const GameDetails = () => {
   }, [userDetails?.ID]);
   const navigation = useNavigation<any>()
 
-  const onGameCardClick = (schedule: IScheduleDetail) => {
-    const { ID } = schedule
-    let index = gameCategories.findIndex((category) => category.ID == categoryId);
-    let temp = [...gameCategories];
-    let { PLAY_OPTIONS } = temp[index];
-    navigation.navigate('PlayGame', { cardImages: PLAY_OPTIONS, GAME_MASTER_SCHEDULE_ID: ID, GAME_CATEGORY: categoryId });
-  }
-
   // ── Categories (tab bar) ──────────────────────────────────────────────────
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true)
@@ -113,9 +105,14 @@ const GameDetails = () => {
   const [schedules, setSchedules] = useState<IScheduleDetail[]>([])
   const [isGamesLoading, setIsGamesLoading] = useState(true)
 
-  // tick drives countdown re-renders every second
-  const [, setTick] = useState(0)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const onGameCardClick = useCallback((schedule: IScheduleDetail) => {
+    const { ID } = schedule
+    const index = gameCategories.findIndex((category) => category.ID == activeTab);
+    if (index === -1) return;
+    const { PLAY_OPTIONS } = gameCategories[index];
+    navigation.navigate('PlayGame', { cardImages: PLAY_OPTIONS, GAME_MASTER_SCHEDULE_ID: ID, GAME_CATEGORY: activeTab });
+  }, [gameCategories, activeTab, navigation])
+
 
   // ── Fetch: all categories (runs once on mount) ────────────────────────────
   const fetchAllGameCategories = useCallback(async () => {
@@ -183,14 +180,6 @@ const GameDetails = () => {
     getGameListByCategoryId()
   }, [getGameListByCategoryId])
 
-  // ── Countdown ticker ──────────────────────────────────────────────────────
-  useEffect(() => {
-    intervalRef.current = setInterval(() => setTick(t => t + 1), 1000)
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-  }, [])
-
   // ── Tab switch: clear stale games instantly so skeleton shows right away ──
   const handleTabPress = useCallback(
     (tab: IGameCategoryResponse) => {
@@ -255,7 +244,7 @@ const GameDetails = () => {
               <>
                 <GameDetailsSectionHeader title="RUNNING" />
                 {categorized.running.map(s => (
-                  <GameCard onGameCardClick={(schedule: IScheduleDetail) => onGameCardClick(schedule)} key={s.ID} schedule={s} isEnabled={true} />
+                  <GameCard onGameCardClick={onGameCardClick} key={s.ID} schedule={s} isEnabled={true} />
                 ))}
               </>
             )}

@@ -460,7 +460,7 @@ const TransactionHistory = () => {
         return (
             <View style={txStyles.cardWrapper}>
                 <LinearGradient
-                    colors={['#260030', '#44004F']}
+                    colors={Colors.GRADIENT.GRADIENTHEADER}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={txStyles.card}
@@ -545,7 +545,7 @@ const TransactionHistory = () => {
 
             {/* ── Filter Bar ────────────────────────────────────────────────── */}
             <LinearGradient
-                colors={['#2A0D5C', '#3A1A72', '#2A0D5C']}
+                colors={Colors.GRADIENT.GRADIENTHEADER}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.filterBar}

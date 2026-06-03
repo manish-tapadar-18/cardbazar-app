@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { rh, rw } from '../utils/responsive';
+import { Colors } from '../utils/Colors';
 
 const ROW_COUNT = 6;
 
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(69,21,99,0.6)',
+        backgroundColor: Colors.PRIMARY_BG,
         borderRadius: rw(3),
         padding: rw(3),
         gap: rw(3),
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
         width: rw(13),
         height: rw(13),
         borderRadius: rw(2),
-        backgroundColor: '#5020A0',
+        backgroundColor: Colors.SECONDARY_BG,
     },
     middle: {
         flex: 1,
@@ -77,13 +78,13 @@ const styles = StyleSheet.create({
         width: '80%',
         height: rh(1.8),
         borderRadius: 5,
-        backgroundColor: '#5020A0',
+        backgroundColor: Colors.SECONDARY_BG,
     },
     subtitleLine: {
         width: '55%',
         height: rh(1.4),
         borderRadius: 5,
-        backgroundColor: '#5020A0',
+        backgroundColor: Colors.SECONDARY_BG,
     },
     right: {
         alignItems: 'flex-end',
@@ -93,13 +94,13 @@ const styles = StyleSheet.create({
         width: rw(14),
         height: rh(1.8),
         borderRadius: 5,
-        backgroundColor: '#5020A0',
+        backgroundColor: Colors.SECONDARY_BG,
     },
     badge: {
         width: rw(14),
         height: rh(2.6),
         borderRadius: rw(4),
-        backgroundColor: '#5020A0',
+        backgroundColor: Colors.SECONDARY_BG,
     },
 });
 

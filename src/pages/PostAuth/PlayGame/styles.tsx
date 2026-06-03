@@ -105,7 +105,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'center',
-        backgroundColor: 'rgba(20,0,60,0.65)',
+        backgroundColor: Colors.PRIMARY_BG,
         borderRadius: rh(2),
         borderWidth: 1,
         borderColor: Colors.GOLD,
@@ -405,7 +405,7 @@ export const styles = StyleSheet.create({
     },
     dropdownModal: {
         width: rw(55),
-        backgroundColor: '#1a0540',
+        backgroundColor: Colors.PRIMARY_BG,
         borderRadius: rw(3),
         overflow: 'hidden',
         borderWidth: 1,

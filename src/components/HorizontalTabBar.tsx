@@ -10,7 +10,7 @@ import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight';
 import { Colors } from '../utils/Colors';
 import { IGameCategoryResponse } from '../response/module/IGameCategoryResponse';
 
-const BAR_GRADIENT = ['#3b1a72', '#441775', '#521477', '#650f7b'];
+const BAR_GRADIENT = Colors.GRADIENT.GRADIENTHEADER;
 
 type Props = {
   tabs: IGameCategoryResponse[];
@@ -135,7 +135,7 @@ const HorizontalTabBar: React.FC<Props> = ({ tabs, activeKey, onPress }) => {
       {showLeftHint && (
         <>
           <LinearGradient
-            colors={['#3b1a72', 'transparent']}
+            colors={[Colors.PRIMARY_BG, 'transparent']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.leftFade}
@@ -151,7 +151,7 @@ const HorizontalTabBar: React.FC<Props> = ({ tabs, activeKey, onPress }) => {
       {showRightHint && (
         <>
           <LinearGradient
-            colors={['transparent', '#3a0e6e']}
+            colors={['transparent', Colors.PRIMARY_BG]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.rightFade}
@@ -163,9 +163,9 @@ const HorizontalTabBar: React.FC<Props> = ({ tabs, activeKey, onPress }) => {
             activeOpacity={0.7}
           >
             <CustomText style={styles.pillArrow}>❯</CustomText>
-            {hiddenCount > 0 && (
+            {/* {hiddenCount > 0 && (
               <CustomText style={styles.pillCount}>+{hiddenCount}</CustomText>
-            )}
+            )} */}
           </AnimatedTouchable>
         </>
       )}
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(20,4,60,0.72)',
+    backgroundColor: Colors.PRIMARY_BG,
     borderRadius: rw(4),
     borderWidth: 1,
     borderColor: 'rgba(255,215,0,0.35)',
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: rw(0.8),
-    backgroundColor: 'rgba(20,4,60,0.72)',
+    backgroundColor: Colors.PRIMARY_BG,
     borderRadius: rw(4),
     borderWidth: 1,
     borderColor: 'rgba(255,215,0,0.45)',

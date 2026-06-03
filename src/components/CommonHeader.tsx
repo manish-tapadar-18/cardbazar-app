@@ -38,19 +38,27 @@ const CommonHeader = ({ onMenuPress, balance, onPhonePress, onWhatsappPress }: C
                 <View style={{ flex: 1 }} />
 
                 {/* Wallet pill — tapping opens WalletStatusModal */}
-                <TouchableOpacity
-                    style={styles.walletPill}
-                    activeOpacity={0.75}
-                    onPress={() => setShowWalletModal(true)}
-                >
-                    <Image source={Images.WALLET} style={styles.walletIcon} />
-                    <View style={styles.walletTextCol}>
-                        <CustomText style={styles.balanceText}>
-                            {new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(balance))}
-                        </CustomText>
-                        <CustomText style={styles.walletLabel}>INR In Wallet</CustomText>
-                    </View>
-                </TouchableOpacity>
+                <View style={styles.walletPillShadow}>
+                    <TouchableOpacity
+                        activeOpacity={0.75}
+                        onPress={() => setShowWalletModal(true)}
+                    >
+                        <LinearGradient
+                            colors={Colors.GRADIENT.GRADIENTHEADER}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.walletPill}
+                        >
+                            <Image source={Images.WALLET} style={styles.walletIcon} />
+                            <View style={styles.walletTextCol}>
+                                <CustomText style={styles.balanceText}>
+                                    {new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(balance))}
+                                </CustomText>
+                                <CustomText style={styles.walletLabel}>INR In Wallet</CustomText>
+                            </View>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
 
                 {/* Right actions */}
                 <View style={styles.rightActions}>
@@ -90,13 +98,24 @@ const styles = StyleSheet.create({
         height: rh(4),
         resizeMode: 'contain',
     },
+    walletPillShadow: {
+        borderRadius: rw(3),
+        // Android elevation needs a non-transparent background to cast a shadow
+        backgroundColor: '#06402B',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 6,
+    },
     walletPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: "#3d1867",
         paddingHorizontal: rw(3),
         paddingVertical: rh(0.5),
         gap: rw(2),
+        borderRadius: rw(3),
+        overflow: 'hidden',
     },
     walletIcon: {
         width: rh(3),

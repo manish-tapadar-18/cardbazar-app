@@ -4,7 +4,6 @@ import {
   ImageBackground,
   Platform,
   RefreshControl,
-  TouchableOpacity,
   View,
 } from 'react-native'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
@@ -21,15 +20,14 @@ import { useWalletStore } from '../../../stores/walletStore'
 import CardSkeleton from './components/CardSkeleton'
 import CategoryCard from './components/CategoryCard'
 import { getFCMToken } from '../../../utils/PushNotificationUtils'
-import DeviceInfo, { getUniqueId } from 'react-native-device-info';
+import DeviceInfo, { getUniqueId } from 'react-native-device-info'
 import { FilterPayloadContainer, UpdateDeviceRequestBody } from '../../../services/interfaces/IUserService'
 import { useDeviceModalStore } from '../../../stores/deviceModalStore'
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
 import { clLog, clRecordError, clSetAttribute, clSetUser, TAGS } from '../../../utils/CrashlyticsUtils'
 import DeviceBlockModal from '../../../components/DeviceBlockModal'
-import MultiLoginModal from '../../../components/MultiLoginModal'
 import EmptyState from '../../../components/EmptyState'
-import CardRevealModal from '../../../components/CardRevealModal'
+import MultiLoginModal from '../../../components/MultiLoginModal'
 const SKELETON_COUNT = 4
 
 const ListHeader: React.FC = () => (
@@ -50,7 +48,6 @@ const SkeletonList: React.FC = () => (
 const Home = () => {
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [showReveal, setShowReveal] = useState(false)
   // ── Card reveal controls (change these to test different outcomes) ─────────
   const revealWinner: 0 | 1 | 2 | 3 = 2          // 0=card1  1=card2  2=card3  3=card4
   const revealExitMode: 'fadeOut' | 'scatter' = 'scatter'  // 'fadeOut' | 'scatter'
@@ -270,32 +267,6 @@ const Home = () => {
     </ImageBackground>
       <DeviceBlockModal onCheckDevice={checkDeviceId} />
       {/* <MultiLoginModal onRefresh={getProfileDetails} /> */}
-
-      {/* TODO: remove — temp trigger for CardRevealModal testing */}
-      {/* <TouchableOpacity
-        style={{
-          position: 'absolute',
-          bottom: 100,
-          alignSelf: 'center',
-          backgroundColor: Colors.GOLD,
-          paddingHorizontal: 24,
-          paddingVertical: 10,
-          borderRadius: 20,
-        }}
-        onPress={() => setShowReveal(true)}
-        activeOpacity={0.8}
-      >
-        <CustomText style={{ color: Colors.BLACK, fontWeight: '700', fontSize: 13, letterSpacing: 1 }}>
-          TEST CARD REVEAL
-        </CustomText>
-      </TouchableOpacity>
-
-      <CardRevealModal
-        visible={showReveal}
-        onClose={() => setShowReveal(false)}
-        winnerIndex={revealWinner}
-        exitMode={revealExitMode}
-      /> */}
     </>
   )
 }

@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
     height: rh(4),
     width: rw(22),
     borderRadius: rh(2),
-    backgroundColor: 'rgba(140,80,220,0.5)',
+    backgroundColor: Colors.PRIMARY_BG,
   },
   scrollView: {
     flex: 1,
@@ -121,27 +121,27 @@ export const styles = StyleSheet.create({
     paddingHorizontal: rw(3.5),
     paddingVertical: rh(1.3),
     minHeight: rh(8.5),
-    backgroundColor: 'rgba(60,24,102,0.85)',
+    backgroundColor: Colors.PRIMARY_BG,
   },
   skeletonIcon: {
     width: rw(13),
     height: rw(13),
     borderRadius: rw(2),
-    backgroundColor: 'rgba(140,80,220,0.5)',
+    backgroundColor: Colors.SECONDARY_BG,
     marginRight: rw(3),
   },
   skeletonCardTitle: {
     width: '70%',
     height: rh(2.6),
     borderRadius: 4,
-    backgroundColor: 'rgba(140,80,220,0.5)',
+    backgroundColor: Colors.PRIMARY_BG,
     marginBottom: rh(0.8),
   },
   skeletonCardSubtitle: {
     width: '50%',
     height: rh(2),
     borderRadius: 4,
-    backgroundColor: 'rgba(140,80,220,0.4)',
+    backgroundColor: Colors.SECONDARY_BG,
   },
 
   // ─── Empty State ─────────────────────────────────────────────────────────────

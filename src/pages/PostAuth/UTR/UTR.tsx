@@ -51,7 +51,7 @@ const SkeletonBox = ({ width, height, style }: { width: number | string; height:
           width,
           height,
           borderRadius: rh(1),
-          backgroundColor: 'rgba(255,215,0,0.15)',
+          backgroundColor: Colors.SECONDARY_BG,
           opacity: anim,
         },
         style,
@@ -135,7 +135,7 @@ const UTR = () => {
   return (
     <ImageBackground
       source={Images.DASHBOARD_SPLASH}
-      style={{ flex: 1, backgroundColor: Colors.DEEP_PURPLE }}
+      style={{ flex: 1 }}
       resizeMode="cover"
     >
       <KeyboardAwareScrollView
@@ -268,7 +268,7 @@ const UTR = () => {
       <Modal transparent animationType="fade" visible={modalVisible} onRequestClose={handleModalOk}>
         <View style={styles.modalBackdrop}>
           <LinearGradient
-            colors={['rgba(255,215,0,0.5)', 'rgba(255,255,255,0.05)', 'rgba(255,215,0,0.5)']}
+            colors={Colors.GRADIENT.GRADIENTHEADER}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.modalCardBorder}
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     marginBottom: rh(2),
   },
   cardInner: {
-    backgroundColor: 'rgba(18, 4, 45, 0.96)',
+    backgroundColor: Colors.PRIMARY_BG,
     borderRadius: rh(2) - 1.5,
     paddingHorizontal: rw(4.5),
     paddingTop: rh(2.2),
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     padding: 1.5,
   },
   modalCardInner: {
-    backgroundColor: 'rgba(18, 4, 45, 0.98)',
+    backgroundColor: Colors.PRIMARY_BG,
     borderRadius: rh(2.5) - 1.5,
     paddingHorizontal: rw(6),
     paddingTop: rh(3.5),

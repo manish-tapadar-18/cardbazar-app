@@ -16,7 +16,7 @@ import { FontFamilyWithWeight } from "../utils/FontFamilyWithWeight";
 
 const TabBarBackground = () => (
     <LinearGradient
-        colors={['#44004F','#260030']}
+        colors={Colors.GRADIENT.GRADIENTHEADER}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={StyleSheet.absoluteFill}

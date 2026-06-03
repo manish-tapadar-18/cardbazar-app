@@ -32,9 +32,11 @@ export default function App() {
     const [showPermissionModal, setShowPermissionModal] = React.useState(false);
     const [cardRevealVisible, setCardRevealVisible] = React.useState(false);
     const [cardRevealCategoryId, setCardRevealCategoryId] = React.useState('0');
+    const [cardRevealWinnerImage, setCardRevealWinnerImage] = React.useState<string | undefined>(undefined);
 
-    const handleCategoryId = React.useCallback<OnCategoryIdCallback>((categoryId) => {
+    const handleCategoryId = React.useCallback<OnCategoryIdCallback>((categoryId, cardImage) => {
         setCardRevealCategoryId(categoryId);
+        setCardRevealWinnerImage(cardImage);
         setCardRevealVisible(true);
     }, []);
 
@@ -137,6 +139,7 @@ export default function App() {
                 visible={cardRevealVisible}
                 onClose={() => setCardRevealVisible(false)}
                 winnerIndex={cardRevealWinnerIndex}
+                winnerImage={cardRevealWinnerImage}
             />
         </ToastProvider>
     );

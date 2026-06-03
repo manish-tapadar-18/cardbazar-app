@@ -1,15 +1,15 @@
 export const Colors = {
 
     // ─── Backgrounds ────────────────────────────────────────────────────────────
-    PRIMARY_BG: '#1B0535',          // darkest purple — header gradient start, page bg
-    SECONDARY_BG: '#3A0D7A',        // header gradient end
-    DARK_VIOLET: '#3C1866',
-    PURPLE: '#260030',
-    STATUS_BAR_COLOR: '#3D1B5E',
-    DEEP_PURPLE: '#2D0A6E',         // GameRules bg
-    WRAPPER_BG: '#7f53ca',          // Wrapper status bar
-    TAB_ACTIVE_BG: '#5d2b8d',       // bottom tab & drawer active item bg
-    CARD_BG: 'rgba(45, 16, 96, 0.85)',          // SeriesCard bg
+    PRIMARY_BG: '#06402B',          // darkest purple — header gradient start, page bg
+    SECONDARY_BG: '#0A6A47',        // header gradient end
+    DARK_VIOLET: '#06402B',
+    PURPLE: '#0A6A47',
+    STATUS_BAR_COLOR: '#06402B',
+    DEEP_PURPLE: '#06402B',         // GameRules bg
+    WRAPPER_BG: '#0A6A47',          // Wrapper status bar
+    TAB_ACTIVE_BG: '#0A6A47',       // bottom tab & drawer active item bg
+    CARD_BG: '#06402B',          // SeriesCard bg
 
     // ─── Text ────────────────────────────────────────────────────────────────────
     WHITE: '#FFFFFF',
@@ -51,10 +51,10 @@ export const Colors = {
 
     // ─── Gradients ──────────────────────────────────────────────────────────────
     GRADIENT: {
-        HEADER: ['#44004F','#3b1e60','#3b2263'],
-        GRADIENTHEADER: ['#541770','#451863','#451863'],
+        HEADER: ['#06402B','#0A6A47','#0E9464'],
+        GRADIENTHEADER: ['#06402B','#0E9464','#0A6A47',],
         // Metallic gold — top highlight → rich gold → deep amber (top-to-bottom, angle 180)
-        GOLD: ['#FFD540', '#FFE600', '#FFF177', '#A300DC'],
+        GOLD: ['#FFD540', '#FFE600', '#FFF177', '#0E9464'],
         BUTTON_GOLD: ['#FFD540','#cf67f5', '#FFE600', '#FFF177',],
         GOLD_LOCATIONS: [0.25, 0.5, 0.75, 1] as number[],
         SPACER: ['transparent', '#B8860B', '#FFD700', '#FFA500', '#B8860B', 'transparent'],

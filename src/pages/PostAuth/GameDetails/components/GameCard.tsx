@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Image, Pressable, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import moment from 'moment'
@@ -6,6 +6,8 @@ import { Images } from '../../../../utils/Images'
 import { styles } from '../styles'
 import CustomText from '../../../../components/CustomText'
 import { IScheduleDetail } from '../../../../response/module/IGetAllGamesListResponse'
+import { Colors } from '../../../../utils/Colors'
+import GradientText from '../../../../components/GradientText'
 
 type GameStatus = 'RUNNING' | 'UPCOMING' | 'EXPIRED'
 
@@ -26,8 +28,24 @@ const getRemainingTime = (endTime: string): string => {
 
 const formatTime = (time: string) => moment(time, 'HH:mm').format('hh:mm A')
 
-const GameCard: React.FC<{ schedule: IScheduleDetail; isEnabled: boolean; onGameCardClick?: (schedule: IScheduleDetail) => void }> = ({ schedule, isEnabled, onGameCardClick }) => {
+const GameCard: React.FC<{ schedule: IScheduleDetail; isEnabled: boolean; onGameCardClick?: (schedule: IScheduleDetail) => void }> = React.memo(({ schedule, isEnabled, onGameCardClick }) => {
   const status = getStatus(schedule)
+
+  // Only RUNNING cards need a local countdown ticker; UPCOMING/EXPIRED are static.
+  const [countdown, setCountdown] = useState(() =>
+    status === 'RUNNING' ? getRemainingTime(schedule.END_TIME) : ''
+  )
+
+  useEffect(() => {
+    if (status !== 'RUNNING') return
+    const id = setInterval(() => {
+      const remaining = getRemainingTime(schedule.END_TIME)
+      setCountdown(remaining)
+      if (remaining === '00:00:00') clearInterval(id)
+    }, 1000)
+    return () => clearInterval(id)
+  }, [schedule.END_TIME, status])
+
   return (
     <Pressable
       disabled={!isEnabled}
@@ -35,39 +53,66 @@ const GameCard: React.FC<{ schedule: IScheduleDetail; isEnabled: boolean; onGame
       style={styles.cardWrapper}
     >
       <LinearGradient
-        colors={['#FFD700', '#E8900C']}
+        colors={Colors.GRADIENT.GRADIENTHEADER}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.card}
       >
         <Image source={Images.CARD_ICON} style={styles.cardIcon} resizeMode="contain" />
         <View style={styles.cardContent}>
-          <CustomText style={styles.cardTitle}>{schedule.NAME}</CustomText>
+          <GradientText
+            colors={Colors.GRADIENT.GOLD}
+            locations={Colors.GRADIENT.GOLD_LOCATIONS}
+            style={styles.cardTitle}
+            angle={180}
+          >
+            {schedule.NAME}
+          </GradientText>
           {status === 'RUNNING' && (
-            <CustomText style={styles.runningTime}>
-              Ends in {getRemainingTime(schedule.END_TIME)}
-            </CustomText>
+            <GradientText
+              colors={Colors.GRADIENT.GOLD}
+              locations={Colors.GRADIENT.GOLD_LOCATIONS}
+              style={styles.runningTime}
+              angle={180}
+            >
+              Ends in {countdown}
+            </GradientText>
           )}
           {status === 'UPCOMING' && (
             <View style={styles.upcomingTimeRow}>
-              <CustomText style={styles.upcomingTime}>
+              <GradientText
+                colors={Colors.GRADIENT.GOLD}
+                locations={Colors.GRADIENT.GOLD_LOCATIONS}
+                style={styles.upcomingTime}
+                angle={180}
+              >
                 Starts at {formatTime(schedule.START_TIME)}
-              </CustomText>
+              </GradientText>
               <CustomText style={styles.upcomingTimeSpacer}>{'    '}</CustomText>
-              <CustomText style={styles.upcomingTime}>
+              <GradientText
+                colors={Colors.GRADIENT.GOLD}
+                locations={Colors.GRADIENT.GOLD_LOCATIONS}
+                style={styles.upcomingTime}
+                angle={180}
+              >
                 Ends at {formatTime(schedule.END_TIME)}
-              </CustomText>
+              </GradientText>
             </View>
           )}
           {status === 'EXPIRED' && (
-            <CustomText style={styles.expiredTime}>
+            <GradientText
+              colors={Colors.GRADIENT.GOLD}
+              locations={Colors.GRADIENT.GOLD_LOCATIONS}
+              style={styles.expiredTime}
+              angle={180}
+            >
               Ended at {formatTime(schedule.END_TIME)}
-            </CustomText>
+            </GradientText>
           )}
         </View>
       </LinearGradient>
     </Pressable>
   )
-}
+})
 
 export default GameCard

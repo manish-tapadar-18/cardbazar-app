@@ -23,7 +23,7 @@ import { FeedbackValidationSchema } from '../../../validations/schemas/FeedbackV
 import { Repository } from '../../../repository/Repository';
 import { Toast } from '../../../utils/toast';
 
-const CARD_GRADIENT = ['#260030', '#44004F'];
+const CARD_GRADIENT =Colors.GRADIENT.GRADIENTHEADER;
 const RULE_GRADIENT = ['transparent', Colors.GOLD, Colors.ORANGE, Colors.GOLD, 'transparent'];
 
 const RATING_LABELS: Record<number, string> = {

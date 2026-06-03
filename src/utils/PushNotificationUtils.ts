@@ -11,6 +11,7 @@ import notifee, { AndroidImportance, AndroidStyle, EventType } from '@notifee/re
 import { Alert, NativeModules, Platform } from 'react-native';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { checkNotifications, requestNotifications, RESULTS } from 'react-native-permissions';
+import { Colors } from './Colors';
 
 const CHANNEL_ID = 'cardbazar_default';
 
@@ -31,9 +32,10 @@ const prepareCardImage = async (url: string): Promise<string> => {
 };
 const BG_PRESS_KEY = '_pn_bg_press';
 const BG_PRESS_CATEGORY_KEY = '_pn_bg_category';
+const BG_PRESS_CARD_IMAGE_KEY = '_pn_bg_card_image';
 const MODAL_DISMISSED_KEY = '_pn_modal_dismissed';
 
-export type OnCategoryIdCallback = (categoryId: string) => void;
+export type OnCategoryIdCallback = (categoryId: string, cardImage?: string) => void;
 
 // ── Android notification channel ──────────────────────────────────────────────
 export const createNotificationChannel = async (): Promise<void> => {
@@ -124,7 +126,10 @@ const fireCategoryId = (
 ): boolean => {
     const id = data?.categoryId;
     if (typeof id === 'string' && id.length > 0) {
-        onCategoryId(id);
+        const cardImage = typeof data?.cardImage === 'string' && data.cardImage.length > 0
+            ? data.cardImage as string
+            : undefined;
+        onCategoryId(id, cardImage);
         return true;
     }
     return false;
@@ -154,7 +159,7 @@ const buildNotifeePayload = async (
             smallIcon: 'ic_launcher',
             ...(cardImage && {
                 largeIcon: cardImage,
-                color: '#44004F',
+                color: Colors.PRIMARY_BG,
                 style: {
                     type: AndroidStyle.BIGPICTURE,
                     picture: cardImage,
@@ -226,6 +231,9 @@ export const onNotifeeBackgroundPress = async (
         await EncryptedStorage.setItem(BG_PRESS_KEY, 'true');
         if (notificationData?.categoryId) {
             await EncryptedStorage.setItem(BG_PRESS_CATEGORY_KEY, notificationData.categoryId);
+        }
+        if (notificationData?.cardImage) {
+            await EncryptedStorage.setItem(BG_PRESS_CARD_IMAGE_KEY, notificationData.cardImage);
         }
     } catch (_) { }
 };
@@ -307,7 +315,9 @@ export const checkInitialNotification = async (
             const categoryId = await EncryptedStorage.getItem(BG_PRESS_CATEGORY_KEY);
             if (categoryId) {
                 await EncryptedStorage.removeItem(BG_PRESS_CATEGORY_KEY);
-                onCategoryId(categoryId);
+                const cardImage = await EncryptedStorage.getItem(BG_PRESS_CARD_IMAGE_KEY);
+                if (cardImage) await EncryptedStorage.removeItem(BG_PRESS_CARD_IMAGE_KEY);
+                onCategoryId(categoryId, cardImage ?? undefined);
             } else {
                 showOpenedFromAlert('Background');
             }

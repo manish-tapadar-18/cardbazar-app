@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Dimensions, StyleSheet, View } from 'react-native';
 import { rh, rw } from '../utils/responsive';
+import { Colors } from '../utils/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CELL_W = SCREEN_WIDTH / 3;
@@ -70,19 +71,19 @@ const styles = StyleSheet.create({
         width: CELL_W * 0.65,
         height: rh(1.8),
         borderRadius: 6,
-        backgroundColor: '#5020A0',
+        backgroundColor: Colors.PRIMARY_BG,
     },
     blockStatus: {
         width: CELL_W * 0.55,
         height: rh(1.8),
         borderRadius: 6,
-        backgroundColor: '#5020A0',
+        backgroundColor: Colors.PRIMARY_BG,
     },
     blockAmount: {
         width: CELL_W * 0.45,
         height: rh(1.8),
         borderRadius: 6,
-        backgroundColor: '#5020A0',
+        backgroundColor: Colors.PRIMARY_BG,
     },
     separator: {
         height: 1,

@@ -244,7 +244,7 @@ const ForgetPassword = () => {
     return (
         <View style={styles.root}>
             <LinearGradient
-                colors={['#07010F', '#110226', '#1B0535', '#25095E', '#1B0535', '#0D0120']}
+                colors={Colors.GRADIENT.GRADIENTHEADER}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
                 style={StyleSheet.absoluteFill}
@@ -299,7 +299,7 @@ const ForgetPassword = () => {
                         }
                     >
                         <LinearGradient
-                            colors={['#FFD700', '#FF5E94', '#BF5FFF', '#4FACFE', '#43E97B', '#FFD700']}
+                            colors={[Colors.GRADIENT.RED, Colors.GOLD, '#FFF5CC', Colors.ORANGE, Colors.GRADIENT.RED]}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             style={styles.appNameWrapper}
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
         padding: 1,
     },
     cardInner: {
-        backgroundColor: 'rgba(18, 4, 45, 0.96)',
+        backgroundColor: Colors.PRIMARY_BG,
         borderRadius: rh(2) - 1,
         paddingHorizontal: rw(4.5),
         paddingTop: rh(2.5),

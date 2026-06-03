@@ -218,7 +218,7 @@ const PlayHistoryCard: React.FC<Props> = ({ date, items }) => (
 
         {/* ── Card body ─────────────────────────────────────────────────── */}
         <LinearGradient
-            colors={['#260030', '#44004F']}
+            colors={Colors.GRADIENT.GRADIENTHEADER}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.card}

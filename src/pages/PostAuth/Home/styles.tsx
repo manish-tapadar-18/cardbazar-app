@@ -144,15 +144,25 @@ export const styles = StyleSheet.create({
   },
   categoryCard: {
     paddingHorizontal: rw(4),
-    paddingVertical: rh(1.3),
+    paddingVertical: rh(1.5),
     minHeight: rh(17),
     justifyContent: 'space-between',
+  },
+  categoryCardTop: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+    marginBottom: rh(0.5),
+  },
+  categoryCardContent: {
+    flex: 1,
+    paddingRight: rw(2),
   },
   categoryName: {
     color: Colors.WHITE,
     fontSize: rf(5),
     fontWeight:"bold",
-    marginBottom: rh(0.8),
+    marginBottom: rh(0.6),
     letterSpacing: 0.5,
     textTransform:"uppercase"
   },
@@ -161,7 +171,6 @@ export const styles = StyleSheet.create({
     fontSize: rf(4),
     fontFamily: FontFamilyWithWeight["inter_400"],
     lineHeight: rf(4.8),
-    flex: 1,
   },
   categoryFooter: {
     flexDirection: 'row',
@@ -193,6 +202,7 @@ export const styles = StyleSheet.create({
   playIcon: {
     width: rw(8),
     height: rw(8),
+    tintColor:Colors.GOLD
   },
   playText: {
     color: Colors.WHITE,
@@ -203,7 +213,7 @@ export const styles = StyleSheet.create({
 
   // ─── Skeleton ────────────────────────────────────────────────────────────────
   skeletonCardInner: {
-    backgroundColor: 'rgba(60,24,102,0.85)',
+    backgroundColor: Colors.PRIMARY_BG,
     paddingHorizontal: rw(4),
     paddingVertical: rh(2),
     minHeight: rh(17),
@@ -213,26 +223,26 @@ export const styles = StyleSheet.create({
     width: '55%',
     height: rh(3),
     borderRadius: 4,
-    backgroundColor: 'rgba(140,80,220,0.5)',
+    backgroundColor: Colors.SECONDARY_BG,
     marginBottom: rh(1.2),
   },
   skeletonDescLine: {
     width: '80%',
     height: rh(2),
     borderRadius: 4,
-    backgroundColor: 'rgba(140,80,220,0.4)',
+    backgroundColor: Colors.SECONDARY_BG,
     marginBottom: rh(0.8),
   },
   skeletonBadge: {
     width: rw(28),
     height: rh(3.5),
     borderRadius: rh(0.8),
-    backgroundColor: 'rgba(140,80,220,0.5)',
+    backgroundColor: Colors.SECONDARY_BG,
   },
   skeletonPlayBtn: {
     width: rw(32),
     height: rh(3.5),
     borderRadius: rh(0.8),
-    backgroundColor: 'rgba(140,80,220,0.5)',
+    backgroundColor: Colors.SECONDARY_BG,
   },
 });

@@ -20,9 +20,9 @@ import { IReferralHistoryItem } from '../response/module/IReferralHistoryRespons
 
 // ─── Status colour map ────────────────────────────────────────────────────────
 const STATUS_MAP: Record<string, { bg: string; text: string }> = {
-    JOINED:      { bg: 'rgba(34,197,94,0.18)',  text: '#4ADE80' },
+    JOINED: { bg: 'rgba(34,197,94,0.18)', text: '#4ADE80' },
     BONUS_GIVEN: { bg: 'rgba(96,165,250,0.18)', text: '#60A5FA' },
-    PENDING:     { bg: 'rgba(251,191,36,0.18)', text: '#FBBF24' },
+    PENDING: { bg: 'rgba(251,191,36,0.18)', text: '#FBBF24' },
 };
 const getStatusColor = (status: string) =>
     STATUS_MAP[status] ?? { bg: 'rgba(255,255,255,0.10)', text: '#CCCCCC' };
@@ -82,7 +82,7 @@ const ReferralCard: React.FC<{ item: IReferralHistoryItem }> = ({ item }) => {
 
     return (
         <LinearGradient
-            colors={['#260030', '#44004F']}
+            colors={Colors.GRADIENT.GRADIENTHEADER}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={card.container}
@@ -111,8 +111,8 @@ const ReferralCard: React.FC<{ item: IReferralHistoryItem }> = ({ item }) => {
             <View style={card.sep} />
 
             {/* ── Details ── */}
-            <LV label="Mobile"     value={item.JOINED_MOBILE} icon="📱" />
-            <LV label="Joined On"  value={joinedDate}         icon="📅" />
+            <LV label="Mobile" value={item.JOINED_MOBILE} icon="📱" />
+            <LV label="Joined On" value={joinedDate} icon="📅" />
         </LinearGradient>
     );
 };

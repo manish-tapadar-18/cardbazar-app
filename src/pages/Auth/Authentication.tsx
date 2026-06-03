@@ -33,7 +33,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 // Suit config: symbol + color
 const SUITS = ['♠', '♥', '♦', '♣'] as const;
-const SUIT_COLORS = [Colors.WHITE, '#E84545', Colors.WHITE, '#E84545'] as const;
+const SUIT_COLORS = ['#FFD700', '#E86900', '#FFA500', '#FCD20D'] as const;
 // Stagger offset between consecutive suits (ms)
 const STAGGER = 320;
 // Float distance in dp
@@ -174,7 +174,7 @@ const Authentication: React.FC = () => {
     <Wrapper>
       {/* ── Deep space gradient background ── */}
       <LinearGradient
-        colors={['#07010F', '#110226', '#1B0535', '#25095E', '#1B0535', '#0D0120']}
+        colors={Colors.GRADIENT.GRADIENTHEADER}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -222,7 +222,7 @@ const Authentication: React.FC = () => {
           }
         >
           <LinearGradient
-            colors={['#FFD700', '#FF5E94', '#BF5FFF', '#4FACFE', '#43E97B', '#FFD700']}
+            colors={[Colors.GRADIENT.RED, Colors.GOLD, '#FFF5CC', Colors.ORANGE, Colors.GRADIENT.RED]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.appNameWrapper}

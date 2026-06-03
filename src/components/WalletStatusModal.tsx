@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
 
   // Bottom sheet card
   sheet: {
-    backgroundColor: '#130338',
+    backgroundColor: Colors.PRIMARY_BG,
     borderTopLeftRadius: rh(3),
     borderTopRightRadius: rh(3),
     borderWidth: 1,

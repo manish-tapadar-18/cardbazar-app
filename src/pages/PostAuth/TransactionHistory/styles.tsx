@@ -51,7 +51,7 @@ export const styles = StyleSheet.create({
     chipText: {
         fontFamily: FontFamilyWithWeight[700],
         fontSize: rf(3),
-        color: Colors.WHITE_55,
+        color: Colors.WHITE,
         letterSpacing: 0.4,
     },
 
@@ -92,7 +92,7 @@ export const styles = StyleSheet.create({
         borderRadius: rw(3.5),
         backgroundColor: 'rgba(252,3,3,0.15)',
         borderWidth: 1.5,
-        borderColor: Colors.ERROR_RED,
+        borderColor: Colors.WHITE,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -104,7 +104,7 @@ export const styles = StyleSheet.create({
     clearText: {
         fontFamily: FontFamilyWithWeight[900],
         fontSize: rf(3),
-        color: Colors.ERROR_RED,
+        color: Colors.WHITE,
     },
 
     // ─── Active Date Indicator Strip ─────────────────────────────────────────────

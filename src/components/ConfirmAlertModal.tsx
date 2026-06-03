@@ -62,7 +62,7 @@ const ConfirmAlertModal: React.FC<Props> = ({
 
             {/* ── Gold gradient header ───────────────────────────────── */}
             <LinearGradient
-              colors={['#B8860B', '#FFD700', '#FFA500', '#B8860B']}
+              colors={Colors.GRADIENT.GRADIENTHEADER}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.header}
@@ -82,7 +82,7 @@ const ConfirmAlertModal: React.FC<Props> = ({
                     <View key={index} style={styles.dataRow}>
                       <CustomText style={styles.rowLabel}>{row.label}</CustomText>
                       <LinearGradient
-                        colors={['rgba(255,215,0,0.08)', 'rgba(255,215,0,0.02)']}
+                        colors={Colors.GRADIENT.GRADIENTHEADER}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={styles.rowValueBox}
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   card: {
-    backgroundColor: '#130338',
+    backgroundColor: Colors.PRIMARY_BG,
     borderRadius: rh(2),
     borderWidth: 1,
     borderColor: 'rgba(255,215,0,0.25)',
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    color: Colors.BLACK,
+    color: Colors.WHITE,
     fontSize: rf(4.5),
     fontFamily: FontFamilyWithWeight[700],
     letterSpacing: 1.5,

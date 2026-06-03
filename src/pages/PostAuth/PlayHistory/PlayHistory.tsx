@@ -133,7 +133,7 @@ const PlayHistory = () => {
         setActiveCategory(firstId);
         activeCatRef.current = firstId;
         setPageNum(0);
-        setHistory([]);
+        
         fetchHistory(firstId, activeDateRef.current, 0, false);
       } else {
         Toast.error(message ?? 'Failed to load categories.');
@@ -149,6 +149,7 @@ const PlayHistory = () => {
 
   useFocusEffect(
     useCallback(() => {
+      setIsLoading(true);
       const fetchAdminDetails = async () => {
         const { isSuccess, data } = await Repository.User.adminDetails();
         if (isSuccess && data != null) setAdminDetails(data);
@@ -265,7 +266,7 @@ const PlayHistory = () => {
 
       {/* ── Date Filter Bar ───────────────────────────────────────────────── */}
       <LinearGradient
-        colors={['#2A0D5C', '#3A1A72', '#2A0D5C']}
+        colors={Colors.GRADIENT.GRADIENTHEADER}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >

@@ -858,7 +858,716 @@ A thin wrapper around `Text` that applies the project-wide font family. Drop-in 
 
 ---
 
-# Learn More
+## PlayGame Screen
+
+**File:** `src/pages/PostAuth/PlayGame/PlayGame.tsx`
+**Styles:** `src/pages/PostAuth/PlayGame/styles.tsx`
+
+The PlayGame screen is the primary game-entry surface. It lets a user browse suit-grouped playing cards, select one or more cards, enter a bet amount per card, accumulate a line-item list, and submit all bets in a single API call.
+
+---
+
+### Route Params
+
+Received via `useRoute<RouteProp<HomeStackParamList, 'PlayGame'>>`:
+
+| Param | Type | Description |
+|---|---|---|
+| `GAME_MASTER_SCHEDULE_ID` | `string` | Identifies the specific game session being played |
+| `GAME_CATEGORY` | `string` | Category ID used for rule lookups and bet submission |
+| `cardImages` | `string` | JSON-serialised `PlayOption[]` — the full set of playable cards for this game |
+
+---
+
+### Type Definitions
+
+```ts
+// A single bet line: one card + the user-entered amount
+interface LineItem {
+  card: PlayOption;   // full card metadata
+  amount: string;     // raw string from TextInput (integer-only, no leading zeros)
+}
+
+// One horizontal page of cards, grouped by suit
+interface CardGroup {
+  suitKey: string;    // raw suit identifier (e.g. "hearts")
+  suitLabel: string;  // uppercased display label (e.g. "HEARTS")
+  cards: PlayOption[]; // cards within this suit, sorted by cardOrder
+}
+
+// Defined in CardItem.tsx — a single playable card option
+interface PlayOption {
+  ID: number;
+  NAME: string;       // hyphen-separated (e.g. "ace-of-spades")
+  IMAGE_URL: string;  // relative path — prefixed with ENV.BASE_URL at render
+  TYPE?: string;      // suit key override
+  typeOrder?: number; // controls suit group order
+  cardOrder?: number; // controls card order within suit
+}
+```
+
+---
+
+### Data Flow
+
+```
+route.params.cardImages (JSON string)
+  │
+  ▼ useMemo → JSON.parse → groupBySuit()
+  │
+  ▼ cardGroups: CardGroup[]            ← immutable for screen lifetime
+        │
+        ▼ FlatList (horizontal, paged)
+              │
+              └─ AnimatedCard per card
+                    │ onPress → onCardPress()
+                    ▼
+              selectedCardIds: Set<number>
+                    │
+                    ▼ onAddLineItem()
+              lineItems: LineItem[]
+                    │
+                    ▼ onPlayGame()
+              Repository.Game.playGameMultiple(body)
+```
+
+---
+
+### State Architecture
+
+| State | Type | Initial | Role |
+|---|---|---|---|
+| `currentGroupIndex` | `number` | `0` | Tracks which suit page the horizontal FlatList is showing |
+| `selectedCardIds` | `Set<number>` | `new Set()` | Holds IDs of all cards the user has tapped but not yet added |
+| `amount` | `string` | `''` | Controlled value for the bet amount TextInput |
+| `lineItems` | `LineItem[]` | `[]` | Accumulates bet line items before submission |
+| `isDropdownOpen` | `boolean` | `false` | Controls visibility of the suit-picker Modal |
+| `gameRules` | `IGameRulesItem[]` | `[]` | Full rule set fetched from backend; used for MIN_BET / MAX_BET validation |
+| `isPlaying` | `boolean` | `false` | Disables the Play button and swaps label to "PLACING BETS..." during submission |
+| `isRefreshing` | `boolean` | `false` | Drives the pull-to-refresh spinner |
+| `confirmDeleteId` | `number \| null` | `null` | Holds the card ID of a line item in the inline delete-confirmation state |
+| `gameType` | `IGameTypeResponse[]` | `[]` | Game type list — only `gameType[0]` is used (first/default type) |
+
+**Refs:**
+
+| Ref | Role |
+|---|---|
+| `flatListRef` | `FlatList<CardGroup>` ref — used by `selectGroup` to programmatically scroll to a suit page |
+| `onViewableItemsChanged` | Stable callback ref (created once via `useRef`) — prevents FlatList from re-registering the handler on every render |
+| `viewabilityConfig` | Stable config ref — `itemVisiblePercentThreshold: 50` |
+
+**Derived value:**
+
+```ts
+const currentGroup = cardGroups[currentGroupIndex];
+// Used to display the dropdown label and to be safe against out-of-bounds index on re-renders
+```
+
+---
+
+### `cardImages` Parsing & `groupBySuit` — How Cards Are Organised on Screen
+
+#### What problem does this solve?
+
+When the server sends cards to the app, it sends them as one list. All cards from all suits arrive together. The server already decides their order — which suit should appear first, and which card should appear first within each suit.
+
+The app needs to split this one list into **separate pages** — one page per suit — and display each page in the horizontal swiper. `groupBySuit` is the function that does this splitting work.
+
+Think of it like a card dealer who has already arranged the deck in the right order. They hand it to you in one pile, and all you need to do is cut it into groups wherever the suit changes — no shuffling, no re-sorting, just slicing.
+
+---
+
+#### What the server sends — the raw list
+
+Each card has exactly three fields:
+
+| Field | Example value | What it means |
+|---|---|---|
+| `ID` | `13` | Unique ID of the card |
+| `NAME` | `"Spade A"` | Display label shown under the card image |
+| `IMAGE_URL` | `"spade-a.png"` | Filename of the card image |
+
+Below is the full 16-card list from a real response. Notice: all Spade cards come first, then Hearts, then Diamonds, then Clubs — **the server controls this order**:
+
+| ID | NAME | IMAGE_URL |
+|---|---|---|
+| 13 | `Spade A` | `spade-a.png` |
+| 16 | `Spade K` | `spade-k.png` |
+| 15 | `Spade Q` | `spade-q.png` |
+| 14 | `Spade J` | `spade-j.png` |
+| 9  | `Heart A` | `heart-a.png` |
+| 12 | `Heart K` | `heart-k.png` |
+| 11 | `Heart Q` | `heart-q.png` |
+| 10 | `Heart J` | `heart-j.png` |
+| 5  | `Diamond A` | `diamond-a.png` |
+| 8  | `Diamond K` | `diamond-k.png` |
+| 7  | `Diamond Q` | `diamond-q.png` |
+| 6  | `Diamond J` | `diamond-j.png` |
+| 1  | `Clubs A` | `clubs-a.png` |
+| 4  | `Clubs K` | `clubs-k.png` |
+| 3  | `Clubs Q` | `clubs-q.png` |
+| 2  | `Clubs J` | `clubs-j.png` |
+
+---
+
+#### How the suit name is read from `IMAGE_URL`
+
+Every `IMAGE_URL` follows the pattern `<suit>-<rank>.png`. To get the suit name, the function splits the filename on `"-"` and takes the first piece:
+
+```
+"spade-a.png"    →  split("-")  →  ["spade", "a.png"]   →  suit key = "spade"
+"heart-k.png"    →  split("-")  →  ["heart", "k.png"]   →  suit key = "heart"
+"diamond-q.png"  →  split("-")  →  ["diamond", "q.png"] →  suit key = "diamond"
+"clubs-j.png"    →  split("-")  →  ["clubs", "j.png"]   →  suit key = "clubs"
+```
+
+The `.png` extension stays on the second piece and is never read — only the first piece (before the first `-`) is used.
+
+---
+
+#### Step 1 — Walk through the list and open a bucket the first time a new suit is seen
+
+The function reads the array from index 0 to the end, one card at a time. For each card it extracts the suit key (as shown above), then:
+
+- **If this suit key has not been seen before** → open a new bucket for it, in this exact position
+- **If this suit key already has a bucket** → drop the card into that existing bucket
+
+Using the sample data above, here is what happens card by card:
+
+| Step | Card | Suit key | Action |
+|---|---|---|---|
+| 0 | Spade A | `spade` | New bucket opened: **spade** |
+| 1 | Spade K | `spade` | Added to spade bucket |
+| 2 | Spade Q | `spade` | Added to spade bucket |
+| 3 | Spade J | `spade` | Added to spade bucket |
+| 4 | Heart A | `heart` | New bucket opened: **heart** |
+| 5 | Heart K | `heart` | Added to heart bucket |
+| 6 | Heart Q | `heart` | Added to heart bucket |
+| 7 | Heart J | `heart` | Added to heart bucket |
+| 8 | Diamond A | `diamond` | New bucket opened: **diamond** |
+| … | … | … | … |
+| 12 | Clubs A | `clubs` | New bucket opened: **clubs** |
+| … | … | … | … |
+
+The **page order** (Spade → Heart → Diamond → Clubs) is determined entirely by the order in which the server placed cards in the list — whichever suit appears first at index 0 becomes page 1.
+
+There is **no re-sorting** at any point. The function trusts the server's order completely.
+
+---
+
+#### Step 2 — No sorting needed
+
+Cards inside each bucket are already in the correct display order because they were appended in the same sequence they arrived from the server. There is nothing more to do.
+
+```
+spade   → [Spade A,   Spade K,   Spade Q,   Spade J]   ← server order kept
+heart   → [Heart A,   Heart K,   Heart Q,   Heart J]   ← server order kept
+diamond → [Diamond A, Diamond K, Diamond Q, Diamond J] ← server order kept
+clubs   → [Clubs A,   Clubs K,   Clubs Q,   Clubs J]   ← server order kept
+```
+
+---
+
+#### Final output — what `groupBySuit` returns
+
+Four `CardGroup` objects, one per suit, in the order they were first encountered:
+
+```
+[
+  {
+    suitKey:   "spade",
+    suitLabel: "SPADE",
+    cards: [Spade A, Spade K, Spade Q, Spade J]
+  },
+  {
+    suitKey:   "heart",
+    suitLabel: "HEART",
+    cards: [Heart A, Heart K, Heart Q, Heart J]
+  },
+  {
+    suitKey:   "diamond",
+    suitLabel: "DIAMOND",
+    cards: [Diamond A, Diamond K, Diamond Q, Diamond J]
+  },
+  {
+    suitKey:   "clubs",
+    suitLabel: "CLUBS",
+    cards: [Clubs A, Clubs K, Clubs Q, Clubs J]
+  }
+]
+```
+
+---
+
+#### What this means on screen
+
+Each `CardGroup` becomes **one full-width page** in the horizontal card swiper:
+
+```
+◀  [SPADE page]  ──swipe──  [HEART page]  ──swipe──  [DIAMOND page]  ──swipe──  [CLUBS page]  ▶
+   A  K  Q  J               A  K  Q  J               A  K  Q  J                A  K  Q  J
+```
+
+The dropdown at the top of the screen shows the current page's `suitLabel`. Tapping it opens the suit-picker modal, which lists all `suitLabel` values so the user can jump directly to any page without swiping.
+
+This grouping is computed **once when the screen loads** and never recalculated — the card list does not change during a session.
+
+---
+
+### Data Fetching
+
+All four fetches are fired in parallel on every `useFocusEffect` cycle via `fetchAll`.
+
+#### `fetchGameTypes`
+
+```
+Repository.Game.getAllGameTypes()
+  → setGameType(data)
+```
+
+Loads all game type records. Only `gameType[0]` (the first/default type) is consumed downstream — its `ID` is used as `GAME_TYPE` in the play payload, and its `SUB_TYPE` is passed as `SUB_TYPE`.
+
+#### `fetchGameRules`
+
+```
+Repository.Game.getAllGameRules({ filters: { search: [] } })
+  → sort by CAT_ORDER_BY ASC, TYPE_NAME DESC
+  → setGameRule(sorted)
+```
+
+Fetches the full rule list and applies a client-side sort: primary key `CAT_ORDER_BY` ascending, secondary key `TYPE_NAME` descending (lexicographic). The sorted list is stored in `gameRules`.
+
+Inside `onAddLineItem`, the active rule is resolved by matching both `CATEGORY_ID === GAME_CATEGORY` and `TYPE_ID === gameType[0]?.ID`. This gives the `MIN_BET` and `MAX_BET` for the current game session.
+
+#### `fetchWalletBalance`
+
+```
+Repository.User.getUserBalance(userDetails.ID)
+  → setWallet(data)          ← updates walletStore globally
+```
+
+Re-fetches the live wallet balance and writes it into the shared `walletStore`. Called on focus and again after a successful `onPlayGame` submission to reflect the deducted amount immediately.
+
+#### `fetchAdminDetails`
+
+```
+Repository.User.adminDetails()
+  → setAdminDetails(data)    ← updates adminDetailsStore globally
+```
+
+Syncs global admin configuration (e.g. support contact) into `adminDetailsStore` on every focus.
+
+#### `fetchAll`
+
+```ts
+await Promise.all([
+  fetchAdminDetails(),
+  fetchGameTypes(),
+  fetchGameRules(),
+  fetchWalletBalance(),
+]);
+```
+
+All four calls are issued concurrently. There is no ordering dependency between them. `useFocusEffect` wraps this so it fires each time the screen comes into focus (including back-navigation).
+
+#### `onRefresh`
+
+```ts
+setIsRefreshing(true)
+await fetchAll()
+setIsRefreshing(false)   // in finally
+```
+
+Drives the `RefreshControl` spinner. Calls `fetchAll` and resets the spinner in `finally` so it always clears even if a fetch throws.
+
+---
+
+### Card Interaction Logic
+
+#### `onCardPress(card: PlayOption)`
+
+Toggles a card's selection state using an immutable `Set` copy pattern:
+
+```ts
+setSelectedCardIds(prev => {
+  const next = new Set(prev);
+  next.has(card.ID) ? next.delete(card.ID) : next.add(card.ID);
+  return next;
+});
+```
+
+Multiple cards can be selected simultaneously. The selection persists across horizontal-swipe pages because `selectedCardIds` is a screen-level `Set`, not per-group. Each `AnimatedCard` receives `isSelected={selectedCardIds.has(card.ID)}` and the FlatList re-renders via `extraData={selectedCardIds}`.
+
+#### `selectGroup(index: number)`
+
+Programmatic navigation to a suit page triggered from the dropdown modal:
+
+```ts
+setCurrentGroupIndex(index);
+setIsDropdownOpen(false);
+flatListRef.current?.scrollToIndex({ index, animated: true });
+```
+
+`scrollToIndex` works reliably because `getItemLayout` is provided (each page is exactly `SCREEN_WIDTH` wide), so the FlatList never needs to measure items before scrolling.
+
+#### `onViewableItemsChanged`
+
+```ts
+const onViewableItemsChanged = useRef(({ viewableItems }) => {
+  if (viewableItems.length > 0) setCurrentGroupIndex(viewableItems[0].index ?? 0);
+}).current;
+```
+
+Keeps `currentGroupIndex` in sync when the user swipes the card pager manually. Wrapped in `useRef(...).current` so the reference is stable across renders — FlatList requires the `onViewableItemsChanged` prop reference to never change after mount.
+
+`viewabilityConfig` uses `itemVisiblePercentThreshold: 50` — a page only becomes "current" once more than half of it is on screen.
+
+---
+
+### Bet Line Item Logic
+
+#### `onAddLineItem`
+
+Full validation chain before any state mutation:
+
+| Step | Check | Error |
+|---|---|---|
+| 1 | `amount` is non-empty and parses to `> 0` | "Please enter a valid amount." |
+| 2 | `selectedCardIds.size > 0` | "Please select at least one card." |
+| 3 | Active rule exists (`CATEGORY_ID + TYPE_ID` match) | "No rules found for this game." |
+| 4 | `numAmount >= activeRule.MIN_BET` | "Minimum bet is ₹N." |
+| 5 | `numAmount <= activeRule.MAX_BET` | "Maximum bet is ₹N." |
+| 6 | None of the selected cards already appear in `lineItems` | "Some selected cards are already added." |
+
+On passing all checks:
+
+```ts
+setLineItems(prev => [
+  ...prev,
+  ...selectedCards.map(card => ({ card, amount })),
+]);
+setAmount('');
+setSelectedCardIds(new Set());
+```
+
+All selected cards are added as individual `LineItem` entries sharing the same amount string. The amount field and selection are both cleared. `Keyboard.dismiss()` is called first to collapse the keyboard before mutating state.
+
+**Amount input sanitisation** (in `onChangeText`):
+
+```ts
+text.replace(/[^0-9]/g, '').replace(/^0+/, '')
+```
+
+Strips all non-numeric characters, then removes leading zeros. Ensures only positive integers can enter the field.
+
+#### `removeLineItem(cardId: number)`
+
+```ts
+setLineItems(prev => prev.filter(i => i.card.ID !== cardId));
+```
+
+Filters out the entry by card ID. Called only after the user confirms via the inline two-step delete UI (`confirmDeleteId` state drives the Cancel / Delete button pair).
+
+**Inline delete flow:**
+- First tap on trash icon → `setConfirmDeleteId(item.card.ID)` (renders Cancel + Delete buttons)
+- Tap "Cancel" → `setConfirmDeleteId(null)` (restores normal view)
+- Tap "Delete" → `removeLineItem(id)` + `setConfirmDeleteId(null)`
+
+---
+
+### Bet Submission — `onPlayGame`
+
+Pre-submission guards (both non-async, checked synchronously):
+
+| Guard | Error |
+|---|---|
+| `lineItems.length === 0` | "Please add at least one bet before playing." |
+| `totalAmount > balance` | "Insufficient balance." — `totalAmount` is `lineItems.reduce((sum, i) => sum + parseFloat(i.amount), 0)` |
+
+**Payload construction:**
+
+```ts
+const body = {
+  GAME_MASTER_SCHEDULE_ID,          // from route.params
+  GAME_TYPE: gameType[0]?.ID ?? '', // first game type ID
+  USER_ID: userDetails?.ID ?? '',   // from userStore
+  GAME_CATEGORY,                    // from route.params
+  SUB_TYPE: gameType[0]?.SUB_TYPE ?? 'single',
+  DATA: lineItems.map(i => ({
+    GAME_NUMBER: i.card.ID.toString(),  // card ID cast to string
+    AMOUNT: i.amount,                   // raw string (server expects string)
+  })),
+};
+```
+
+`DATA` is the array of individual bets. Each item carries `GAME_NUMBER` (the card's numeric ID serialised as a string) and `AMOUNT` (the user's input string, not a parsed number).
+
+**After success:**
+
+```ts
+setLineItems([]);          // clears the bet slip
+await fetchWalletBalance(); // reflects deducted balance immediately
+```
+
+`isPlaying` is reset in the `finally` block so the button is always re-enabled regardless of outcome.
+
+---
+
+### Animated Sub-component — `AnimatedCard`
+
+```ts
+interface AnimatedCardProps {
+  card: PlayOption;
+  isSelected: boolean;
+  onPress: (card: PlayOption) => void;
+  index: number;   // position within its suit group (0-based)
+}
+```
+
+A `React.memo`-wrapped component that plays a deal-from-above animation using `react-native-reanimated` shared values. Wraps `CardItem` in an `Animated.View`.
+
+**Shared values and their roles:**
+
+| Shared Value | Initial | Animates to | Effect |
+|---|---|---|---|
+| `translateY` | `-70` | `0` | Card drops in from above |
+| `opacity` | `0` | `1` | Card fades in |
+| `rotate` | `DEAL_ROTATIONS[index % 14]` | `0` | Card straightens from a random tilt |
+| `scale` | `0.78` | `1` | Card grows to full size |
+
+`DEAL_ROTATIONS` is a fixed 14-element array of degree values (`[-7, 6, -5, 8, ...]`). Each card's initial tilt is `DEAL_ROTATIONS[index % 14]` — the modulo ensures the pattern wraps cleanly for groups larger than 14 cards.
+
+**Stagger timing:** Each card's animation starts after `delay = index * 75` ms, creating a cascading deal effect. All four transforms animate simultaneously per card.
+
+**Spring / Timing config:**
+
+| Value | Easing | Config |
+|---|---|---|
+| `translateY` | `withSpring` | damping 14, stiffness 130 |
+| `opacity` | `withTiming` | duration 180 ms |
+| `rotate` | `withSpring` | damping 11, stiffness 100 |
+| `scale` | `withSpring` | damping 13, stiffness 140 |
+
+The animation fires once on mount (`useEffect` with empty deps `[]`). There is no teardown because the animation completes and shared values rest at their final state.
+
+---
+
+### Helper Functions
+
+#### `groupBySuit(options: PlayOption[]): CardGroup[]`
+
+See [How Cards Are Organised on Screen](#cardimages-parsing--groupbysuit--how-cards-are-organised-on-screen) above — that section walks through the full process with real data examples.
+
+Extracts the suit key from each card's `IMAGE_URL` by splitting on `"-"` and taking the first segment (`"spade-a.png"` → `"spade"`). Uses a `Map` to bucket cards in first-encounter order — the order the server placed them in is preserved exactly, with no pre-sorting or within-bucket sorting.
+
+#### `formatCardName(name: string | null): string`  *(defined in `CardItem.tsx`)*
+
+```ts
+const RANK_MAP = { a: 'ACE', k: 'KING', q: 'QUEEN', j: 'JACK' };
+
+formatCardName('ace-of-spades')  // → "ACE OF SPADES"
+formatCardName('k-hearts')       // → "KING HEARTS"
+formatCardName(null)             // → ""
+```
+
+Splits on `-`, maps each segment through `RANK_MAP` (case-insensitive), uppercases unrecognised segments, then joins with space. Used in both `CardItem` labels and the line-item name column.
+
+#### `getItemLayout(_: any, index: number)`
+
+```ts
+{ length: SCREEN_WIDTH, offset: SCREEN_WIDTH * index, index }
+```
+
+Enables `scrollToIndex` on the horizontal FlatList without measurement. Each page is exactly one `SCREEN_WIDTH` wide, making offset calculation trivial and O(1).
+
+---
+
+### Render Structure
+
+```
+<ImageBackground source={DASHBOARD_SPLASH}>
+
+  <KeyboardAwareScrollView
+    refreshControl={<RefreshControl onRefresh={onRefresh} />}
+  >
+
+    <Pressable onPress={() => setIsDropdownOpen(true)}>  ← suit dropdown trigger
+      {currentGroup.suitLabel}
+      <Image source={ANGLE_DOWN} />
+    </Pressable>
+
+    <FlatList                                             ← horizontal card pager
+      ref={flatListRef}
+      data={cardGroups}
+      horizontal pagingEnabled
+      renderItem={renderGroupPage}                        ← see below
+      extraData={selectedCardIds}
+      onViewableItemsChanged={onViewableItemsChanged}
+      getItemLayout={getItemLayout}
+    />
+
+    <View amountZone>
+      <TextInput value={amount} onChangeText={sanitise} />
+      <Pressable onPress={onAddLineItem}>Add</Pressable>
+    </View>
+
+    <View lineItemsSection>
+      {lineItems.length === 0 && <EmptySlate />}
+      {lineItems.length > 0 &&
+        <>
+          <SectionDivider label="ADDED LINE ITEMS" />
+          {lineItems.map(item =>
+            <LineItemRow                                  ← see below
+              item={item}
+              isPendingDelete={confirmDeleteId === item.card.ID}
+            />
+          )}
+        </>
+      }
+    </View>
+
+  </KeyboardAwareScrollView>
+
+  {lineItems.length > 0 &&
+    <Pressable onPress={onPlayGame} disabled={isPlaying}>
+      <LinearGradient>PLAY GAME / PLACING BETS...</LinearGradient>
+    </Pressable>
+  }
+
+  <Modal visible={isDropdownOpen}>                        ← suit picker modal
+    {cardGroups.map((group, i) =>
+      <Pressable onPress={() => selectGroup(i)}>
+        {group.suitLabel}  {i === currentGroupIndex && '✓'}
+      </Pressable>
+    )}
+  </Modal>
+
+</ImageBackground>
+```
+
+#### `renderGroupPage`
+
+Renders one horizontal page of the card pager:
+
+```
+<View style={groupPage}>
+  {item.cards.map((card, index) =>
+    <AnimatedCard
+      key={card.ID}
+      card={card}
+      index={index}
+      isSelected={selectedCardIds.has(card.ID)}
+      onPress={onCardPress}
+    />
+  )}
+</View>
+```
+
+When a suit group has fewer than 4 cards, `justifyContent: 'center'` is applied inline so the cards are horizontally centred rather than left-aligned.
+
+#### Line Item Row
+
+Each `LineItem` renders as a horizontal row:
+
+```
+┌─[thumbnail]─┬─[card name]─────────────────┬─[₹amount]─┬─[🗑️]─┐
+│  card image  │  formatCardName(item.card.NAME)  │  gold    │ red  │
+└─────────────┴──────────────────────────────┴───────────┴──────┘
+```
+
+When `confirmDeleteId === item.card.ID`, the amount + trash column is replaced inline with:
+
+```
+┌─[thumbnail]─┬─[card name]─────────────────┬─[Cancel]─┬─[Delete]─┐
+```
+
+This avoids a modal or swipe gesture for deletion — the confirm UI is rendered directly in the row.
+
+#### Play Game Button
+
+Pinned outside `KeyboardAwareScrollView` so it is always visible at the bottom of the screen regardless of scroll position. Only rendered when `lineItems.length > 0`.
+
+- **Idle:** gold gradient (`Colors.GRADIENT.SPACER_CORE`), label "PLAY GAME"
+- **Submitting:** flat disabled background (`Colors.DISABLED_BG`), label "PLACING BETS..."
+
+---
+
+### Suit Picker Modal
+
+```
+<Modal visible={isDropdownOpen} transparent animationType="fade">
+  <Pressable overlay onPress={() => setIsDropdownOpen(false)}>
+    <View dropdownModal>
+      <LinearGradient header>SELECT CATEGORY</LinearGradient>
+      {cardGroups.map((group, index) =>
+        <Pressable
+          onPress={() => selectGroup(index)}
+          style={[dropdownItem,
+            index === currentGroupIndex && dropdownItemActive,
+            index < last && dropdownItemBorder
+          ]}
+        >
+          {group.suitLabel}
+          {index === currentGroupIndex && <Text>✓</Text>}
+        </Pressable>
+      )}
+    </View>
+  </Pressable>
+</Modal>
+```
+
+Tapping the overlay (`Pressable` wrapping the modal content) dismisses the modal. The active group is highlighted with a subtle gold tint background and a `✓` checkmark on the right.
+
+---
+
+### Component Reference
+
+#### `AnimatedCard`
+
+**Defined inline in `PlayGame.tsx`**
+
+`React.memo`-wrapped deal-animation wrapper. Accepts `card`, `isSelected`, `onPress`, and `index`. Plays a staggered drop-in animation on mount, then delegates rendering to `CardItem`. Memoised to prevent re-animation when parent state (e.g. `selectedCardIds`) changes.
+
+---
+
+#### `CardItem`
+
+**File:** `src/components/CardItem.tsx`
+
+Renders a single playable card as a pressable tile:
+
+| Detail | Value |
+|---|---|
+| Props | `card: PlayOption`, `isSelected: boolean`, `onPress: (card) => void` |
+| Selected state | Green border (`#22cc44`), elevated shadow, green `✓` badge at top-right |
+| Image source | `${ENV.BASE_URL}/${card.IMAGE_URL}` with `Images.SMALL_CARD` as `defaultSource` |
+| Label | `formatCardName(card.NAME)` — truncated to 1 line |
+
+---
+
+#### `SectionDivider`
+
+**File:** `src/components/SectionDivider.tsx`
+
+A labelled horizontal rule: two `flex: 1` lines flank a centred text label in gold. Used as the header above the line-item list.
+
+| Detail | Value |
+|---|---|
+| Props | `label: string` |
+| Used in PlayGame | `label="ADDED LINE ITEMS"` |
+
+---
+
+### Implementation Notes
+
+- **`cardImages` parsed once**: The JSON string from route params is parsed inside `useMemo` with `[cardImages]` as its dependency. Because navigation params are set at push-time and never mutated, this memo never re-fires mid-session — the parse cost (and `groupBySuit` grouping pass) is paid exactly once.
+- **`selectedCardIds` as immutable Set**: Every `onCardPress` call creates a new `Set` instance. This ensures React detects the state change (object identity), and FlatList's `extraData={selectedCardIds}` triggers re-renders for the correct cards.
+- **`onViewableItemsChanged` stability**: Assigning the handler inside `useRef(...).current` satisfies the FlatList requirement that this prop never changes after mount. Using a plain arrow function in JSX would cause FlatList to silently ignore viewability updates.
+- **`getItemLayout` requirement for `scrollToIndex`**: Without `getItemLayout`, calling `flatListRef.current?.scrollToIndex` on a horizontal pager would throw a warning and may silently no-op. Providing it makes offset calculation O(1) and scroll reliable.
+- **Two-step delete UX**: `confirmDeleteId` enables an inline confirmation flow with zero modals or swipe gestures. Setting it to `null` on any navigation-away or other card addition is not needed — stale `confirmDeleteId` is harmless because the referenced card ID will either still be in `lineItems` (correct) or be gone (the `isPendingDelete` branch simply never renders).
+- **Wallet refresh post-play**: `fetchWalletBalance` is called inside the `onPlayGame` success path (not in `finally`) to ensure the balance only updates when the bets are confirmed server-side, not on error paths.
+
+---
 
 To learn more about React Native, take a look at the following resources:
 

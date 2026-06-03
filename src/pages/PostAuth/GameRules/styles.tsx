@@ -12,8 +12,7 @@ export const styles = StyleSheet.create({
   withdrawalContainer: {
     paddingHorizontal: rw(5),
     paddingVertical: rh(1.8),
-    gap: rh(0.6),
-    backgroundColor: Colors.OVERLAY_PURPLE,
+    gap: rh(0.6)
   },
   withdrawalRow: {
     flexDirection: 'row',

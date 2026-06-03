@@ -37,8 +37,8 @@ export const styles = StyleSheet.create({
   },
   balanceLabel: {
     color: Colors.WHITE_55,
-    fontSize: rf(3),
-    fontFamily: FontFamilyWithWeight[400],
+    fontSize: rf(3.5),
+    fontFamily: FontFamilyWithWeight["600"],
     letterSpacing: 1,
     marginBottom: rh(0.5),
   },
@@ -50,8 +50,8 @@ export const styles = StyleSheet.create({
   },
   minAmountText: {
     color: Colors.WHITE_55,
-    fontSize: rf(2.8),
-    fontFamily: FontFamilyWithWeight[400],
+    fontSize: rf(3.5),
+    fontFamily: FontFamilyWithWeight["600"],
     marginTop: rh(0.5),
   },
 
@@ -71,7 +71,7 @@ export const styles = StyleSheet.create({
   },
   inputLabel: {
     color: Colors.WHITE_75,
-    fontSize: rf(2.8),
+    fontSize: rf(3.5),
     fontFamily: FontFamilyWithWeight[600],
     marginBottom: rh(0.8),
     letterSpacing: 0.3,
@@ -84,16 +84,16 @@ export const styles = StyleSheet.create({
     height: rh(6.5),
     paddingHorizontal: rw(4),
     color: Colors.WHITE,
-    fontSize: rf(3.2),
-    fontFamily: FontFamilyWithWeight[400],
+    fontSize: rf(3.5),
+    fontFamily: FontFamilyWithWeight[700],
   },
   inputBoxDisabled: {
     opacity: 0.6,
   },
   errorText: {
     color: Colors.ERROR_RED,
-    fontSize: rf(2.6),
-    fontFamily: FontFamilyWithWeight[400],
+    fontSize: rf(3.5),
+    fontFamily: FontFamilyWithWeight[700],
     marginTop: rh(0.5),
   },
 

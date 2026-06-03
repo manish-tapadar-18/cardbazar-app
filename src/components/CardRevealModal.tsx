@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  ImageSourcePropType,
 } from 'react-native'
 import Animated, {
   useSharedValue,
@@ -63,7 +64,7 @@ const BALLOON_IMAGE = require('../assets/images/balloon.png')
 const CELEBRATION_LOTTIE = require('../assets/lottie/celebration.json')
 
 // 7 balloons — varied colours, x-positions, and sizes for depth
-const BALLOON_TINTS = [Colors.GOLD, Colors.GREEN, '#4A90D9', Colors.ORANGE, '#C947E8', '#00D4D4', '#FF6B9D'] as const
+const BALLOON_TINTS = [Colors.GOLD, Colors.GREEN, Colors.ORANGE, '#E86900', '#FCD20D', '#0E9464', '#FFD540'] as const
 const BALLOON_POSITIONS = [SW * 0.06, SW * 0.20, SW * 0.36, SW * 0.50, SW * 0.63, SW * 0.77, SW * 0.88] as const
 const BALLOON_SIZES = [48, 42, 52, 44, 50, 40, 46] as const
 
@@ -72,6 +73,8 @@ export interface CardRevealModalProps {
   onClose: () => void
   /** 0 = card1.png  1 = card2.png  2 = card3.png  3 = card4.png */
   winnerIndex: 0 | 1 | 2 | 3
+  /** Remote image URL shown as the winner card once the fan loop completes */
+  winnerImage?: string
   /** How non-winner cards exit after the reveal. Default: 'fadeOut' */
   exitMode?: 'fadeOut' | 'scatter'
 }
@@ -80,6 +83,7 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
   visible,
   onClose,
   winnerIndex,
+  winnerImage,
   exitMode = 'fadeOut',
 }) => {
   const [isRevealed, setIsRevealed] = useState(false)
@@ -110,6 +114,18 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
   const b6y = useSharedValue(0); const b6sway = useSharedValue(0)
 
   useEffect(() => { winnerIdx.value = winnerIndex }, [winnerIndex])
+
+  // Prefetch the winner image during the fan loop so it's ready when isRevealed fires
+  useEffect(() => {
+    if (visible && winnerImage) {
+      Image.prefetch(winnerImage).catch(() => {})
+    }
+  }, [visible, winnerImage])
+
+  const getCardSource = (index: number): ImageSourcePropType =>
+    isRevealed && winnerImage && index === winnerIndex
+      ? { uri: winnerImage }
+      : CARD_IMAGES[index]
 
   const cancelAll = useCallback(() => {
     ;[
@@ -311,10 +327,10 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
         <View style={styles.glowOrb} pointerEvents="none" />
 
         {/* Cards — rendered bottom→top for default z-stacking */}
-        <Animated.Image source={CARD_IMAGES[0]} style={[styles.card, cardStyle0]} resizeMode="cover" />
-        <Animated.Image source={CARD_IMAGES[1]} style={[styles.card, cardStyle1]} resizeMode="cover" />
-        <Animated.Image source={CARD_IMAGES[2]} style={[styles.card, cardStyle2]} resizeMode="cover" />
-        <Animated.Image source={CARD_IMAGES[3]} style={[styles.card, cardStyle3]} resizeMode="cover" />
+        <Animated.Image source={getCardSource(0)} style={[styles.card, cardStyle0]} resizeMode="cover" />
+        <Animated.Image source={getCardSource(1)} style={[styles.card, cardStyle1]} resizeMode="cover" />
+        <Animated.Image source={getCardSource(2)} style={[styles.card, cardStyle2]} resizeMode="cover" />
+        <Animated.Image source={getCardSource(3)} style={[styles.card, cardStyle3]} resizeMode="cover" />
 
         {/* 7 balloons — float up from below the screen after winner reveal */}
         {BALLOON_TINTS.map((tint, i) => (
@@ -387,19 +403,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(12, 1, 30, 0.93)',
+    backgroundColor: 'rgba(6, 64, 43, 0.95)',
   },
   glowOrb: {
     position: 'absolute',
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: 'rgba(160, 22, 230, 0.2)',
+    backgroundColor: 'rgba(255, 215, 0, 0.07)',
     top: SH / 2 - 130,
     left: SW / 2 - 110,
-    shadowColor: Colors.HIGHLIGHT_PURPLE,
+    shadowColor: Colors.GOLD,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.65,
+    shadowOpacity: 0.55,
     shadowRadius: 45,
   },
   card: {

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -29,6 +29,14 @@ import CardItem, { PlayOption, formatCardName } from '../../../components/CardIt
 import SectionDivider from '../../../components/SectionDivider';
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore';
 import { ENV } from '../../../utils/env';
+import Animated, {
+  cancelAnimation,
+  useSharedValue,
+  useAnimatedStyle,
+  withDelay,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface LineItem {
@@ -45,19 +53,59 @@ interface CardGroup {
 // ─── Constants ────────────────────────────────────────────────────────────────
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+// Fixed rotation offsets per slot so each card lands at a slightly different angle
+const DEAL_ROTATIONS = [-7, 6, -5, 8, -6, 7, -4, 9, -8, 5, -6, 7, -3, 8];
+
+// ─── Animated card wrapper (deal-from-above animation) ───────────────────────
+interface AnimatedCardProps {
+  card: PlayOption;
+  isSelected: boolean;
+  onPress: (card: PlayOption) => void;
+  index: number;
+}
+
+const AnimatedCard: React.FC<AnimatedCardProps> = React.memo(({ card, isSelected, onPress, index }) => {
+  const translateY = useSharedValue(-70);
+  const opacity = useSharedValue(0);
+  const rotate = useSharedValue(DEAL_ROTATIONS[index % DEAL_ROTATIONS.length]);
+  const scale = useSharedValue(0.78);
+
+  useEffect(() => {
+    const delay = index * 75;
+    translateY.value = withDelay(delay, withSpring(0, { damping: 14, stiffness: 130 }));
+    opacity.value = withDelay(delay, withTiming(1, { duration: 180 }));
+    rotate.value = withDelay(delay, withSpring(0, { damping: 11, stiffness: 100 }));
+    scale.value = withDelay(delay, withSpring(1, { damping: 13, stiffness: 140 }));
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: translateY.value },
+      { rotate: `${rotate.value}deg` },
+      { scale: scale.value },
+    ],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <CardItem card={card} isSelected={isSelected} onPress={onPress} />
+    </Animated.View>
+  );
+});
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const groupBySuit = (options: PlayOption[]): CardGroup[] => {
-  const sorted = [...options].sort((a, b) => (a.typeOrder ?? 0) - (b.typeOrder ?? 0));
-  const map: Record<string, PlayOption[]> = {};
-  for (const opt of sorted) {
-    const suit = opt.TYPE ?? opt.NAME.split('-')[0] ?? 'other';
-    if (!map[suit]) map[suit] = [];
-    map[suit].push(opt);
+  const map = new Map<string, PlayOption[]>();
+  for (const opt of options) {
+    const suitKey = opt.IMAGE_URL.split('-')[0];
+    if (!map.has(suitKey)) map.set(suitKey, []);
+    map.get(suitKey)!.push(opt);
   }
-  return Object.entries(map).map(([suitKey, cards]) => ({
+  return Array.from(map.entries()).map(([suitKey, cards]) => ({
     suitKey,
     suitLabel: suitKey.toUpperCase(),
-    cards: [...cards].sort((a, b) => (a.cardOrder ?? 0) - (b.cardOrder ?? 0)),
+    cards,
   }));
 };
 
@@ -325,10 +373,11 @@ const PlayGame: React.FC = () => {
   // ── Render card group page ───────────────────────────────────────────────
   const renderGroupPage = ({ item }: { item: CardGroup }) => (
     <View style={[styles.groupPage, item.cards.length < 4 && { justifyContent: 'center' }]}>
-      {item.cards.map(card => (
-        <CardItem
+      {item.cards.map((card, index) => (
+        <AnimatedCard
           key={card.ID}
           card={card}
+          index={index}
           isSelected={selectedCardIds.has(card.ID)}
           onPress={onCardPress}
         />
@@ -391,8 +440,7 @@ const PlayGame: React.FC = () => {
               keyboardShouldPersistTaps="always"
             />
           )}
-
-          {/* ── Amount input — centered in the purple zone ────────────────── */}
+          
           <View style={styles.amountZone}>
             <View style={styles.amountRow}>
               <TextInput

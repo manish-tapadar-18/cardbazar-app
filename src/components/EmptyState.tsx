@@ -45,9 +45,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: rw(8),
     },
     glowRing: {
-        width: rw(45),
-        height: rw(45),
-        borderRadius: rw(22.5),
+        width: rw(30),
+        height: rw(30),
+        borderRadius: rw(15),
         borderWidth: 1.5,
         borderColor: 'rgba(255,215,0,0.2)',
         alignItems: 'center',
@@ -59,9 +59,9 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFill,
     },
     image: {
-        width: rw(28),
-        height: rw(28),
-        tintColor: 'rgba(255,215,0,0.45)',
+        width: rw(20),
+        height: rw(20),
+        tintColor: 'rgba(255,215,0,0.30)',
     },
     divider: {
         width: rw(40),

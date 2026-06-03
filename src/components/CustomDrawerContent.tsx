@@ -81,7 +81,7 @@ const CustomDrawerContent = (props: DrawerContentComponentProps) => {
     >
       {/* ── Header ── */}
       <LinearGradient
-        colors={['#0D0120', '#1B0535', '#2D0A6E', '#3A0D7A']}
+        colors={Colors.GRADIENT.GRADIENTHEADER}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.header}

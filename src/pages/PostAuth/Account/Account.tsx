@@ -215,7 +215,7 @@ const Account = () => {
       >
         {/* ── Account Details ── */}
         <LinearGradient
-          colors={['#260030', '#44004F' ]}
+          colors={Colors.GRADIENT.GRADIENTHEADER}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.cardBorder}
@@ -275,7 +275,7 @@ const Account = () => {
 
         {/* ── UPI Details ── */}
         <LinearGradient
-          colors={['#260030', '#44004F' ]}
+          colors={Colors.GRADIENT.GRADIENTHEADER}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.cardBorder}
@@ -345,7 +345,7 @@ const Account = () => {
 
         {/* ── Bank Details ── */}
         <LinearGradient
-          colors={['#260030', '#44004F' ]}
+          colors={Colors.GRADIENT.GRADIENTHEADER}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.cardBorder}
