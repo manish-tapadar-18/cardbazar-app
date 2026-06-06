@@ -35,7 +35,7 @@ const BG_PRESS_CATEGORY_KEY = '_pn_bg_category';
 const BG_PRESS_CARD_IMAGE_KEY = '_pn_bg_card_image';
 const MODAL_DISMISSED_KEY = '_pn_modal_dismissed';
 
-export type OnCategoryIdCallback = (categoryId: string, cardImage?: string) => void;
+export type OnCategoryIdCallback = (categoryId: string, cardImage?: string, title?: string) => void;
 
 // ── Android notification channel ──────────────────────────────────────────────
 export const createNotificationChannel = async (): Promise<void> => {
@@ -129,7 +129,10 @@ const fireCategoryId = (
         const cardImage = typeof data?.cardImage === 'string' && data.cardImage.length > 0
             ? data.cardImage as string
             : undefined;
-        onCategoryId(id, cardImage);
+        const title = typeof data?.title === 'string' && data.title.length > 0
+            ? data.title as string
+            : undefined;
+        onCategoryId(id, cardImage, title);
         return true;
     }
     return false;
@@ -287,9 +290,22 @@ export const setupPushNotificationHandlers = (
 export const checkInitialNotification = async (
     onCategoryId: OnCategoryIdCallback,
 ): Promise<void> => {
+    // Helper: wipe all BG_PRESS keys so they can never replay on a subsequent cold start.
+    // Must be called in every early-return branch because onNotifeeBackgroundPress writes
+    // these keys before the app opens, and if we return without clearing them they persist
+    // into the next launch and re-open the modal.
+    const clearBgPressKeys = async () => {
+        try {
+            await EncryptedStorage.removeItem(BG_PRESS_KEY);
+            await EncryptedStorage.removeItem(BG_PRESS_CATEGORY_KEY);
+            await EncryptedStorage.removeItem(BG_PRESS_CARD_IMAGE_KEY);
+        } catch (_) {}
+    };
+
     // Quit state — app launched by tapping an FCM notification
     const fcmInitial = await getInitialNotification(getMessaging());
     if (fcmInitial) {
+        await clearBgPressKeys();
         logNotification('Quit State', fcmInitial);
         if (!fireCategoryId(fcmInitial.data, onCategoryId)) {
             showOpenedFromAlert('Quit State');
@@ -297,9 +313,12 @@ export const checkInitialNotification = async (
         return;
     }
 
-    // Quit state — app launched by tapping a notifee-displayed notification
+    // Quit state — app launched by tapping a notifee-displayed notification.
+    // onNotifeeBackgroundPress already wrote BG_PRESS_KEY before the app opened;
+    // clear those keys here so the next cold start does not replay the modal.
     const notifeeInitial = await notifee.getInitialNotification();
     if (notifeeInitial) {
+        await clearBgPressKeys();
         const data = notifeeInitial.notification.data as Record<string, string> | undefined;
         if (!fireCategoryId(data, onCategoryId)) {
             showOpenedFromAlert('Quit State');

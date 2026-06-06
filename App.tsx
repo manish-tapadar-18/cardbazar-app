@@ -33,10 +33,12 @@ export default function App() {
     const [cardRevealVisible, setCardRevealVisible] = React.useState(false);
     const [cardRevealCategoryId, setCardRevealCategoryId] = React.useState('0');
     const [cardRevealWinnerImage, setCardRevealWinnerImage] = React.useState<string | undefined>(undefined);
+    const [cardRevealTitle, setCardRevealTitle] = React.useState<string | undefined>(undefined);
 
-    const handleCategoryId = React.useCallback<OnCategoryIdCallback>((categoryId, cardImage) => {
+    const handleCategoryId = React.useCallback<OnCategoryIdCallback>((categoryId, cardImage, title) => {
         setCardRevealCategoryId(categoryId);
         setCardRevealWinnerImage(cardImage);
+        setCardRevealTitle(title);
         setCardRevealVisible(true);
     }, []);
 
@@ -124,10 +126,10 @@ export default function App() {
                 <AppNavigator />
             </NavigationContainer>
 
-            {/* <SecurityBlockModal
+            <SecurityBlockModal
                 visible={violationReasons.length > 0}
                 reasons={violationReasons}
-            /> */}
+            />
 
             <PushNotificationPermissionModal
                 visible={showPermissionModal}
@@ -140,6 +142,7 @@ export default function App() {
                 onClose={() => setCardRevealVisible(false)}
                 winnerIndex={cardRevealWinnerIndex}
                 winnerImage={cardRevealWinnerImage}
+                notifTitle={cardRevealTitle}
             />
         </ToastProvider>
     );

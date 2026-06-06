@@ -37,6 +37,10 @@ const LOOP_COUNT = 2
 
 const WINNER_BADGE_TOP = SH / 2 + CARD_H / 2 + 30
 
+// Bottom edge of the winner card after it flies up (winnerY=-210) and scales to 1.2,
+// plus a small gap — this is where the notif title sits.
+const NOTIF_TITLE_TOP = CARD_TOP + Math.round(CARD_H * 1.1) - 210 + 16
+
 // Fan spread — symmetrical, derived from Lottie analysis
 const SPREADS = [
   { tx: -90, ty: 20, rot: -40 },
@@ -77,6 +81,8 @@ export interface CardRevealModalProps {
   winnerImage?: string
   /** How non-winner cards exit after the reveal. Default: 'fadeOut' */
   exitMode?: 'fadeOut' | 'scatter'
+  /** Title from the push notification — shown prominently during card reveal */
+  notifTitle?: string
 }
 
 const CardRevealModal: React.FC<CardRevealModalProps> = ({
@@ -85,6 +91,7 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
   winnerIndex,
   winnerImage,
   exitMode = 'fadeOut',
+  notifTitle,
 }) => {
   const [isRevealed, setIsRevealed] = useState(false)
   const lottieRef = useRef<LottieView>(null)
@@ -97,6 +104,9 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
   const labelOp = useSharedValue(0)
   const labelScale = useSharedValue(0.8)
   const winnerIdx = useSharedValue<number>(winnerIndex)
+  const glowOrbOp = useSharedValue(1)
+  const notifTitleOp = useSharedValue(0)
+  const notifTitleY = useSharedValue(18)
 
   // ── Scatter (per-card, stay at 0 in fadeOut mode) ─────────────────────────
   const s0x = useSharedValue(0); const s0y = useSharedValue(0); const s0r = useSharedValue(0)
@@ -129,7 +139,8 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
 
   const cancelAll = useCallback(() => {
     ;[
-      fanProgress, winnerY, winnerScale, otherOp, labelOp, labelScale,
+      fanProgress, winnerY, winnerScale, otherOp, labelOp, labelScale, glowOrbOp,
+      notifTitleOp, notifTitleY,
       s0x, s0y, s0r, s1x, s1y, s1r, s2x, s2y, s2r, s3x, s3y, s3r,
       b0y, b0sway, b1y, b1sway, b2y, b2sway,
       b3y, b3sway, b4y, b4sway, b5y, b5sway, b6y, b6sway,
@@ -145,7 +156,8 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
     if (!visible) {
       cancelAll()
       fanProgress.value = 0; winnerY.value = 0; winnerScale.value = 1
-      otherOp.value = 1; labelOp.value = 0; labelScale.value = 0.8
+      otherOp.value = 1; labelOp.value = 0; labelScale.value = 0.8; glowOrbOp.value = 1
+      notifTitleOp.value = 0; notifTitleY.value = 18
       s0x.value = 0; s0y.value = 0; s0r.value = 0
       s1x.value = 0; s1y.value = 0; s1r.value = 0
       s2x.value = 0; s2y.value = 0; s2r.value = 0
@@ -181,6 +193,7 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
 
     winnerY.value = withSpring(-210, { damping: 14, stiffness: 90 })
     winnerScale.value = withTiming(1.2, { duration: 600 })
+    glowOrbOp.value = withTiming(0, { duration: 500, easing: Easing.out(Easing.quad) })
 
     const exitDur = exitMode === 'scatter' ? 700 : 450
     otherOp.value = withTiming(0, { duration: exitDur })
@@ -195,6 +208,9 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
 
     labelOp.value = withDelay(750, withTiming(1, { duration: 400 }))
     labelScale.value = withDelay(750, withTiming(1, { duration: 400, easing: Easing.out(Easing.back(1.5)) }))
+
+    notifTitleOp.value = withDelay(1000, withTiming(1, { duration: 350, easing: Easing.out(Easing.quad) }))
+    notifTitleY.value = withDelay(1000, withTiming(0, { duration: 350, easing: Easing.out(Easing.quad) }))
 
     // Lottie confetti fires after the winner card has risen partway
     const timer = setTimeout(() => lottieRef.current?.play(), 450)
@@ -300,6 +316,13 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
     transform: [{ scale: labelScale.value }],
   }))
 
+  const glowOrbStyle = useAnimatedStyle(() => ({ opacity: glowOrbOp.value }))
+
+  const notifTitleStyle = useAnimatedStyle(() => ({
+    opacity: notifTitleOp.value,
+    transform: [{ translateY: notifTitleY.value }],
+  }))
+
   const b0Style = useAnimatedStyle(() => ({ transform: [{ translateY: b0y.value }, { translateX: b0sway.value }] }))
   const b1Style = useAnimatedStyle(() => ({ transform: [{ translateY: b1y.value }, { translateX: b1sway.value }] }))
   const b2Style = useAnimatedStyle(() => ({ transform: [{ translateY: b2y.value }, { translateX: b2sway.value }] }))
@@ -324,7 +347,7 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
         <View style={styles.backdrop} />
 
         {/* Ambient glow orb behind the card stack */}
-        <View style={styles.glowOrb} pointerEvents="none" />
+        <Animated.View style={[styles.glowOrb, glowOrbStyle]} pointerEvents="none" />
 
         {/* Cards — rendered bottom→top for default z-stacking */}
         <Animated.Image source={getCardSource(0)} style={[styles.card, cardStyle0]} resizeMode="cover" />
@@ -383,6 +406,13 @@ const CardRevealModal: React.FC<CardRevealModalProps> = ({
             <CustomText style={styles.winnerText}>✦  WINNING CARD  ✦</CustomText>
           </View>
         </Animated.View>
+
+        {/* Notification title — slides up sharply after winner badge */}
+        {notifTitle ? (
+          <Animated.View style={[styles.notifTitleContainer, notifTitleStyle]} pointerEvents="none">
+            <CustomText style={styles.notifTitleText}>{notifTitle}</CustomText>
+          </Animated.View>
+        ) : null}
 
         {/* Close button — only shown once reveal is done */}
         {isRevealed && (
@@ -513,6 +543,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 4,
+  },
+  notifTitleContainer: {
+    position: 'absolute',
+    top: NOTIF_TITLE_TOP,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  notifTitleText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+    textAlign: 'center',
+    textShadowColor: 'rgba(255, 255, 255, 0.7)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
 })
 

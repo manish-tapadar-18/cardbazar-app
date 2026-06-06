@@ -19,11 +19,6 @@ class NotificationImageModule(reactContext: ReactApplicationContext) :
 
     override fun getName() = "NotificationImageModule"
 
-    /**
-     * Downloads [imageUrl], composites it (contain-scaled, horizontally centered) onto a
-     * #44004F landscape canvas, saves it to the app cache, and resolves with the file:// path.
-     * Rejects on any error so the caller can fall back to the original URL.
-     */
     @ReactMethod
     fun prepareNotificationImage(imageUrl: String, promise: Promise) {
         Thread {
@@ -42,7 +37,7 @@ class NotificationImageModule(reactContext: ReactApplicationContext) :
                 // Create the purple canvas
                 val result = Bitmap.createBitmap(canvasW, canvasH, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(result)
-                canvas.drawColor(Color.parseColor("#44004F"))
+                canvas.drawColor(Color.parseColor("#FFFFFF"))
 
                 // Contain-scale: keep aspect ratio, fit inside canvas
                 val scale = minOf(canvasW.toFloat() / src.width, canvasH.toFloat() / src.height)
