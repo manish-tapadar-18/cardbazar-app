@@ -24,5 +24,7 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
         await onNotifeeBackgroundPress(detail.notification?.data);
     }
 });
-// LogBox.ignoreLogs()
+if (__DEV__) {
+  LogBox.ignoreLogs(['Open ...']);
+}
 AppRegistry.registerComponent(appName, () => App);

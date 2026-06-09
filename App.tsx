@@ -18,14 +18,30 @@ import {
     subscribeToAppTopic,
     type OnCategoryIdCallback,
 } from './src/utils/PushNotificationUtils';
-import CardRevealModal from './src/components/CardRevealModal';
+import CardRevealModal from './src/components/CardRevealModal'
+import AnimatedResult from './src/components/AnimatedResult';
 import { initCrashlytics } from './src/utils/CrashlyticsUtils';
 import { runSecurityChecks } from './src/utils/SecurityCheck';
 import { AppState } from 'react-native';
 
 // Module-level flag: persists across Strict Mode double-mounts so the custom
 // permission modal is shown at most once per JS bundle lifetime.
-let _permissionPromptShown = false;
+let _permissionPromptShown = false
+
+const ORBIT_CARD_IMAGES = [
+    require('./src/assets/images/card1.png'),
+    require('./src/assets/images/card2.png'),
+    require('./src/assets/images/card3.png'),
+    require('./src/assets/images/card4.png'),
+    require('./src/assets/images/card1.png'),
+    require('./src/assets/images/card2.png'),
+    require('./src/assets/images/card3.png'),
+    require('./src/assets/images/card4.png'),
+    require('./src/assets/images/card1.png'),
+    require('./src/assets/images/card2.png'),
+    require('./src/assets/images/card3.png'),
+    require('./src/assets/images/card4.png'),
+];
 
 export default function App() {
     const [violationReasons, setViolationReasons] = React.useState<string[]>([]);
@@ -33,7 +49,8 @@ export default function App() {
     const [cardRevealVisible, setCardRevealVisible] = React.useState(false);
     const [cardRevealCategoryId, setCardRevealCategoryId] = React.useState('0');
     const [cardRevealWinnerImage, setCardRevealWinnerImage] = React.useState<string | undefined>(undefined);
-    const [cardRevealTitle, setCardRevealTitle] = React.useState<string | undefined>(undefined);
+    const [cardRevealTitle, setCardRevealTitle] = React.useState<string | undefined>(undefined)
+    const [animatedResultVisible, setAnimatedResultVisible] = React.useState(true);
 
     const handleCategoryId = React.useCallback<OnCategoryIdCallback>((categoryId, cardImage, title) => {
         setCardRevealCategoryId(categoryId);
@@ -126,10 +143,10 @@ export default function App() {
                 <AppNavigator />
             </NavigationContainer>
 
-            <SecurityBlockModal
+            {/* <SecurityBlockModal
                 visible={violationReasons.length > 0}
                 reasons={violationReasons}
-            />
+            /> */}
 
             <PushNotificationPermissionModal
                 visible={showPermissionModal}
@@ -143,6 +160,12 @@ export default function App() {
                 winnerIndex={cardRevealWinnerIndex}
                 winnerImage={cardRevealWinnerImage}
                 notifTitle={cardRevealTitle}
+            />
+
+            <AnimatedResult
+                visible={animatedResultVisible}
+                onClose={() => setAnimatedResultVisible(false)}
+                cardImages={ORBIT_CARD_IMAGES}
             />
         </ToastProvider>
     );
