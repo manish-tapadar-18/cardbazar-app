@@ -150,7 +150,7 @@ export const styles = StyleSheet.create({
 
   // ─── Other Amount Input ─────────────────────────────────────────────────────
   otherInputCard: {
-    backgroundColor: 'rgba(30,8,72,0.85)',
+    backgroundColor: 'rgba(59,212,20,0.12)',
     borderRadius: rh(1.5),
     borderWidth: 1,
     borderColor: 'rgba(255,215,0,0.2)',
@@ -244,14 +244,14 @@ export const styles = StyleSheet.create({
   gatewayCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(30,8,72,0.85)',
+    backgroundColor: 'rgba(59,212,20,0.12)',
     borderRadius: rh(1.5),
     borderWidth: 1,
     borderColor: 'rgba(255,215,0,0.25)',
     padding: rw(4),
     marginBottom: rh(3),
     elevation: 3,
-    shadowColor: Colors.GOLD,
+    // shadowColor: Colors.GOLD,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,

@@ -17,4 +17,5 @@ export const FontFamilyWithWeight = {
     inter_700:'Inter-Bold',
     inter_800:'Inter-ExtraBold',
     inter_900:'Inter-Black',
+    cooper_italic:'Cooper-Black-Italic',
 }

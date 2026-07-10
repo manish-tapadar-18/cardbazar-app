@@ -253,6 +253,22 @@ const PlayGame: React.FC = () => {
     });
   }, []);
 
+  // ── Select / deselect all cards in the current group ─────────────────────
+  const onSelectAllToggle = useCallback(() => {
+    const group = cardGroups[currentGroupIndex];
+    if (!group) return;
+    setSelectedCardIds(prev => {
+      const next = new Set(prev);
+      const allSelected = group.cards.every(c => next.has(c.ID));
+      if (allSelected) {
+        group.cards.forEach(c => next.delete(c.ID));
+      } else {
+        group.cards.forEach(c => next.add(c.ID));
+      }
+      return next;
+    });
+  }, [cardGroups, currentGroupIndex]);
+
   // ── Add line items — supports multiple selected cards at once ────────────
   const onAddLineItem = () => {
     Keyboard.dismiss();
@@ -392,6 +408,12 @@ const PlayGame: React.FC = () => {
   });
 
   const currentGroup = cardGroups[currentGroupIndex];
+  const currentGroupTotal = currentGroup?.cards.length ?? 0;
+  const currentGroupSelectedCount = useMemo(
+    () => currentGroup?.cards.filter(c => selectedCardIds.has(c.ID)).length ?? 0,
+    [currentGroup, selectedCardIds],
+  );
+  const isAllInGroupSelected = currentGroupTotal > 0 && currentGroupSelectedCount === currentGroupTotal;
 
   return (
     <ImageBackground source={Images.DASHBOARD_SPLASH} style={styles.bg} resizeMode="cover">
@@ -421,6 +443,37 @@ const PlayGame: React.FC = () => {
             </CustomText>
             <Image source={Images.ANGLE_DOWN} style={styles.angleDown} tintColor={Colors.GOLD} />
           </Pressable>
+
+          {/* ── Select All bar ───────────────────────────────────────────── */}
+          {currentGroupTotal > 0 && (
+            <View style={styles.selectAllBar}>
+              <View style={styles.selectionCountRow}>
+                <CustomText style={styles.selectionCountNum}>{currentGroupSelectedCount}</CustomText>
+                <CustomText style={styles.selectionCountSep}> / </CustomText>
+                <CustomText style={styles.selectionCountTotal}>{currentGroupTotal}</CustomText>
+                <CustomText style={styles.selectionCountLabel}> SELECTED</CustomText>
+              </View>
+              <Pressable
+                onPress={onSelectAllToggle}
+                style={({ pressed }) => [styles.selectAllBtn, pressed && { opacity: 0.75 }]}
+              >
+                {isAllInGroupSelected ? (
+                  <LinearGradient
+                    colors={['#FFD700', '#E8900C']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.selectAllBtnInner}
+                  >
+                    <CustomText style={styles.selectAllBtnTextFilled}>✕  DESELECT ALL</CustomText>
+                  </LinearGradient>
+                ) : (
+                  <View style={styles.selectAllBtnOutline}>
+                    <CustomText style={styles.selectAllBtnTextOutline}>✓  SELECT ALL</CustomText>
+                  </View>
+                )}
+              </Pressable>
+            </View>
+          )}
 
           {/* ── Horizontally paged card sets ──────────────────────────────── */}
           {cardGroups.length > 0 && (

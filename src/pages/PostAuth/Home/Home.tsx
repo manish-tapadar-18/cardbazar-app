@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   FlatList,
   ImageBackground,
@@ -48,21 +48,12 @@ const SkeletonList: React.FC = () => (
 const Home = () => {
   const [gameCategories, setGameCategories] = useState<IGameCategoryResponse[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  // ── Card reveal controls (change these to test different outcomes) ─────────
-  const revealWinner: 0 | 1 | 2 | 3 = 2          // 0=card1  1=card2  2=card3  3=card4
-  const revealExitMode: 'fadeOut' | 'scatter' = 'scatter'  // 'fadeOut' | 'scatter'
-  // ─────────────────────────────────────────────────────────────────────────
   const navigation = useNavigation();
   const { userDetails } = useUserStore();
   const { setWallet } = useWalletStore();
   const { openDeviceBlock, closeDeviceBlock, openMultiLogin, closeMultiLogin } = useDeviceModalStore();
   const { setAdminDetails } = useAdminDetailsStore();
-
-  // Runs once on mount: fetch full profile then sync FCM token if it changed
-  useEffect(() => {
-    getProfileDetails();
-  }, []);
-
+  
   const updateFCMTokenAPI = async (userId: string): Promise<void> => {
     clLog(TAGS.HOME, `updateFCMTokenAPI — userId: ${userId}`);
     try {
@@ -169,10 +160,6 @@ const Home = () => {
   }
 
   useFocusEffect(React.useCallback(() => {
-    fetchWalletBalance();
-  }, []))
-
-  useFocusEffect(React.useCallback(() => {
     const fetchAdminDetails = async () => {
       clLog(TAGS.HOME, 'fetchAdminDetails — start');
       try {
@@ -223,8 +210,10 @@ const Home = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchAllGameCategories()
-    }, [fetchAllGameCategories]),
+      fetchAllGameCategories();
+      getProfileDetails();
+      fetchWalletBalance();
+    }, []),
   )
 
   return (
@@ -257,7 +246,11 @@ const Home = () => {
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
-              onRefresh={fetchAllGameCategories}
+              onRefresh={() => {
+                fetchAllGameCategories();
+                getProfileDetails();
+                fetchWalletBalance();
+              }}
               tintColor={Colors.GOLD}
               colors={[Colors.GOLD]}
             />

@@ -13,6 +13,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { FontFamilyWithWeight } from '../utils/FontFamilyWithWeight';
+import { rh, rw } from '../utils/responsive';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -606,13 +608,13 @@ export default function AnimatedResult({ visible, onClose, winnerImage, cardBazz
                 {/* Winner banner */}
                 {phase === 'winner' && (
                     <Animated.View style={[styles.bannerWrap, { opacity: captionFade }]}>
-                        <Animated.Text style={[styles.popper, { transform: [{ rotate: popLeft }] }]}>
+                        {/* <Animated.Text style={[styles.popper, { transform: [{ rotate: popLeft }] }]}>
                             🎉
-                        </Animated.Text>
-                        <Text style={styles.bannerTitle}>{cardBazzi || 'FIRST BAAZI'}</Text>
-                        <Animated.Text style={[styles.popper, { transform: [{ rotate: popRight }] }]}>
+                        </Animated.Text> */}
+                        <Text style={styles.bannerTitle}>{cardBazzi || 'Not Available'}</Text>
+                        {/* <Animated.Text style={[styles.popper, { transform: [{ rotate: popRight }] }]}>
                             🎉
-                        </Animated.Text>
+                        </Animated.Text> */}
                     </Animated.View>
                 )}
 
@@ -725,12 +727,12 @@ const styles = StyleSheet.create({
         zIndex: 30,
     },
     bannerTitle: {
-        fontSize: 26,
-        fontWeight: '400',
-        color: CHAMP,
-        letterSpacing: 6,
-        marginHorizontal: 14,
-        textShadowColor: 'rgba(201,182,140,0.4)',
+        fontSize: rw(10),
+        fontFamily: FontFamilyWithWeight["cooper_italic"],
+        color: "#FFFFFF",
+        textTransform: 'uppercase',
+        alignSelf: 'center',
+        textShadowColor: 'rgba(0, 0, 0, 0.4)',
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 14,
     },

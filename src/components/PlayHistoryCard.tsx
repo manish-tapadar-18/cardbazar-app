@@ -38,6 +38,13 @@ function formatTimeAMPM(raw: string): string {
     return m.isValid() ? m.format('hh:mm A') : raw;
 }
 
+/** "2024-06-17T14:30:00" or "2024-06-17" → "17 Jun 2024, 02:30 PM" */
+function formatPlayedAt(raw: string): string {
+    if (!raw) return '';
+    const m = moment(raw);
+    return m.isValid() ? m.format('DD MMM YYYY, hh:mm A') : raw;
+}
+
 type ResultStyle = 'pending' | 'win' | 'loss';
 
 function getResult(resultPublish: number, win: number): { label: string; style: ResultStyle } {
@@ -274,6 +281,9 @@ const PlayHistoryCard: React.FC<Props> = ({ date, items }) => (
 
                             {/* SCHEDULE — full width */}
                             <LV label="GAME NAME" value={item.GAME_MASTER_SCHEDULE_NAME} />
+
+                            {/* PLAYED AT — full width */}
+                            <LV label="PLAYED AT" value={formatPlayedAt(item.DATE)} />
 
                             {/* START TIME  |  END TIME */}
                             <View style={styles.pairRow}>

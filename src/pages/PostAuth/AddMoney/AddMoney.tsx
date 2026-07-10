@@ -91,10 +91,20 @@ const AddMoney = () => {
     }
   }, [userDetails?.EMAIL])
 
+  const resetSelectionState = useCallback(() => {
+    setSelectedAmount(null)
+    setIsOtherSelected(false)
+    setOtherAmount('')
+    setSelectedGateway(null)
+    setIsGatewayLoading(false)
+    setIsAddingMoney(false)
+  }, [])
+
   useFocusEffect(
     useCallback(() => {
+      resetSelectionState()
       fetchInitData()
-    }, [fetchInitData])
+    }, [resetSelectionState, fetchInitData])
   )
 
   // ── Reset gateway state on new amount selection ───────────────────────────

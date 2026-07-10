@@ -2,6 +2,10 @@
   "migIndex": 1,
   "data": [
     {
+      "path": "src/assets/fonts/Cooper-Black-Italic.otf",
+      "sha1": "ea8e0a52988fe5c9ffdf7006cad5356ad01f264e"
+    },
+    {
       "path": "src/assets/fonts/Inter-Black.ttf",
       "sha1": "283fa65b96dc1f2d71c6504afb9610447bdcdf1b"
     },

@@ -395,6 +395,73 @@ export const styles = StyleSheet.create({
         letterSpacing: 1.5,
     },
 
+    // ─── Select All Bar ───────────────────────────────────────────────────────
+    selectAllBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: rw(4),
+        paddingVertical: rh(0.8),
+        marginBottom: rh(0.5),
+    },
+    selectionCountRow: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+    },
+    selectionCountNum: {
+        color: Colors.GOLD,
+        fontSize: rf(5.5),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 0.5,
+    },
+    selectionCountSep: {
+        color: 'rgba(255,255,255,0.45)',
+        fontSize: rf(4),
+        fontFamily: FontFamilyWithWeight[400],
+    },
+    selectionCountTotal: {
+        color: 'rgba(255,255,255,0.65)',
+        fontSize: rf(4),
+        fontFamily: FontFamilyWithWeight[500],
+    },
+    selectionCountLabel: {
+        color: 'rgba(255,255,255,0.45)',
+        fontSize: rf(3.2),
+        fontFamily: FontFamilyWithWeight[400],
+        letterSpacing: 0.8,
+    },
+    selectAllBtn: {
+        borderRadius: rw(5),
+        overflow: 'hidden',
+    },
+    selectAllBtnInner: {
+        paddingHorizontal: rw(4),
+        paddingVertical: rh(1),
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    selectAllBtnOutline: {
+        paddingHorizontal: rw(4),
+        paddingVertical: rh(0.85),
+        borderRadius: rw(5),
+        borderWidth: 1.5,
+        borderColor: Colors.GOLD,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    selectAllBtnTextFilled: {
+        color: '#1A0A00',
+        fontSize: rf(3.5),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 0.6,
+    },
+    selectAllBtnTextOutline: {
+        color: Colors.GOLD,
+        fontSize: rf(3.5),
+        fontFamily: FontFamilyWithWeight[700],
+        letterSpacing: 0.6,
+    },
+
     // ─── Dropdown Modal ───────────────────────────────────────────────────────
     modalOverlay: {
         flex: 1,
