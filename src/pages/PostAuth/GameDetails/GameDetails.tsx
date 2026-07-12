@@ -24,6 +24,7 @@ import GameDetailsEmptyState from './components/GameDetailsEmptyState'
 import GameCard from './components/GameCard'
 import GameDetailsSectionHeader from './components/GameDetailsSectionHeader'
 import { useAdminDetailsStore } from '../../../stores/adminDetailsStore'
+import { clearAllStores } from '../../../stores/clearAllStores'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type GameStatus = 'RUNNING' | 'UPCOMING' | 'EXPIRED'
@@ -75,6 +76,17 @@ const GameDetails = () => {
   const { setWallet } = useWalletStore();
   const { setAdminDetails } = useAdminDetailsStore();
 
+  const fetchUserDetails = useCallback(async () => {
+    const email = userDetails?.EMAIL;
+    if (!email) return;
+    try {
+      const { isSuccess, data } = await Repository.User.userDetails({ EMAIL: email });
+      if (isSuccess && data?.STATUS === 'INACTIVE') clearAllStores();
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to verify session.');
+    }
+  }, [userDetails?.EMAIL]);
+
   useFocusEffect(
     useCallback(() => {
       const fetchAdminDetails = async () => {
@@ -83,6 +95,7 @@ const GameDetails = () => {
       };
       fetchAdminDetails();
       fetchWalletBalance();
+      fetchUserDetails();
     }, [])
   )
 

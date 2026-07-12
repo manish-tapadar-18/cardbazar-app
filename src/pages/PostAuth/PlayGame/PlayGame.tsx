@@ -37,6 +37,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { clearAllStores } from '../../../stores/clearAllStores';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface LineItem {
@@ -205,6 +206,17 @@ const PlayGame: React.FC = () => {
     }
   }, [setAdminDetails]);
 
+  const fetchUserDetails = useCallback(async () => {
+    const email = userDetails?.EMAIL;
+    if (!email) return;
+    try {
+      const { isSuccess, data } = await Repository.User.userDetails({ EMAIL: email });
+      if (isSuccess && data?.STATUS === 'INACTIVE') clearAllStores();
+    } catch (error: any) {
+      Toast.error(error?.message ?? 'Failed to verify session.');
+    }
+  }, [userDetails?.EMAIL]);
+
   // ── Fetch everything in parallel ─────────────────────────────────────────
   const fetchAll = useCallback(async () => {
     await Promise.all([
@@ -212,12 +224,15 @@ const PlayGame: React.FC = () => {
       fetchGameTypes(),
       fetchGameRules(),
       fetchWalletBalance(),
+      fetchUserDetails()
     ]);
   }, [fetchAdminDetails, fetchGameTypes, fetchGameRules, fetchWalletBalance]);
 
   useFocusEffect(useCallback(() => {
     fetchAll();
   }, [fetchAll]));
+
+
 
   // ── Pull-to-refresh ───────────────────────────────────────────────────────
   const onRefresh = useCallback(async () => {
@@ -493,7 +508,7 @@ const PlayGame: React.FC = () => {
               keyboardShouldPersistTaps="always"
             />
           )}
-          
+
           <View style={styles.amountZone}>
             <View style={styles.amountRow}>
               <TextInput

@@ -28,6 +28,7 @@ import { clLog, clRecordError, clSetAttribute, clSetUser, TAGS } from '../../../
 import DeviceBlockModal from '../../../components/DeviceBlockModal'
 import EmptyState from '../../../components/EmptyState'
 import MultiLoginModal from '../../../components/MultiLoginModal'
+import { clearAllStores } from '../../../stores/clearAllStores'
 const SKELETON_COUNT = 4
 
 const ListHeader: React.FC = () => (
@@ -53,7 +54,7 @@ const Home = () => {
   const { setWallet } = useWalletStore();
   const { openDeviceBlock, closeDeviceBlock, openMultiLogin, closeMultiLogin } = useDeviceModalStore();
   const { setAdminDetails } = useAdminDetailsStore();
-  
+
   const updateFCMTokenAPI = async (userId: string): Promise<void> => {
     clLog(TAGS.HOME, `updateFCMTokenAPI — userId: ${userId}`);
     try {
@@ -71,7 +72,10 @@ const Home = () => {
     if (!userDetails?.EMAIL) return;
     try {
       const { isSuccess, data } = await Repository.User.userDetails({ EMAIL: userDetails.EMAIL });
-      if (!isSuccess || !data || data.STATUS == 'INACTIVE') return;
+      if (!isSuccess || !data || data.STATUS == 'INACTIVE') {
+        clearAllStores()
+        return
+      }
       clSetUser(data.ID);
       clSetAttribute('email', data.EMAIL);
       const fcmToken = await getFCMToken();
@@ -218,46 +222,46 @@ const Home = () => {
 
   return (
     <>
-    <ImageBackground
-      source={Images.DASHBOARD_SPLASH}
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <GradientIconBar />
-      {isLoading && gameCategories.length === 0 ? (
-        <SkeletonList />
-      ) : (
-        <FlatList
-          data={gameCategories}
-          keyExtractor={(item) => item.ID}
-          renderItem={({ item }) => <CategoryCard item={item} onPress={(id) => navigateToGameDetails(id)} contestCount={item.SCHEDULE_COUNT} />}
-          ListHeaderComponent={<ListHeader />}
-          ListEmptyComponent={
-            isLoading ? null : (
-              <EmptyState
-                image={Images.GAME_LIST}
-                title="No Games Available"
-                subtitle={"No active game categories right now.\nPull down to refresh."}
+      <ImageBackground
+        source={Images.DASHBOARD_SPLASH}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <GradientIconBar />
+        {isLoading && gameCategories.length === 0 ? (
+          <SkeletonList />
+        ) : (
+          <FlatList
+            data={gameCategories}
+            keyExtractor={(item) => item.ID}
+            renderItem={({ item }) => <CategoryCard item={item} onPress={(id) => navigateToGameDetails(id)} contestCount={item.SCHEDULE_COUNT} />}
+            ListHeaderComponent={<ListHeader />}
+            ListEmptyComponent={
+              isLoading ? null : (
+                <EmptyState
+                  image={Images.GAME_LIST}
+                  title="No Games Available"
+                  subtitle={"No active game categories right now.\nPull down to refresh."}
+                />
+              )
+            }
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={isLoading}
+                onRefresh={() => {
+                  fetchAllGameCategories();
+                  getProfileDetails();
+                  fetchWalletBalance();
+                }}
+                tintColor={Colors.GOLD}
+                colors={[Colors.GOLD]}
               />
-            )
-          }
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={() => {
-                fetchAllGameCategories();
-                getProfileDetails();
-                fetchWalletBalance();
-              }}
-              tintColor={Colors.GOLD}
-              colors={[Colors.GOLD]}
-            />
-          }
-        />
-      )}
-    </ImageBackground>
+            }
+          />
+        )}
+      </ImageBackground>
       <DeviceBlockModal onCheckDevice={checkDeviceId} />
       <MultiLoginModal onRefresh={getProfileDetails} />
     </>

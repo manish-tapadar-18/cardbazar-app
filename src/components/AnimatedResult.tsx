@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     bannerTitle: {
         fontSize: rw(10),
         fontFamily: FontFamilyWithWeight["cooper_italic"],
-        color: "#FFFFFF",
+        color: "#f3d866",
         textTransform: 'uppercase',
         alignSelf: 'center',
         textShadowColor: 'rgba(0, 0, 0, 0.4)',
